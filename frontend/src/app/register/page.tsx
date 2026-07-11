@@ -107,13 +107,13 @@ export default function RegisterPage() {
 
           <select
             name="role"
-            value={form.role}
+            value={form.role} 
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="USER">Shopper</option>
             <option value="DELIVERY_BOY">Delivery Partner</option>
-            <option value="ADMIN">Admin</option>
+           
           </select>
 
           <button
