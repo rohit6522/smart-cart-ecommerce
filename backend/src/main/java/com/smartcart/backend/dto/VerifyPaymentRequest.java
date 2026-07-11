@@ -4,13 +4,17 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CheckoutRequest {
+public class VerifyPaymentRequest {
 
-    @NotBlank(message = "Delivery address is required")
-    private String deliveryAddress;
-
-    // Populated only when paying via Razorpay; null/empty means Cash on Delivery
+    @NotBlank
     private String razorpayOrderId;
+
+    @NotBlank
     private String razorpayPaymentId;
+
+    @NotBlank
     private String razorpaySignature;
+
+    @NotBlank
+    private String deliveryAddress; // reused to actually place the order after verification
 }

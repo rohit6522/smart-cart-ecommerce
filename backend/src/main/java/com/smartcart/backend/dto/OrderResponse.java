@@ -24,4 +24,5 @@ public class OrderResponse {
     // Delivery info (null until assigned)
     private String deliveryBoyName;
     private String deliveryBoyPhone;
+    private String paymentStatus;
 }

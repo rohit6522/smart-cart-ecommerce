@@ -27,7 +27,9 @@ public class OrderService {
     private final DeliveryAssignmentRepository deliveryAssignmentRepository;
     private final SecurityUtil securityUtil;
 
-    // ---------- Checkout: Cart -> Order ----------
+
+    private final PaymentService paymentService; // add this field with other repositories
+
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
         User user = getCurrentUser();
@@ -41,7 +43,6 @@ public class OrderService {
             throw new ApiException("Cart is empty", HttpStatus.BAD_REQUEST);
         }
 
-        // Validate stock availability for every item BEFORE creating the order
         for (CartItem item : cartItems) {
             Product product = item.getProduct();
             if (product.getStockQuantity() < item.getQuantity()) {
@@ -52,20 +53,38 @@ public class OrderService {
             }
         }
 
+        // ---------- Payment verification (only if Razorpay details are present) ----------
+        Order.PaymentStatus paymentStatus = Order.PaymentStatus.PENDING; // COD default
+
+        boolean isOnlinePayment = request.getRazorpayOrderId() != null && !request.getRazorpayOrderId().isBlank();
+
+        if (isOnlinePayment) {
+            boolean valid = paymentService.verifySignature(
+                    request.getRazorpayOrderId(),
+                    request.getRazorpayPaymentId(),
+                    request.getRazorpaySignature()
+            );
+            if (!valid) {
+                throw new ApiException("Payment verification failed", HttpStatus.PAYMENT_REQUIRED);
+            }
+            paymentStatus = Order.PaymentStatus.PAID;
+        }
+
         BigDecimal totalAmount = cartItems.stream()
                 .map(item -> item.getPriceAtAdd().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Create the order
         Order order = Order.builder()
                 .user(user)
                 .totalAmount(totalAmount)
                 .status(Order.OrderStatus.PENDING)
                 .deliveryAddress(request.getDeliveryAddress())
+                .paymentStatus(paymentStatus)
+                .razorpayOrderId(request.getRazorpayOrderId())
+                .razorpayPaymentId(request.getRazorpayPaymentId())
                 .build();
         order = orderRepository.save(order);
 
-        // Convert cart items -> order items, and deduct stock
         for (CartItem item : cartItems) {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -75,16 +94,13 @@ public class OrderService {
                     .build();
             orderItemRepository.save(orderItem);
 
-            // Deduct stock
             Product product = item.getProduct();
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
         }
 
-        // Clear the cart after successful order
         cartItemRepository.deleteAll(cartItems);
 
-        // Reset budget's current_spent back to 0 since cart is now empty
         budgetRepository.findByUserId(user.getId()).ifPresent(budget -> {
             budget.setCurrentSpent(BigDecimal.ZERO);
             budgetRepository.save(budget);
@@ -92,6 +108,8 @@ public class OrderService {
 
         return mapToResponse(order);
     }
+
+
 
     // ---------- Get logged-in user's order history ----------
     public List<OrderResponse> getMyOrders() {
@@ -141,6 +159,7 @@ public class OrderService {
                 .filter(oi -> oi.getOrder().getId().equals(order.getId()))
                 .toList();
 
+
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
             BigDecimal subtotal = item.getPriceAtPurchase().multiply(BigDecimal.valueOf(item.getQuantity()));
             return OrderItemResponse.builder()
@@ -169,6 +188,7 @@ public class OrderService {
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
+                .paymentStatus(order.getPaymentStatus().name())
                 .totalAmount(order.getTotalAmount())
                 .deliveryAddress(order.getDeliveryAddress())
                 .items(itemResponses)
@@ -176,5 +196,9 @@ public class OrderService {
                 .deliveryBoyName(deliveryBoyName)
                 .deliveryBoyPhone(deliveryBoyPhone)
                 .build();
+
     }
+
+
+
 }

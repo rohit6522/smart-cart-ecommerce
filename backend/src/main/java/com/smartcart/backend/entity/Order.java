@@ -40,9 +40,21 @@ public class Order {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) status = OrderStatus.PENDING;
+        if (paymentStatus == null) paymentStatus = PaymentStatus.PENDING;
     }
 
     public enum OrderStatus {
         PENDING, CONFIRMED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+    }
+
+    private String razorpayOrderId;
+    private String razorpayPaymentId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus paymentStatus;
+
+    public enum PaymentStatus {
+        PENDING, PAID, FAILED
     }
 }
