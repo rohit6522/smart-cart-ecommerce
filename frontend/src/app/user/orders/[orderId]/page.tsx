@@ -76,8 +76,22 @@ function OrderDetailContent() {
             <h1 className="text-xl font-bold text-gray-900">
               Order #{order.orderId}
             </h1>
-            <OrderStatusBadge status={order.status} />
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                  order.paymentStatus === "PAID"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {order.paymentStatus === "PAID"
+                  ? "Paid Online"
+                  : "Cash on Delivery"}
+              </span>
+              <OrderStatusBadge status={order.status} />
+            </div>
           </div>
+
           <p className="text-sm text-gray-500">
             Placed on{" "}
             {new Date(order.createdAt).toLocaleDateString("en-IN", {

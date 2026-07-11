@@ -1,10 +1,15 @@
 import api from "./axios";
 import { ApiResponse, OrderResponse, OrderStatus } from "@/types";
 
-export const checkout = async (deliveryAddress: string) => {
-  const res = await api.post<ApiResponse<OrderResponse>>("/api/user/orders/checkout", {
-    deliveryAddress,
-  });
+interface CheckoutPayload {
+  deliveryAddress: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+}
+
+export const checkout = async (payload: CheckoutPayload) => {
+  const res = await api.post<ApiResponse<OrderResponse>>("/api/user/orders/checkout", payload);
   return res.data.data;
 };
 

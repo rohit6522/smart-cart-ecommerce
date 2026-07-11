@@ -92,6 +92,7 @@ export interface OrderResponse {
   createdAt: string;
   deliveryBoyName: string | null;
   deliveryBoyPhone: string | null;
+  paymentStatus: string; // add this line
 }
 
 // ---------- Delivery ----------
@@ -121,4 +122,11 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export interface RazorpayOrderResponse {
+  razorpayOrderId: string;
+  razorpayKeyId: string;
+  amount: number;
+  currency: string;
 }
