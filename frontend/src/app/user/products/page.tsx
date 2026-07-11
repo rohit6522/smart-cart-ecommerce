@@ -10,13 +10,14 @@ import { Product } from "@/types";
 import { Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
+import { useSearchParams } from "next/navigation";
 function ProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [toast, setToast] = useState("");
+const searchParams = useSearchParams();
+const initialCategory = searchParams.get("category") || "All";
+const [category, setCategory] = useState(initialCategory);  const [toast, setToast] = useState("");
   const router = useRouter();
 
   useEffect(() => {

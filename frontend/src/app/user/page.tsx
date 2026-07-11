@@ -1,287 +1,145 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import BudgetTracker from "@/components/user/BudgetTracker";
-import CartItemRow from "@/components/user/CartItemRow";
-import { getCart, updateCartItem, removeCartItem, setBudget } from "@/lib/cartApi";
-import { checkout } from "@/lib/orderApi";
-import { createRazorpayOrder } from "@/lib/paymentApi";
-import { useAuth } from "@/context/AuthContext";
-import { CartResponse } from "@/types";
-import { RazorpaySuccessResponse } from "@/types/razorpay";
-import { ArrowLeft, ShoppingBag, CreditCard, Banknote } from "lucide-react";
+import ProductCard from "@/components/user/ProductCard";
+import { getAllProducts } from "@/lib/productApi";
+import { getCart, setBudget, addToCart } from "@/lib/cartApi";
+import { Product, CartResponse } from "@/types";
+import { Search } from "lucide-react";
 import Link from "next/link";
 
-function CartContent() {
+function UserHomeContent() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "COD">("ONLINE");
-  const [placingOrder, setPlacingOrder] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
-  const { user } = useAuth();
-
-  const fetchCart = async () => {
-    try {
-      const data = await getCart();
-      setCart(data);
-    } catch (err) {
-      console.error("Failed to fetch cart", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [search, setSearch] = useState("");
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
-    fetchCart();
+    Promise.all([getAllProducts(), getCart()])
+      .then(([productsData, cartData]) => {
+        setProducts(productsData);
+        setCart(cartData);
+      })
+      .catch((err) => console.error("Failed to load home data", err))
+      .finally(() => setLoading(false));
   }, []);
-
-  const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
-    const updated = await updateCartItem(cartItemId, quantity);
-    setCart(updated);
-  };
-
-  const handleRemove = async (cartItemId: number) => {
-    const updated = await removeCartItem(cartItemId);
-    setCart(updated);
-  };
 
   const handleSetBudget = async (amount: number) => {
     const updated = await setBudget(amount);
     setCart(updated);
   };
 
-  const validateBeforeCheckout = (): boolean => {
-    setError("");
-    if (!address.trim()) {
-      setError("Please enter a delivery address");
-      return false;
-    }
-    if (!cart || cart.items.length === 0) {
-      setError("Your cart is empty");
-      return false;
-    }
-    return true;
-  };
-
-  // ---------- Cash on Delivery flow ----------
-  const handleCodCheckout = async () => {
-    setPlacingOrder(true);
+  const handleAddToCart = async (productId: number, quantity: number) => {
     try {
-      const order = await checkout({ deliveryAddress: address });
-      router.push(`/user/orders/${order.orderId}`);
+      const updated = await addToCart(productId, quantity);
+      setCart(updated);
+      setToast("Item added to cart!");
+      setTimeout(() => setToast(""), 2000);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Checkout failed. Try again.");
-    } finally {
-      setPlacingOrder(false);
+      setToast(err?.response?.data?.message || "Failed to add item");
+      setTimeout(() => setToast(""), 2500);
     }
   };
 
-  // ---------- Razorpay online payment flow ----------
-  const handleOnlineCheckout = async () => {
-    setPlacingOrder(true);
-    setError("");
-
-    try {
-      // Step 1: ask backend to create a Razorpay order (amount computed server-side from cart)
-      const razorpayOrder = await createRazorpayOrder();
-
-      // Step 2: open Razorpay's checkout popup
-      const options = {
-        key: razorpayOrder.razorpayKeyId,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        name: "Smart Cart",
-        description: "Order Payment",
-        order_id: razorpayOrder.razorpayOrderId,
-        prefill: {
-          name: user?.name,
-          email: user?.email,
-        },
-        theme: { color: "#2563eb" },
-        handler: async (response: RazorpaySuccessResponse) => {
-          // Step 3: payment succeeded on Razorpay's side - now verify + create order on our backend
-          try {
-            const order = await checkout({
-              deliveryAddress: address,
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-            });
-            router.push(`/user/orders/${order.orderId}`);
-          } catch (err: any) {
-            setError(err?.response?.data?.message || "Payment verification failed");
-            setPlacingOrder(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            // User closed the popup without paying
-            setPlacingOrder(false);
-          },
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to start payment");
-      setPlacingOrder(false);
-    }
-  };
-
-  const handleCheckout = () => {
-    if (!validateBeforeCheckout()) return;
-
-    if (paymentMethod === "ONLINE") {
-      handleOnlineCheckout();
-    } else {
-      handleCodCheckout();
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar title="Smart Cart" />
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="h-40 bg-white border border-gray-200 rounded-xl animate-pulse" />
-        </div>
-      </div>
+  // Group products by category
+  const productsByCategory = useMemo(() => {
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase())
     );
-  }
+    const groups: Record<string, Product[]> = {};
+    filtered.forEach((p) => {
+      const cat = p.category || "Others";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
+    return groups;
+  }, [products, search]);
 
-  const isEmpty = !cart || cart.items.length === 0;
+  const categories = Object.keys(productsByCategory);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" />
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <button
-          onClick={() => router.push("/user/products")}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
-        >
-          <ArrowLeft size={16} /> Continue Shopping
-        </button>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Cart</h1>
-
-        <div className="mb-6">
-          <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
+      <div className="max-w-6xl mx-auto px-6 py-6">
+        {/* Search bar */}
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search for products, brands and more..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
 
-        {isEmpty ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <ShoppingBag className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-500 mb-4">Your cart is empty</p>
-            <Link
-              href="/user/products"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm"
-            >
-              Browse Products
-            </Link>
+        {/* Budget Tracker - compact, always visible at top */}
+        <div className="mb-8">
+          {loading ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
+          ) : (
+            <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
+          )}
+        </div>
+
+        {/* Product sections by category */}
+        {loading ? (
+          <div className="space-y-8">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i}>
+                <div className="h-6 w-40 bg-gray-200 rounded mb-4 animate-pulse" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div key={j} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
+        ) : categories.length === 0 ? (
+          <p className="text-center text-gray-500 py-16">No products found.</p>
         ) : (
-          <>
-            <div className="space-y-3 mb-6">
-              {cart.items.map((item) => (
-                <CartItemRow
-                  key={item.id}
-                  item={item}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onRemove={handleRemove}
-                />
-              ))}
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
-                <span className="text-gray-600">Cart Total</span>
-                <span className="text-xl font-bold text-gray-900">
-                  ₹{cart.cartTotal.toFixed(2)}
-                </span>
-              </div>
-
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Delivery Address
-              </label>
-              <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your full delivery address"
-                rows={2}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-
-              {/* Payment method selector */}
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment Method
-              </label>
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("ONLINE")}
-                  className={`flex items-center gap-2 justify-center py-2.5 rounded-lg border text-sm font-medium transition ${
-                    paymentMethod === "ONLINE"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <CreditCard size={16} /> Pay Online
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("COD")}
-                  className={`flex items-center gap-2 justify-center py-2.5 rounded-lg border text-sm font-medium transition ${
-                    paymentMethod === "COD"
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <Banknote size={16} /> Cash on Delivery
-                </button>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-3">
-                  {error}
+          <div className="space-y-10">
+            {categories.map((category) => (
+              <section key={category}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-gray-900">{category}</h2>
+                  <Link
+                    href={`/user/products?category=${encodeURIComponent(category)}`}
+                    className="text-sm text-blue-600 hover:underline font-medium"
+                  >
+                    View all →
+                  </Link>
                 </div>
-              )}
-
-              {cart.overBudget && (
-                <div className="bg-yellow-50 text-yellow-700 text-sm px-4 py-2 rounded-lg mb-3">
-                  Heads up — you&apos;re over your set budget. You can still place the order if you&apos;d like.
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {productsByCategory[category].slice(0, 4).map((product) => (
+                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  ))}
                 </div>
-              )}
-
-              <button
-                onClick={handleCheckout}
-                disabled={placingOrder}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition disabled:opacity-50"
-              >
-                {placingOrder
-                  ? "Processing..."
-                  : paymentMethod === "ONLINE"
-                  ? `Pay ₹${cart.cartTotal.toFixed(2)}`
-                  : "Place Order (COD)"}
-              </button>
-            </div>
-          </>
+              </section>
+            ))}
+          </div>
         )}
       </div>
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
 
-export default function CartPage() {
+export default function UserHomePage() {
   return (
     <ProtectedRoute allowedRoles={["USER"]}>
-      <CartContent />
+      <UserHomeContent />
     </ProtectedRoute>
   );
 }

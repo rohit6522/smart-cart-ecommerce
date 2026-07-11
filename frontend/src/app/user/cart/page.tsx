@@ -8,17 +8,22 @@ import BudgetTracker from "@/components/user/BudgetTracker";
 import CartItemRow from "@/components/user/CartItemRow";
 import { getCart, updateCartItem, removeCartItem, setBudget } from "@/lib/cartApi";
 import { checkout } from "@/lib/orderApi";
+import { createRazorpayOrder } from "@/lib/paymentApi";
+import { useAuth } from "@/context/AuthContext";
 import { CartResponse } from "@/types";
-import { ArrowLeft, ShoppingBag } from "lucide-react";
+import { RazorpaySuccessResponse } from "@/types/razorpay";
+import { ArrowLeft, ShoppingBag, CreditCard, Banknote } from "lucide-react";
 import Link from "next/link";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"ONLINE" | "COD">("ONLINE");
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const { user } = useAuth();
 
   const fetchCart = async () => {
     try {
@@ -50,27 +55,92 @@ function CartContent() {
     setCart(updated);
   };
 
-  const handleCheckout = async () => {
+  const validateBeforeCheckout = (): boolean => {
     setError("");
-
     if (!address.trim()) {
       setError("Please enter a delivery address");
-      return;
+      return false;
     }
-
     if (!cart || cart.items.length === 0) {
       setError("Your cart is empty");
-      return;
+      return false;
     }
+    return true;
+  };
 
+  // ---------- Cash on Delivery flow ----------
+  const handleCodCheckout = async () => {
     setPlacingOrder(true);
     try {
-      const order = await checkout(address);
+      const order = await checkout({ deliveryAddress: address });
       router.push(`/user/orders/${order.orderId}`);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Checkout failed. Try again.");
     } finally {
       setPlacingOrder(false);
+    }
+  };
+
+  // ---------- Razorpay online payment flow ----------
+  const handleOnlineCheckout = async () => {
+    setPlacingOrder(true);
+    setError("");
+
+    try {
+      // Step 1: ask backend to create a Razorpay order (amount computed server-side from cart)
+      const razorpayOrder = await createRazorpayOrder();
+
+      // Step 2: open Razorpay's checkout popup
+      const options = {
+        key: razorpayOrder.razorpayKeyId,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "Smart Cart",
+        description: "Order Payment",
+        order_id: razorpayOrder.razorpayOrderId,
+        prefill: {
+          name: user?.name,
+          email: user?.email,
+        },
+        theme: { color: "#2563eb" },
+        handler: async (response: RazorpaySuccessResponse) => {
+          // Step 3: payment succeeded on Razorpay's side - now verify + create order on our backend
+          try {
+            const order = await checkout({
+              deliveryAddress: address,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            router.push(`/user/orders/${order.orderId}`);
+          } catch (err: any) {
+            setError(err?.response?.data?.message || "Payment verification failed");
+            setPlacingOrder(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            // User closed the popup without paying
+            setPlacingOrder(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to start payment");
+      setPlacingOrder(false);
+    }
+  };
+
+  const handleCheckout = () => {
+    if (!validateBeforeCheckout()) return;
+
+    if (paymentMethod === "ONLINE") {
+      handleOnlineCheckout();
+    } else {
+      handleCodCheckout();
     }
   };
 
@@ -101,7 +171,6 @@ function CartContent() {
 
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Your Cart</h1>
 
-        {/* Budget Tracker always visible at top of cart */}
         <div className="mb-6">
           <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
         </div>
@@ -130,7 +199,6 @@ function CartContent() {
               ))}
             </div>
 
-            {/* Checkout section */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
                 <span className="text-gray-600">Cart Total</span>
@@ -147,8 +215,37 @@ function CartContent() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter your full delivery address"
                 rows={2}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+
+              {/* Payment method selector */}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Payment Method
+              </label>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("ONLINE")}
+                  className={`flex items-center gap-2 justify-center py-2.5 rounded-lg border text-sm font-medium transition ${
+                    paymentMethod === "ONLINE"
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <CreditCard size={16} /> Pay Online
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("COD")}
+                  className={`flex items-center gap-2 justify-center py-2.5 rounded-lg border text-sm font-medium transition ${
+                    paymentMethod === "COD"
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  <Banknote size={16} /> Cash on Delivery
+                </button>
+              </div>
 
               {error && (
                 <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-3">
@@ -167,7 +264,11 @@ function CartContent() {
                 disabled={placingOrder}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition disabled:opacity-50"
               >
-                {placingOrder ? "Placing Order..." : "Place Order"}
+                {placingOrder
+                  ? "Processing..."
+                  : paymentMethod === "ONLINE"
+                  ? `Pay ₹${cart.cartTotal.toFixed(2)}`
+                  : "Place Order (COD)"}
               </button>
             </div>
           </>
@@ -183,4 +284,4 @@ export default function CartPage() {
       <CartContent />
     </ProtectedRoute>
   );
-}
+} 
