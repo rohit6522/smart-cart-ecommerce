@@ -116,11 +116,16 @@ function UserHomeContent() {
                     View all →
                   </Link>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {productsByCategory[category].slice(0, 4).map((product) => (
-                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-                  ))}
-                </div>
+
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin snap-x">
+  {productsByCategory[category].map((product) => (
+    <div key={product.id} className="flex-shrink-0 w-52 snap-start">
+      <ProductCard product={product} onAddToCart={handleAddToCart} />
+    </div>
+  ))}
+</div>
+
+
               </section>
             ))}
           </div>
