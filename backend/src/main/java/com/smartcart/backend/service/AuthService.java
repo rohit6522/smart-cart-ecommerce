@@ -32,8 +32,12 @@ public class AuthService {
             throw new ApiException("Email already registered", HttpStatus.CONFLICT);
         }
 
+// Public registration only allows USER or DELIVERY_BOY.
+// ADMIN accounts must be created manually (e.g. directly in DB or via a separate seeded/protected process).
         User.Role role = request.getRole() != null ? request.getRole() : User.Role.USER;
-
+        if (role == User.Role.ADMIN) {
+            throw new ApiException("Admin accounts cannot be self-registered", HttpStatus.FORBIDDEN);
+        }
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
