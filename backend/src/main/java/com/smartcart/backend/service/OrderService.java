@@ -101,10 +101,10 @@ public class OrderService {
 
         cartItemRepository.deleteAll(cartItems);
 
-        budgetRepository.findByUserId(user.getId()).ifPresent(budget -> {
-            budget.setCurrentSpent(BigDecimal.ZERO);
-            budgetRepository.save(budget);
-        });
+//        budgetRepository.findByUserId(user.getId()).ifPresent(budget -> {
+//            budget.setCurrentSpent(BigDecimal.ZERO);
+//            budgetRepository.save(budget);
+//        });
 
         return mapToResponse(order);
     }

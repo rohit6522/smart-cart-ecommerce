@@ -23,6 +23,7 @@ public class CartService {
     private final BudgetRepository budgetRepository;
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
+    private final OrderRepository orderRepository;
 
     // ---------- Core: Add item to cart ----------
     public CartResponse addToCart(AddToCartRequest request) {
@@ -152,11 +153,11 @@ public class CartService {
                     .build();
         }).toList();
 
+
         BigDecimal cartTotal = itemResponses.stream()
                 .map(CartItemResponse::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Fetch or create budget, then SYNC current_spent with actual cart total
         Budget budget = budgetRepository.findByUserId(user.getId())
                 .orElseGet(() -> budgetRepository.save(Budget.builder()
                         .user(user)
@@ -164,27 +165,32 @@ public class CartService {
                         .currentSpent(BigDecimal.ZERO)
                         .build()));
 
-        budget.setCurrentSpent(cartTotal);
+// Lifetime spend = money already spent on placed orders + whatever's currently in the cart
+        BigDecimal spentOnOrders = orderRepository.getTotalSpentByUser(user.getId());
+        BigDecimal totalSpent = spentOnOrders.add(cartTotal);
+
+        budget.setCurrentSpent(totalSpent);
         budgetRepository.save(budget);
 
-        BigDecimal remaining = budget.getTotalBudget().subtract(cartTotal);
-        boolean overBudget = cartTotal.compareTo(budget.getTotalBudget()) > 0
+        BigDecimal remaining = budget.getTotalBudget().subtract(totalSpent);
+        boolean overBudget = totalSpent.compareTo(budget.getTotalBudget()) > 0
                 && budget.getTotalBudget().compareTo(BigDecimal.ZERO) > 0;
 
         double percentageUsed = 0.0;
         if (budget.getTotalBudget().compareTo(BigDecimal.ZERO) > 0) {
-            percentageUsed = cartTotal
+            percentageUsed = totalSpent
                     .divide(budget.getTotalBudget(), 4, RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100))
                     .doubleValue();
         }
+
 
         return CartResponse.builder()
                 .cartId(cart.getId())
                 .items(itemResponses)
                 .cartTotal(cartTotal)
                 .totalBudget(budget.getTotalBudget())
-                .currentSpent(cartTotal)
+                .currentSpent(totalSpent)
                 .remainingBudget(remaining)
                 .overBudget(overBudget)
                 .percentageUsed(percentageUsed)
