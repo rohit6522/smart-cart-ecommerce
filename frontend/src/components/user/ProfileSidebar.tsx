@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { LayoutDashboard, Package, MapPin, UserCircle, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  MapPin,
+  UserCircle,
+  LogOut,
+  ArrowLeft,
+} from "lucide-react";
 
 const navItems = [
   { href: "/user/profile", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +25,13 @@ export default function ProfileSidebar() {
 
   return (
     <aside className="w-full sm:w-64 bg-white border border-gray-200 rounded-2xl p-4 h-fit">
+      <Link
+        href="/user"
+        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-3 px-2"
+      >
+        <ArrowLeft size={16} />
+        Back to Shopping
+      </Link>
       <div className="flex items-center gap-3 px-2 py-3 mb-2 border-b border-gray-100">
         <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
           {user?.name?.charAt(0).toUpperCase()}
