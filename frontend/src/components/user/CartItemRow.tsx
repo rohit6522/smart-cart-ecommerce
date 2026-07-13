@@ -38,11 +38,11 @@ export default function CartItemRow({ item, onUpdateQuantity, onRemove }: CartIt
 
   return (
     <div
-      className={`flex items-center gap-4 bg-white border border-gray-200 rounded-xl p-4 transition ${
+      className={`flex items-start gap-4 py-5 border-b border-gray-100 last:border-0 transition ${
         removing ? "opacity-40" : ""
       }`}
     >
-      <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
         {item.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -54,44 +54,49 @@ export default function CartItemRow({ item, onUpdateQuantity, onRemove }: CartIt
             }}
           />
         ) : (
-          <ShoppingCart className="text-gray-300" size={24} />
+          <ShoppingCart className="text-gray-300" size={26} />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-gray-900 truncate">{item.productName}</h4>
-        <p className="text-sm text-gray-500">₹{item.priceAtAdd.toFixed(2)} each</p>
-      </div>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h4 className="font-semibold text-gray-900">{item.productName}</h4>
+            <p className="text-sm text-gray-400 mt-0.5">₹{item.priceAtAdd.toFixed(2)} each</p>
+          </div>
+          <span className="font-bold text-gray-900 whitespace-nowrap">
+            ₹{item.subtotal.toFixed(2)}
+          </span>
+        </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => handleQuantityChange(item.quantity - 1)}
-          disabled={updating || removing}
-          className="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
-        >
-          <Minus size={12} />
-        </button>
-        <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
-        <button
-          onClick={() => handleQuantityChange(item.quantity + 1)}
-          disabled={updating || removing}
-          className="w-7 h-7 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
-        >
-          <Plus size={12} />
-        </button>
-      </div>
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-1 py-1">
+            <button
+              onClick={() => handleQuantityChange(item.quantity - 1)}
+              disabled={updating || removing}
+              className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
+            >
+              <Minus size={13} />
+            </button>
+            <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+            <button
+              onClick={() => handleQuantityChange(item.quantity + 1)}
+              disabled={updating || removing}
+              className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
+            >
+              <Plus size={13} />
+            </button>
+          </div>
 
-      <div className="w-20 text-right font-semibold text-gray-900">
-        ₹{item.subtotal.toFixed(2)}
+          <button
+            onClick={handleRemove}
+            disabled={removing}
+            className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 font-medium disabled:opacity-50"
+          >
+            <Trash2 size={14} /> Remove
+          </button>
+        </div>
       </div>
-
-      <button
-        onClick={handleRemove}
-        disabled={removing}
-        className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition disabled:opacity-50"
-      >
-        <Trash2 size={16} />
-      </button>
     </div>
   );
 }
