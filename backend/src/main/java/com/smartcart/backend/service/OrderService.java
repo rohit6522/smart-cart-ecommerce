@@ -26,7 +26,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final DeliveryAssignmentRepository deliveryAssignmentRepository;
     private final SecurityUtil securityUtil;
-
+    private final EmailService emailService;
 
     private final PaymentService paymentService; // add this field with other repositories
 
@@ -101,10 +101,8 @@ public class OrderService {
 
         cartItemRepository.deleteAll(cartItems);
 
-//        budgetRepository.findByUserId(user.getId()).ifPresent(budget -> {
-//            budget.setCurrentSpent(BigDecimal.ZERO);
-//            budgetRepository.save(budget);
-//        });
+        // Send confirmation email asynchronously - doesn't block the response
+        emailService.sendOrderConfirmationEmail(order, user);
 
         return mapToResponse(order);
     }
