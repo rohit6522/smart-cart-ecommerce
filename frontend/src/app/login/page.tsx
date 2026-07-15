@@ -6,9 +6,12 @@ import { loginUser } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+const notice = searchParams.get("notice");
   const { login } = useAuth();
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -45,6 +48,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
         <h1 className="text-2xl font-bold mb-1 text-gray-900">Welcome Back</h1>
         <p className="text-gray-500 mb-6">Login to continue shopping smart</p>
+
+{notice === "login-required" && (
+  <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2 rounded-lg mb-4">
+    Please login to add items to your cart or place an order.
+  </div>
+)}
+
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">
