@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
@@ -128,8 +128,10 @@ const [category, setCategory] = useState(initialCategory);  const [toast, setToa
 
 export default function ProductsPage() {
   return (
-    <ProtectedRoute allowedRoles={["USER"]}>
-      <ProductsContent />
-    </ProtectedRoute>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+      <ProtectedRoute allowedRoles={["USER"]}>
+        <ProductsContent />
+      </ProtectedRoute>
+    </Suspense>
   );
 }

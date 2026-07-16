@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { loginUser } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-const notice = searchParams.get("notice");
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const notice = searchParams.get("notice");
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -49,12 +48,11 @@ const notice = searchParams.get("notice");
         <h1 className="text-2xl font-bold mb-1 text-gray-900">Welcome Back</h1>
         <p className="text-gray-500 mb-6">Login to continue shopping smart</p>
 
-{notice === "login-required" && (
-  <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2 rounded-lg mb-4">
-    Please login to add items to your cart or place an order.
-  </div>
-)}
-
+        {notice === "login-required" && (
+          <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2 rounded-lg mb-4">
+            Please login to add items to your cart or place an order.
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">
@@ -99,5 +97,13 @@ const notice = searchParams.get("notice");
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
