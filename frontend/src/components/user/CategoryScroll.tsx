@@ -15,7 +15,7 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
-    const amount = 220;
+    const amount = 240;
     scrollRef.current.scrollBy({
       left: direction === "left" ? -amount : amount,
       behavior: "smooth",
@@ -23,7 +23,6 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
   };
 
   const handleClick = (category: string) => {
-    // Clicking the already-active category clears the filter (toggle behavior)
     onSelect(activeCategory === category ? null : category);
   };
 
@@ -34,17 +33,17 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
         <h2 className="text-lg font-bold text-gray-900">Shop by Category</h2>
       </div>
 
-      <div className="relative">
+      <div className="relative flex items-center">
         <button
           onClick={() => scroll("left")}
-          className="absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50"
+          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-sm items-center justify-center hover:bg-gray-50 mr-2 z-10"
         >
           <ChevronLeft size={16} />
         </button>
 
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto scrollbar-thin px-6 pb-1 snap-x scroll-smooth"
+          className="flex gap-5 overflow-x-auto scrollbar-thin py-1 snap-x scroll-smooth"
         >
           {categories.map((category) => {
             const { icon: Icon, bg } = getCategoryStyle(category);
@@ -53,8 +52,8 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
               <button
                 key={category}
                 onClick={() => handleClick(category)}
-                className={`flex-shrink-0 w-28 flex flex-col items-center gap-2 p-4 rounded-2xl transition ${bg} ${
-                  isActive ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
+                className={`flex-shrink-0 w-28 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition ${bg} ${
+                  isActive ? "border-blue-500" : "border-transparent hover:border-gray-200"
                 }`}
               >
                 <Icon className="text-gray-700" size={26} />
@@ -68,7 +67,7 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
 
         <button
           onClick={() => scroll("right")}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center hover:bg-gray-50"
+          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-sm items-center justify-center hover:bg-gray-50 ml-2 z-10"
         >
           <ChevronRight size={16} />
         </button>
