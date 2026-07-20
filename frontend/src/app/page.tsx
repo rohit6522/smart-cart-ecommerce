@@ -1,5 +1,5 @@
 "use client";
-
+import CategoryScroll from "@/components/user/CategoryScroll";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
@@ -27,7 +27,7 @@ export default function HomePage() {
 
   const productsByCategory = useMemo(() => {
     const filtered = products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
+      p.name.toLowerCase().includes(search.toLowerCase()),
     );
     const groups: Record<string, Product[]> = {};
     filtered.forEach((p) => {
@@ -70,7 +70,10 @@ export default function HomePage() {
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* Search bar */}
         <div className="relative mb-8">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search for products, brands and more..."
@@ -80,10 +83,14 @@ export default function HomePage() {
           />
         </div>
 
+        {!loading && categories.length > 0 && (
+          <CategoryScroll categories={categories} basePath="/user/products" />
+        )}
+
         {!user && (
           <div className="bg-blue-50 border border-blue-100 text-blue-700 text-sm px-4 py-3 rounded-xl mb-8">
-            👋 Browsing as guest — you can explore all products freely. To add items to your
-            cart or place an order, you&apos;ll need to{" "}
+            👋 Browsing as guest — you can explore all products freely. To add
+            items to your cart or place an order, you&apos;ll need to{" "}
             <a href="/login" className="font-semibold underline">
               login
             </a>{" "}
@@ -102,7 +109,10 @@ export default function HomePage() {
                 <div className="h-6 w-40 bg-gray-200 rounded mb-4 animate-pulse" />
                 <div className="flex gap-4">
                   {Array.from({ length: 4 }).map((_, j) => (
-                    <div key={j} className="w-52 h-64 flex-shrink-0 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                    <div
+                      key={j}
+                      className="w-52 h-64 flex-shrink-0 bg-white border border-gray-200 rounded-2xl animate-pulse"
+                    />
                   ))}
                 </div>
               </div>
@@ -114,11 +124,19 @@ export default function HomePage() {
           <div className="space-y-10">
             {categories.map((category) => (
               <section key={category}>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">{category}</h2>
+                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                  {category}
+                </h2>
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin snap-x">
                   {productsByCategory[category].map((product) => (
-                    <div key={product.id} className="flex-shrink-0 w-52 snap-start">
-                      <ProductCard product={product} onAddToCart={handleAddToCart} />
+                    <div
+                      key={product.id}
+                      className="flex-shrink-0 w-52 snap-start"
+                    >
+                      <ProductCard
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                      />
                     </div>
                   ))}
                 </div>

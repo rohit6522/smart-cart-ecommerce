@@ -1,5 +1,5 @@
 "use client";
-
+import CategoryScroll from "@/components/user/CategoryScroll";
 import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
@@ -48,7 +48,7 @@ function UserHomeContent() {
   // Group products by category
   const productsByCategory = useMemo(() => {
     const filtered = products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
+      p.name.toLowerCase().includes(search.toLowerCase()),
     );
     const groups: Record<string, Product[]> = {};
     filtered.forEach((p) => {
@@ -67,8 +67,11 @@ function UserHomeContent() {
 
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* Search bar */}
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <div className="relative mb-8">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search for products, brands and more..."
@@ -77,6 +80,11 @@ function UserHomeContent() {
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        {/* NEW: Category pills */}
+        {!loading && categories.length > 0 && (
+          <CategoryScroll categories={categories} basePath="/user/products" />
+        )}
 
         {/* Budget Tracker - compact, always visible at top */}
         <div className="mb-8">
@@ -95,7 +103,10 @@ function UserHomeContent() {
                 <div className="h-6 w-40 bg-gray-200 rounded mb-4 animate-pulse" />
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {Array.from({ length: 4 }).map((_, j) => (
-                    <div key={j} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                    <div
+                      key={j}
+                      className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+                    />
                   ))}
                 </div>
               </div>
@@ -108,7 +119,9 @@ function UserHomeContent() {
             {categories.map((category) => (
               <section key={category}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900">{category}</h2>
+                  <h2 className="text-lg font-bold text-gray-900">
+                    {category}
+                  </h2>
                   <Link
                     href={`/user/products?category=${encodeURIComponent(category)}`}
                     className="text-sm text-blue-600 hover:underline font-medium"
@@ -118,14 +131,18 @@ function UserHomeContent() {
                 </div>
 
                 <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin snap-x">
-  {productsByCategory[category].map((product) => (
-    <div key={product.id} className="flex-shrink-0 w-52 snap-start">
-      <ProductCard product={product} onAddToCart={handleAddToCart} />
-    </div>
-  ))}
-</div>
-
-
+                  {productsByCategory[category].map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex-shrink-0 w-52 snap-start"
+                    >
+                      <ProductCard
+                        product={product}
+                        onAddToCart={handleAddToCart}
+                      />
+                    </div>
+                  ))}
+                </div>
               </section>
             ))}
           </div>
