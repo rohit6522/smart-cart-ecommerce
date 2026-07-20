@@ -65,7 +65,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar title="Smart Cart" />
+      <Navbar title="Smart Cart" onSearch={setSearch} />
 
       <div className="max-w-6xl mx-auto px-6 py-6">
         {/* Search bar */}

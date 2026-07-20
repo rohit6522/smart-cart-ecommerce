@@ -1,20 +1,21 @@
 "use client";
-import CategoryScroll from "@/components/user/CategoryScroll";
+
 import { useEffect, useState, useMemo } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import BudgetTracker from "@/components/user/BudgetTracker";
 import ProductCard from "@/components/user/ProductCard";
+import CategoryScroll from "@/components/user/CategoryScroll";
 import { getAllProducts } from "@/lib/productApi";
 import { getCart, setBudget, addToCart } from "@/lib/cartApi";
 import { Product, CartResponse } from "@/types";
-import { Search } from "lucide-react";
-import Link from "next/link";
+import { X } from "lucide-react";
 
 function UserHomeContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState("");
 
@@ -45,48 +46,38 @@ function UserHomeContent() {
     }
   };
 
-  // Group products by category
-  const productsByCategory = useMemo(() => {
-    const filtered = products.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()),
-    );
-    const groups: Record<string, Product[]> = {};
-    filtered.forEach((p) => {
-      const cat = p.category || "Others";
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(p);
-    });
-    return groups;
-  }, [products, search]);
+  const categories = useMemo(() => {
+    return Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+  }, [products]);
 
-  const categories = Object.keys(productsByCategory);
+  const visibleProducts = useMemo(() => {
+    let result = products;
+    if (activeCategory) {
+      result = result.filter((p) => p.category === activeCategory);
+    }
+    if (search.trim()) {
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
+    return result;
+  }, [products, activeCategory, search]);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar title="Smart Cart" />
+     <Navbar title="Smart Cart" onSearch={setSearch} />
 
       <div className="max-w-6xl mx-auto px-6 py-6">
-        {/* Search bar */}
-        <div className="relative mb-8">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Search for products, brands and more..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* NEW: Category pills */}
+        {/* Category pills - clicking filters in place, no navigation */}
         {!loading && categories.length > 0 && (
-          <CategoryScroll categories={categories} basePath="/user/products" />
+          <CategoryScroll
+            categories={categories}
+            activeCategory={activeCategory}
+            onSelect={setActiveCategory}
+          />
         )}
 
-        {/* Budget Tracker - compact, always visible at top */}
+        {/* Budget Tracker */}
         <div className="mb-8">
           {loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
@@ -95,55 +86,44 @@ function UserHomeContent() {
           )}
         </div>
 
-        {/* Product sections by category */}
+        {/* Active filter indicator */}
+        {activeCategory && (
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-lg font-bold text-gray-900">
+              {activeCategory}
+            </h2>
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full"
+            >
+              <X size={12} /> Clear filter
+            </button>
+          </div>
+        )}
+        {!activeCategory && !loading && (
+          <h2 className="text-lg font-bold text-gray-900 mb-4">All Products</h2>
+        )}
+
+        {/* Mixed product grid */}
         {loading ? (
-          <div className="space-y-8">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i}>
-                <div className="h-6 w-40 bg-gray-200 rounded mb-4 animate-pulse" />
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {Array.from({ length: 4 }).map((_, j) => (
-                    <div
-                      key={j}
-                      className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
-                    />
-                  ))}
-                </div>
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
             ))}
           </div>
-        ) : categories.length === 0 ? (
+        ) : visibleProducts.length === 0 ? (
           <p className="text-center text-gray-500 py-16">No products found.</p>
         ) : (
-          <div className="space-y-10">
-            {categories.map((category) => (
-              <section key={category}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-gray-900">
-                    {category}
-                  </h2>
-                  <Link
-                    href={`/user/products?category=${encodeURIComponent(category)}`}
-                    className="text-sm text-blue-600 hover:underline font-medium"
-                  >
-                    View all →
-                  </Link>
-                </div>
-
-                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin snap-x">
-                  {productsByCategory[category].map((product) => (
-                    <div
-                      key={product.id}
-                      className="flex-shrink-0 w-52 snap-start"
-                    >
-                      <ProductCard
-                        product={product}
-                        onAddToCart={handleAddToCart}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {visibleProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+              />
             ))}
           </div>
         )}

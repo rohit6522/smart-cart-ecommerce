@@ -1,18 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Grid3x3 } from "lucide-react";
 import { getCategoryStyle } from "@/lib/categoryStyles";
 
 interface CategoryScrollProps {
   categories: string[];
-  basePath?: string; // where clicking a category navigates to
+  activeCategory: string | null;
+  onSelect: (category: string | null) => void;
 }
 
-export default function CategoryScroll({ categories, basePath = "/user/products" }: CategoryScrollProps) {
+export default function CategoryScroll({ categories, activeCategory, onSelect }: CategoryScrollProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const scroll = (direction: "left" | "right") => {
     if (!scrollRef.current) return;
@@ -24,11 +23,12 @@ export default function CategoryScroll({ categories, basePath = "/user/products"
   };
 
   const handleClick = (category: string) => {
-    router.push(`${basePath}?category=${encodeURIComponent(category)}`);
+    // Clicking the already-active category clears the filter (toggle behavior)
+    onSelect(activeCategory === category ? null : category);
   };
 
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <div className="flex items-center gap-2 mb-4">
         <Grid3x3 className="text-blue-600" size={20} />
         <h2 className="text-lg font-bold text-gray-900">Shop by Category</h2>
@@ -48,11 +48,14 @@ export default function CategoryScroll({ categories, basePath = "/user/products"
         >
           {categories.map((category) => {
             const { icon: Icon, bg } = getCategoryStyle(category);
+            const isActive = activeCategory === category;
             return (
               <button
                 key={category}
                 onClick={() => handleClick(category)}
-                className={`flex-shrink-0 w-28 flex flex-col items-center gap-2 p-4 rounded-2xl ${bg} hover:scale-105 transition snap-start`}
+                className={`flex-shrink-0 w-28 flex flex-col items-center gap-2 p-4 rounded-2xl transition ${bg} ${
+                  isActive ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
+                }`}
               >
                 <Icon className="text-gray-700" size={26} />
                 <span className="text-xs font-medium text-gray-800 text-center leading-tight">

@@ -1,26 +1,58 @@
 "use client";
 
+import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, ShoppingCart, ShoppingBag } from "lucide-react";
+import { LogOut, ShoppingCart, ShoppingBag, Search } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface NavbarProps {
   title: string;
+  onSearch?: (query: string) => void;
 }
 
-export default function Navbar({ title }: NavbarProps) {
+export default function Navbar({ title, onSearch }: NavbarProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const [searchValue, setSearchValue] = useState("");
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
+  const handleSearchFocus = () => {
+    // If a page doesn't handle search itself, typing redirects to the shopping home
+    if (!onSearch && pathname !== "/user" && pathname !== "/") {
+      router.push("/user");
+    }
+  };
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-      <Link href="/" className="flex items-center gap-2">
+    <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 sticky top-0 z-10">
+      <Link href="/" className="flex items-center gap-2 flex-shrink-0">
         <ShoppingCart className="text-blue-600" size={24} />
-        <span className="font-bold text-lg text-gray-900">{title}</span>
+        <span className="font-bold text-lg text-gray-900 hidden sm:inline">{title}</span>
       </Link>
 
-      <div className="flex items-center gap-3">
+      {/* Search bar - always visible in navbar, Flipkart-style */}
+      <div className="relative flex-1 max-w-2xl">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={17} />
+        <input
+          type="text"
+          value={searchValue}
+          onChange={handleSearchChange}
+          onFocus={handleSearchFocus}
+          placeholder="Search for products, brands and more..."
+          className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+        />
+      </div>
+
+      <div className="flex items-center gap-3 flex-shrink-0">
         {/* Guest state */}
         {!user && (
           <>
@@ -67,7 +99,7 @@ export default function Navbar({ title }: NavbarProps) {
 
         {/* Logged-in ADMIN / DELIVERY_BOY */}
         {user && user.role !== "USER" && (
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600 hidden sm:inline">
             Hi, <span className="font-medium text-gray-900">{user.name}</span>
           </span>
         )}
