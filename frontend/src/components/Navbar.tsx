@@ -35,7 +35,12 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   };
 
   const handleSearchFocus = () => {
-    if (!onSearch && pathname !== "/user" && pathname !== "/") {
+    if (
+      !onSearch &&
+      user?.role === "USER" &&
+      pathname !== "/user" &&
+      pathname !== "/"
+    ) {
       router.push("/user");
     }
   };
@@ -61,19 +66,28 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
             </span>
           </Link>
 
-          <div className="flex-1 flex justify-center">
-            <div className="relative w-full max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input
-                type="text"
-                value={searchValue}
-                onChange={handleSearchChange}
-                onFocus={handleSearchFocus}
-                placeholder="Search products..."
-                className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
-              />
+          {/* Search bar - only for guests and USER role, not for Admin/Delivery */}
+          {(!user || user.role === "USER") && (
+            <div className="flex-1 flex justify-center">
+              <div className="relative w-full max-w-md">
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  value={searchValue}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  placeholder="Search products..."
+                  className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                />
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Spacer to keep layout balanced when search is hidden */}
+          {user && user.role !== "USER" && <div className="flex-1" />}
 
           <div className="flex items-center gap-3 flex-shrink-0">
             {!user && (
@@ -98,7 +112,9 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                 <Link
                   href="/user/cart"
                   className={`p-2 rounded-lg transition ${
-                    pathname === "/user/cart" ? "bg-blue-50 text-blue-600" : "text-gray-500 hover:bg-gray-100"
+                    pathname === "/user/cart"
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-500 hover:bg-gray-100"
                   }`}
                   title="Cart"
                 >
@@ -120,7 +136,8 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
             {user && user.role !== "USER" && (
               <span className="text-sm text-gray-600 hidden sm:inline whitespace-nowrap">
-                Hi, <span className="font-medium text-gray-900">{user.name}</span>
+                Hi,{" "}
+                <span className="font-medium text-gray-900">{user.name}</span>
               </span>
             )}
 
