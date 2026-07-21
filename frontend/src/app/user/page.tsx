@@ -9,7 +9,9 @@ import CategoryScroll from "@/components/user/CategoryScroll";
 import { getAllProducts } from "@/lib/productApi";
 import { getCart, setBudget, addToCart } from "@/lib/cartApi";
 import { Product, CartResponse } from "@/types";
-import { X } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+
+const PREVIEW_COUNT = 6;
 
 function UserHomeContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -50,26 +52,38 @@ function UserHomeContent() {
     return Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
   }, [products]);
 
-  const visibleProducts = useMemo(() => {
-    let result = products;
-    if (activeCategory) {
-      result = result.filter((p) => p.category === activeCategory);
-    }
-    if (search.trim()) {
-      result = result.filter((p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
-    return result;
-  }, [products, activeCategory, search]);
+  // Search always searches across everything, regardless of category view
+  const searchedProducts = useMemo(() => {
+    if (!search.trim()) return products;
+    return products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+  }, [products, search]);
+
+  // Products grouped by category, capped to PREVIEW_COUNT each - used for the default view
+  const productsByCategory = useMemo(() => {
+    const groups: Record<string, Product[]> = {};
+    searchedProducts.forEach((p) => {
+      const cat = p.category || "Others";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(p);
+    });
+    return groups;
+  }, [searchedProducts]);
+
+  // Full product list for the active category - used when a category is selected
+  const categoryProducts = useMemo(() => {
+    if (!activeCategory) return [];
+    return searchedProducts.filter((p) => p.category === activeCategory);
+  }, [searchedProducts, activeCategory]);
+
+  const isSearching = search.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
-     <Navbar title="Smart Cart" onSearch={setSearch} />
+      <Navbar title="Smart Cart" onSearch={setSearch} />
 
       <div className="max-w-6xl mx-auto px-6 py-6">
-        {/* Category pills - clicking filters in place, no navigation */}
-        {!loading && categories.length > 0 && (
+        {/* Category pills - always visible for quick navigation */}
+        {!loading && categories.length > 0 && !isSearching && (
           <CategoryScroll
             categories={categories}
             activeCategory={activeCategory}
@@ -86,44 +100,76 @@ function UserHomeContent() {
           )}
         </div>
 
-        {/* Active filter indicator */}
-        {activeCategory && (
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold text-gray-900">
-              {activeCategory}
-            </h2>
-            <button
-              onClick={() => setActiveCategory(null)}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full"
-            >
-              <X size={12} /> Clear filter
-            </button>
-          </div>
-        )}
-        {!activeCategory && !loading && (
-          <h2 className="text-lg font-bold text-gray-900 mb-4">All Products</h2>
-        )}
-
-        {/* Mixed product grid */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
-              />
+          <div className="space-y-8">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i}>
+                <div className="h-6 w-40 bg-gray-200 rounded mb-4 animate-pulse" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <div key={j} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-        ) : visibleProducts.length === 0 ? (
-          <p className="text-center text-gray-500 py-16">No products found.</p>
+        ) : isSearching ? (
+          // ---------- Search results view ----------
+          <>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              Search results for &quot;{search}&quot;
+            </h2>
+            {searchedProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">No products found.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {searchedProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                ))}
+              </div>
+            )}
+          </>
+        ) : activeCategory ? (
+          // ---------- Single category, full list view ----------
+          <>
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium mb-4"
+            >
+              <ArrowLeft size={16} /> Back to all categories
+            </button>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">{activeCategory}</h2>
+
+            {categoryProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">No products in this category.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {categoryProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                ))}
+              </div>
+            )}
+          </>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {visibleProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
+          // ---------- Default view: preview rows per category ----------
+          <div className="space-y-10">
+            {Object.keys(productsByCategory).map((category) => (
+              <section key={category}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-gray-900">{category}</h2>
+                  <button
+                    onClick={() => setActiveCategory(category)}
+                    className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View all <ChevronRight size={15} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {productsByCategory[category].slice(0, PREVIEW_COUNT).map((product) => (
+                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
         )}

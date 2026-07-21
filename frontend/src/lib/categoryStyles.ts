@@ -1,6 +1,7 @@
 import {
   Carrot, Cookie, Flame, Coffee, Heart, Home, Package, Baby,
-  Smartphone, Shirt, Sparkles, ShoppingBasket, LucideIcon
+  Smartphone, Shirt, Sparkles, ShoppingBasket, LucideIcon,
+  Dumbbell, BookOpen, Puzzle, PawPrint, Sofa
 } from "lucide-react";
 
 interface CategoryStyle {
@@ -21,6 +22,11 @@ const styles: Record<string, CategoryStyle> = {
   "Clothing": { icon: Shirt, bg: "bg-purple-50" },
   "Beauty": { icon: Sparkles, bg: "bg-pink-50" },
   "Home & Kitchen": { icon: Home, bg: "bg-lime-50" },
+  "Sports & Fitness": { icon: Dumbbell, bg: "bg-green-50" },
+  "Books & Stationery": { icon: BookOpen, bg: "bg-yellow-50" },
+  "Toys & Games": { icon: Puzzle, bg: "bg-indigo-50" },
+  "Pet Supplies": { icon: PawPrint, bg: "bg-amber-50" },
+  "Furniture": { icon: Sofa, bg: "bg-stone-50" },
 };
 
 const fallback: CategoryStyle = { icon: ShoppingBasket, bg: "bg-gray-50" };
