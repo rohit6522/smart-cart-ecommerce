@@ -10,6 +10,7 @@ import { getAllProducts } from "@/lib/productApi";
 import { getCart, setBudget, addToCart } from "@/lib/cartApi";
 import { Product, CartResponse } from "@/types";
 import { ArrowLeft, ChevronRight } from "lucide-react";
+import Footer from "@/components/Footer";
 
 const PREVIEW_COUNT = 6;
 
@@ -180,6 +181,7 @@ function UserHomeContent() {
           {toast}
         </div>
       )}
+      <Footer />
     </div>
   );
 }
