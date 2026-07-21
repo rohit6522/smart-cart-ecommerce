@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, MapPin, Phone, Mail, Facebook, Instagram, Twitter } from "lucide-react";
-
+import { ShoppingCart, MapPin, Phone, Mail } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="bg-blue-700 text-white mt-16">
@@ -60,17 +59,29 @@ export default function Footer() {
               <Mail size={15} /> support@smartcart.in
             </li>
           </ul>
+          
           <div className="flex items-center gap-3 mt-4">
-            <a href="#" className="hover:text-blue-200 transition">
-              <Facebook size={18} />
-            </a>
-            <a href="#" className="hover:text-blue-200 transition">
-              <Instagram size={18} />
-            </a>
-            <a href="#" className="hover:text-blue-200 transition">
-              <Twitter size={18} />
-            </a>
-          </div>
+  <a
+    href="#"
+    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+  >
+    f
+  </a>
+  <a
+    href="#"
+    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+  >
+    ig
+  </a>
+  <a
+    href="#"
+    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+  >
+    x
+  </a>
+</div>
+
+
         </div>
       </div>
 
