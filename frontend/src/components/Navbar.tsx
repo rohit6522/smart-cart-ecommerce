@@ -46,14 +46,18 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   };
 
   return (
-    <div className="sticky top-0 z-20 px-0 sm:px-4 pt-0 sm:pt-3 transition-all duration-300">
-      <nav
-        className={`bg-white border-gray-200 mx-auto transition-all duration-300 ease-in-out ${
-          scrolled
-            ? "max-w-5xl rounded-full shadow-lg border mt-2"
-            : "max-w-6xl rounded-none shadow-none border-b mt-0"
-        }`}
-      >
+   <div
+  className={`sticky top-0 z-20 transition-all duration-300 ${
+    scrolled ? "px-0 sm:px-4 pt-0 sm:pt-3" : "px-0 pt-0"
+  }`}
+>
+  <nav
+    className={`bg-white border-gray-200 mx-auto transition-all duration-300 ease-in-out ${
+      scrolled
+        ? "max-w-5xl rounded-full shadow-lg border mt-2"
+        : "w-full rounded-none shadow-none border-b mt-0"
+    }`}
+  >
         <div
           className={`mx-auto flex items-center gap-6 transition-all duration-300 ${
             scrolled ? "px-6 py-2.5" : "px-6 py-3"
