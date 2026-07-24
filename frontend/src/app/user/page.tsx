@@ -1,6 +1,6 @@
 "use client";
-
-import { useEffect, useState, useMemo } from "react";
+import HeroCarousel from "@/components/user/HeroCarousel";
+import { useEffect, useState, useMemo, useRef } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -21,6 +21,12 @@ function UserHomeContent() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState("");
+
+  const productsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToProducts = () => {
+    productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     Promise.all([getAllProducts(), getCart()])
@@ -55,7 +61,9 @@ function UserHomeContent() {
 
   const searchedProducts = useMemo(() => {
     if (!search.trim()) return products;
-    return products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()),
+    );
   }, [products, search]);
 
   // Default home view: ALL categories mixed together, capped to 4 products total
@@ -75,7 +83,20 @@ function UserHomeContent() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
-      <div className="max-w-6xl mx-auto px-6 py-6 flex-1 w-full">
+
+
+
+     <div className="max-w-6xl mx-auto px-6 py-6 flex-1 w-full">
+  <HeroCarousel onShopNow={scrollToProducts} />
+
+  {!loading && categories.length > 0 && !isSearching && (
+    <CategoryScroll
+      categories={categories}
+      activeCategory={activeCategory}
+      onSelect={setActiveCategory}
+    />
+  )}
+        
         {!loading && categories.length > 0 && !isSearching && (
           <CategoryScroll
             categories={categories}
@@ -84,8 +105,8 @@ function UserHomeContent() {
           />
         )}
 
-        <div className="mb-8">
-          {loading ? (
+       <div ref={productsRef} className="mb-8">
+  {loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
           ) : (
             <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
@@ -95,7 +116,10 @@ function UserHomeContent() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : isSearching ? (
@@ -104,11 +128,17 @@ function UserHomeContent() {
               Search results for &quot;{search}&quot;
             </h2>
             {searchedProducts.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">No products found.</p>
+              <p className="text-center text-gray-500 py-16">
+                No products found.
+              </p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {searchedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
             )}
@@ -121,27 +151,43 @@ function UserHomeContent() {
             >
               <ArrowLeft size={16} /> Back to all products
             </button>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">{activeCategory}</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              {activeCategory}
+            </h2>
 
             {categoryProducts.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">No products in this category.</p>
+              <p className="text-center text-gray-500 py-16">
+                No products in this category.
+              </p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {categoryProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
             )}
           </>
         ) : (
           <>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Featured Products</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
             {mixedPreview.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">No products found.</p>
+              <p className="text-center text-gray-500 py-16">
+                No products found.
+              </p>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {mixedPreview.map((product) => (
-                  <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
                 ))}
               </div>
             )}
