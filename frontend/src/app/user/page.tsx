@@ -83,20 +83,9 @@ function UserHomeContent() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
+      <div className="max-w-6xl mx-auto px-6 py-6 flex-1 w-full">
+        <HeroCarousel onShopNow={scrollToProducts} />
 
-
-
-     <div className="max-w-6xl mx-auto px-6 py-6 flex-1 w-full">
-  <HeroCarousel onShopNow={scrollToProducts} />
-
-  {!loading && categories.length > 0 && !isSearching && (
-    <CategoryScroll
-      categories={categories}
-      activeCategory={activeCategory}
-      onSelect={setActiveCategory}
-    />
-  )}
-        
         {!loading && categories.length > 0 && !isSearching && (
           <CategoryScroll
             categories={categories}
@@ -105,8 +94,8 @@ function UserHomeContent() {
           />
         )}
 
-       <div ref={productsRef} className="mb-8">
-  {loading ? (
+        <div ref={productsRef} className="mb-8">
+          {loading ? (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
           ) : (
             <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
