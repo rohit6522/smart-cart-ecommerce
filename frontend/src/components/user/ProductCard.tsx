@@ -36,35 +36,21 @@ export default function ProductCard({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col">
-      <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
-        {product.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = "none";
-            }}
-          />
-        ) : (
-          <ShoppingCart className="text-gray-300" size={36} />
-        )}
-      </div>
+
       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <ShoppingCart className="text-gray-300" size={36} />
-        )}
-      </div>
+  {product.imageUrl ? (
+    <Image
+      src={product.imageUrl}
+      alt={product.name}
+      fill
+      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+      className="object-cover"
+      loading="lazy"
+    />
+  ) : (
+    <ShoppingCart className="text-gray-300" size={36} />
+  )}
+</div>
 
       <div className="p-4 flex flex-col flex-1">
         <span className="text-xs text-blue-600 font-medium mb-1">
