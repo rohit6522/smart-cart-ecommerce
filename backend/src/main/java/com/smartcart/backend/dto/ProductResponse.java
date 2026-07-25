@@ -21,4 +21,7 @@ public class ProductResponse {
     private String category;
     private String imageUrl;
     private LocalDateTime createdAt;
+
+    private BigDecimal discountPercentage;
+    private BigDecimal discountedPrice; // computed field, sent pre-calculated to frontend
 }

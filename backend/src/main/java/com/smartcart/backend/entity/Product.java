@@ -36,6 +36,9 @@ public class Product {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(precision = 5, scale = 2)
+    private BigDecimal discountPercentage; // e.g. 20.00 means 20% off, null/0 means no discount
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

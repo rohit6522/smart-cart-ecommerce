@@ -15,7 +15,8 @@ public class ProductRequest {
     private String name;
 
     private String description;
-
+    private BigDecimal discountPercentage; // optional
+    
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     private BigDecimal price;

@@ -48,11 +48,19 @@ public class CartService {
             existing.setQuantity(existing.getQuantity() + request.getQuantity());
             cartItemRepository.save(existing);
         } else {
+            BigDecimal effectivePrice = product.getPrice();
+            if (product.getDiscountPercentage() != null && product.getDiscountPercentage().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal discountAmount = product.getPrice()
+                        .multiply(product.getDiscountPercentage())
+                        .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+                effectivePrice = product.getPrice().subtract(discountAmount);
+            }
+
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
                     .quantity(request.getQuantity())
-                    .priceAtAdd(product.getPrice())
+                    .priceAtAdd(effectivePrice)
                     .build();
             cartItemRepository.save(newItem);
         }

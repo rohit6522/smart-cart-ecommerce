@@ -8,7 +8,7 @@ import com.smartcart.backend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -22,6 +22,7 @@ public class ProductService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .price(request.getPrice())
+                .discountPercentage(request.getDiscountPercentage())
                 .stockQuantity(request.getStockQuantity())
                 .category(request.getCategory())
                 .imageUrl(request.getImageUrl())
@@ -41,7 +42,7 @@ public class ProductService {
         product.setStockQuantity(request.getStockQuantity());
         product.setCategory(request.getCategory());
         product.setImageUrl(request.getImageUrl());
-
+        product.setDiscountPercentage(request.getDiscountPercentage());
         product = productRepository.save(product);
         return mapToResponse(product);
     }
@@ -67,11 +68,25 @@ public class ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
+        BigDecimal discountPct = product.getDiscountPercentage() != null
+                ? product.getDiscountPercentage()
+                : BigDecimal.ZERO;
+
+        BigDecimal discountedPrice = product.getPrice();
+        if (discountPct.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountAmount = product.getPrice()
+                    .multiply(discountPct)
+                    .divide(BigDecimal.valueOf(100), 2, java.math.RoundingMode.HALF_UP);
+            discountedPrice = product.getPrice().subtract(discountAmount);
+        }
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .discountPercentage(discountPct)
+                .discountedPrice(discountedPrice)
                 .stockQuantity(product.getStockQuantity())
                 .category(product.getCategory())
                 .imageUrl(product.getImageUrl())
