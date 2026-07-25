@@ -61,7 +61,7 @@ export default function HeroCarousel({ onShopNow }: HeroCarouselProps) {
   }, []);
 
   return (
-    <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden mb-8 shadow-sm">
+   <div className="relative w-full h-72 sm:h-96 md:h-[26rem] rounded-2xl overflow-hidden mb-8 shadow-sm">
       {slides.map((slide, index) => (
         <div
           key={index}
