@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { CartProvider } from "@/context/CartContext";
 
 export const metadata: Metadata = {
   title: "Smart Cart - Shop Smarter",
@@ -16,8 +17,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
-        <AuthProvider>{children}</AuthProvider>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="beforeInteractive"
+        />
+        <AuthProvider>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -11,6 +11,7 @@ import { getAllProducts } from "@/lib/productApi";
 import { getCart, setBudget, addToCart } from "@/lib/cartApi";
 import { Product, CartResponse } from "@/types";
 import { ArrowLeft } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 const PREVIEW_COUNT = 4;
 
@@ -23,6 +24,7 @@ function UserHomeContent() {
   const [toast, setToast] = useState("");
 
   const productsRef = useRef<HTMLDivElement>(null);
+  const { refreshCartCount } = useCart();
 
   const scrollToProducts = () => {
     productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -44,10 +46,12 @@ function UserHomeContent() {
   };
 
   const handleAddToCart = async (productId: number, quantity: number) => {
-    try {
-      const updated = await addToCart(productId, quantity);
-      setCart(updated);
-      setToast("Item added to cart!");
+  try {
+    const updated = await addToCart(productId, quantity);
+    setCart(updated);
+    refreshCartCount();  // <-- add this line
+    setToast("Item added to cart!");
+
       setTimeout(() => setToast(""), 2000);
     } catch (err: any) {
       setToast(err?.response?.data?.message || "Failed to add item");

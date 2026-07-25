@@ -10,11 +10,15 @@ import { CartResponse } from "@/types";
 import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard } from "lucide-react";
 import Link from "next/link";
 
+import { useCart } from "@/context/CartContext";
+
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [promoCode, setPromoCode] = useState("");
   const router = useRouter();
+
+  const { refreshCartCount } = useCart();
 
   const fetchCart = async () => {
     try {
@@ -34,11 +38,13 @@ function CartContent() {
   const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
     const updated = await updateCartItem(cartItemId, quantity);
     setCart(updated);
+     refreshCartCount(); 
   };
 
   const handleRemove = async (cartItemId: number) => {
     const updated = await removeCartItem(cartItemId);
     setCart(updated);
+     refreshCartCount(); 
   };
 
   if (loading) {
@@ -132,7 +138,9 @@ function CartContent() {
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">
+                      ₹{subtotal.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
@@ -140,13 +148,19 @@ function CartContent() {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Estimated Tax</span>
-                    <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">
+                      ₹{tax.toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                  <span className="font-semibold text-gray-900">Total amount</span>
-                  <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                  <span className="font-semibold text-gray-900">
+                    Total amount
+                  </span>
+                  <span className="text-xl font-bold text-gray-900">
+                    ₹{total.toFixed(2)}
+                  </span>
                 </div>
 
                 <button
@@ -156,7 +170,9 @@ function CartContent() {
                   <CreditCard size={17} /> Proceed to Checkout
                 </button>
 
-                <p className="text-center text-xs text-gray-400 mt-3">🔒 Secure SSL Checkout</p>
+                <p className="text-center text-xs text-gray-400 mt-3">
+                  🔒 Secure SSL Checkout
+                </p>
               </div>
             </div>
           </div>

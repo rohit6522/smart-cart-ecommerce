@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { LogOut, ShoppingCart, ShoppingBag, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useCart } from "@/context/CartContext";
 
 interface NavbarProps {
   title: string;
@@ -13,6 +14,7 @@ interface NavbarProps {
 
 export default function Navbar({ title, onSearch }: NavbarProps) {
   const { user, logout } = useAuth();
+  const { itemCount, refreshCartCount } = useCart();
   const pathname = usePathname();
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
@@ -34,6 +36,12 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (user?.role === "USER") {
+      refreshCartCount();
+    }
+  }, [user, refreshCartCount]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -124,7 +132,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
               <>
                 <Link
                   href="/user/cart"
-                  className={`p-2 rounded-lg transition ${
+                  className={`relative p-2 rounded-lg transition ${
                     pathname === "/user/cart"
                       ? "bg-blue-50 text-blue-600"
                       : "text-gray-500 hover:bg-gray-100"
@@ -132,6 +140,11 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                   title="Cart"
                 >
                   <ShoppingBag size={20} />
+                  {itemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center px-1">
+                      {itemCount > 99 ? "99+" : itemCount}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   href="/user/profile"
