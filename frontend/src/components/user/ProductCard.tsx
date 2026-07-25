@@ -3,13 +3,17 @@
 import { useState } from "react";
 import { Product } from "@/types";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
+import Image from "next/image";
 
 interface ProductCardProps {
   product: Product;
   onAddToCart: (productId: number, quantity: number) => Promise<void>;
 }
 
-export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+}: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -47,15 +51,37 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
           <ShoppingCart className="text-gray-300" size={36} />
         )}
       </div>
+      <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <ShoppingCart className="text-gray-300" size={36} />
+        )}
+      </div>
 
       <div className="p-4 flex flex-col flex-1">
-        <span className="text-xs text-blue-600 font-medium mb-1">{product.category}</span>
+        <span className="text-xs text-blue-600 font-medium mb-1">
+          {product.category}
+        </span>
         <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2 flex-1">{product.description}</p>
+        <p className="text-sm text-gray-500 mb-3 line-clamp-2 flex-1">
+          {product.description}
+        </p>
 
         <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
-          <span className={`text-xs ${outOfStock ? "text-red-500" : "text-gray-400"}`}>
+          <span className="text-lg font-bold text-gray-900">
+            ₹{product.price.toFixed(2)}
+          </span>
+          <span
+            className={`text-xs ${outOfStock ? "text-red-500" : "text-gray-400"}`}
+          >
             {outOfStock ? "Out of stock" : `${product.stockQuantity} in stock`}
           </span>
         </div>
@@ -71,7 +97,9 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
               </button>
               <span className="w-8 text-center font-medium">{quantity}</span>
               <button
-                onClick={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
+                onClick={() =>
+                  setQuantity((q) => Math.min(product.stockQuantity, q + 1))
+                }
                 className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
               >
                 <Plus size={14} />
