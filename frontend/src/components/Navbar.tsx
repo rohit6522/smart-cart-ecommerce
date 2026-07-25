@@ -19,10 +19,19 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -46,20 +55,20 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   };
 
   return (
-   <div
-  className={`sticky top-0 z-20 transition-all duration-300 ${
-    scrolled ? "px-0 sm:px-4 pt-0 sm:pt-3" : "px-0 pt-0"
-  }`}
->
-  <nav
-    className={`bg-white border-gray-200 mx-auto transition-all duration-300 ease-in-out ${
-      scrolled
-        ? "max-w-5xl rounded-full shadow-lg border mt-2"
-        : "w-full rounded-none shadow-none border-b mt-0"
-    }`}
-  >
+    <div
+      className={`sticky top-0 z-20 transition-all duration-500 ease-in-out ${
+        scrolled ? "px-0 sm:px-4 pt-0 sm:pt-3" : "px-0 pt-0"
+      }`}
+    >
+      <nav
+        className={`bg-white border border-gray-200 mx-auto transform-gpu transition-all duration-500 ease-in-out will-change-[max-width,border-radius,box-shadow,margin] ${
+          scrolled
+            ? "max-w-5xl rounded-full shadow-lg mt-2"
+            : "max-w-none w-full rounded-none shadow-none mt-0"
+        }`}
+      >
         <div
-          className={`mx-auto flex items-center gap-6 transition-all duration-300 ${
+          className={`mx-auto flex items-center gap-6 transition-all duration-500 ease-in-out ${
             scrolled ? "px-6 py-2.5" : "px-6 py-3"
           }`}
         >
