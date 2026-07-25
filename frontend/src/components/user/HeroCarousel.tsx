@@ -17,28 +17,28 @@ const slides: Slide[] = [
     subtitle: "Track your budget in real-time while you shop your favorite products.",
     emoji: "🛒",
     gradient: "from-blue-600/70 via-blue-500/50 to-transparent",
-    imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1000&q=65&fm=webp",
   },
   {
     title: "Fresh Groceries Daily",
     subtitle: "Farm-fresh essentials delivered right to your doorstep.",
     emoji: "🥦",
     gradient: "from-green-600/70 via-green-500/50 to-transparent",
-    imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1000&q=65&fm=webp",
   },
   {
     title: "Latest Electronics",
     subtitle: "Top gadgets and accessories at unbeatable prices.",
     emoji: "🎧",
     gradient: "from-purple-600/70 via-purple-500/50 to-transparent",
-    imageUrl: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1000&q=65&fm=webp",
   },
   {
     title: "Trending Fashion",
     subtitle: "Discover styles that fit every occasion and budget.",
     emoji: "👕",
     gradient: "from-pink-600/70 via-pink-500/50 to-transparent",
-    imageUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1200",
+    imageUrl: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=1000&q=65&fm=webp",
   },
 ];
 

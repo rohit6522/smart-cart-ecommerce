@@ -18,7 +18,7 @@ export const getProductById = async (id: number) => {
   return res.data.data;
 };
 
-// Admin only - these should invalidate the cache since they change product data
+// Admin only - these invalidate the cache since they change product data
 export const createProduct = async (payload: ProductPayload) => {
   const res = await api.post<ApiResponse<Product>>("/api/admin/products", payload);
   productsCache = null;
