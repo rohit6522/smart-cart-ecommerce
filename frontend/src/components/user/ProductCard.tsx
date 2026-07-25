@@ -36,21 +36,25 @@ export default function ProductCard({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col">
-
       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
-  {product.imageUrl ? (
-    <Image
-      src={product.imageUrl}
-      alt={product.name}
-      fill
-      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-      className="object-cover"
-      loading="lazy"
-    />
-  ) : (
-    <ShoppingCart className="text-gray-300" size={36} />
-  )}
-</div>
+        {product.discountPercentage > 0 && (
+          <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            {product.discountPercentage}% OFF
+          </span>
+        )}
+        {product.imageUrl ? (
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <ShoppingCart className="text-gray-300" size={36} />
+        )}
+      </div>
 
       <div className="p-4 flex flex-col flex-1">
         <span className="text-xs text-blue-600 font-medium mb-1">
@@ -62,9 +66,22 @@ export default function ProductCard({
         </p>
 
         <div className="flex items-center justify-between mb-3">
-          <span className="text-lg font-bold text-gray-900">
-            ₹{product.price.toFixed(2)}
-          </span>
+          <div className="flex items-center gap-2">
+            {product.discountPercentage > 0 ? (
+              <>
+                <span className="text-lg font-bold text-gray-900">
+                  ₹{product.discountedPrice.toFixed(2)}
+                </span>
+                <span className="text-xs text-gray-400 line-through">
+                  ₹{product.price.toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="text-lg font-bold text-gray-900">
+                ₹{product.price.toFixed(2)}
+              </span>
+            )}
+          </div>
           <span
             className={`text-xs ${outOfStock ? "text-red-500" : "text-gray-400"}`}
           >

@@ -29,6 +29,8 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  discountPercentage: number;
+  discountedPrice: number;
   stockQuantity: number;
   category: string;
   imageUrl: string;
@@ -39,6 +41,7 @@ export interface ProductPayload {
   name: string;
   description: string;
   price: number;
+  discountPercentage: number;
   stockQuantity: number;
   category: string;
   imageUrl: string;

@@ -9,11 +9,16 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-export default function ProductForm({ initialData, onSubmit, onCancel }: ProductFormProps) {
+export default function ProductForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: ProductFormProps) {
   const [form, setForm] = useState<ProductPayload>({
     name: initialData?.name ?? "",
     description: initialData?.description ?? "",
     price: initialData?.price ?? 0,
+    discountPercentage: initialData?.discountPercentage ?? 0,
     stockQuantity: initialData?.stockQuantity ?? 0,
     category: initialData?.category ?? "",
     imageUrl: initialData?.imageUrl ?? "",
@@ -22,12 +27,17 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   const [saving, setSaving] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "price" || name === "stockQuantity" ? Number(value) : value,
+      [name]:
+        name === "price" ||
+        name === "stockQuantity" ||
+        name === "discountPercentage"
+          ? Number(value)
+          : value,
     }));
   };
 
@@ -53,11 +63,15 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg">{error}</div>
+        <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg">
+          {error}
+        </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Product Name
+        </label>
         <input
           type="text"
           name="name"
@@ -69,7 +83,9 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Description
+        </label>
         <textarea
           name="description"
           value={form.description}
@@ -81,7 +97,9 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Price (₹)
+          </label>
           <input
             type="number"
             name="price"
@@ -93,8 +111,11 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
             required
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Stock Qty</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Stock Qty
+          </label>
           <input
             type="number"
             name="stockQuantity"
@@ -108,7 +129,36 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Discount (%){" "}
+          <span className="text-gray-400 font-normal">
+            — for festive sales, leave 0 for none
+          </span>
+        </label>
+        <input
+          type="number"
+          name="discountPercentage"
+          value={form.discountPercentage}
+          onChange={handleChange}
+          min={0}
+          max={100}
+          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
+        {form.discountPercentage > 0 && form.price > 0 && (
+          <p className="text-xs text-green-600 mt-1">
+            Discounted price: ₹
+            {(
+              form.price -
+              (form.price * form.discountPercentage) / 100
+            ).toFixed(2)}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Category
+        </label>
         <input
           type="text"
           name="category"
@@ -120,7 +170,9 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Image URL
+        </label>
         <input
           type="text"
           name="imageUrl"
@@ -144,7 +196,11 @@ export default function ProductForm({ initialData, onSubmit, onCancel }: Product
           disabled={saving}
           className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium disabled:opacity-50"
         >
-          {saving ? "Saving..." : initialData ? "Update Product" : "Add Product"}
+          {saving
+            ? "Saving..."
+            : initialData
+              ? "Update Product"
+              : "Add Product"}
         </button>
       </div>
     </form>
