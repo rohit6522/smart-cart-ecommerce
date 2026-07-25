@@ -1,5 +1,7 @@
 "use client";
 
+import { lookupPincode, getCurrentLocationAddress } from "@/lib/locationUtils";
+import { LocateFixed } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -11,7 +13,13 @@ import { createRazorpayOrder } from "@/lib/paymentApi";
 import { useAuth } from "@/context/AuthContext";
 import { CartResponse } from "@/types";
 import { RazorpaySuccessResponse } from "@/types/razorpay";
-import { MapPin, CreditCard, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
+import {
+  MapPin,
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+} from "lucide-react";
 
 function CheckoutContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -30,8 +38,11 @@ function CheckoutContent() {
     zip: "",
     phone: "",
   });
-
-  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">("COD");
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">(
+    "COD",
+  );
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
 
@@ -52,6 +63,46 @@ function CheckoutContent() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePincodeBlur = async () => {
+    const zip = form.zip.trim();
+    if (zip.length !== 6 || !/^\d{6}$/.test(zip)) return;
+
+    setPincodeLoading(true);
+    try {
+      const result = await lookupPincode(zip);
+      if (result) {
+        setForm((prev) => ({
+          ...prev,
+          city: result.city,
+          state: result.state,
+        }));
+      }
+    } catch (err) {
+      console.error("Pincode lookup failed", err);
+    } finally {
+      setPincodeLoading(false);
+    }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setLocationLoading(true);
+    setError("");
+    try {
+      const location = await getCurrentLocationAddress();
+      setForm((prev) => ({
+        ...prev,
+        street: location.street || prev.street,
+        city: location.city || prev.city,
+        state: location.state || prev.state,
+        zip: location.zip || prev.zip,
+      }));
+    } catch (err: any) {
+      setError(err.message || "Could not fetch your current location");
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
   const buildAddressString = () => {
     return `${form.firstName} ${form.lastName}, ${form.street}, ${form.city}, ${form.state} ${form.zip}. Phone: ${form.phone}`;
   };
@@ -70,7 +121,10 @@ function CheckoutContent() {
       setError("Please fill in all shipping address fields");
       return false;
     }
-    if ((paymentMethod === "CARD" || paymentMethod === "UPI") && paymentMethod === "CARD") {
+    if (
+      (paymentMethod === "CARD" || paymentMethod === "UPI") &&
+      paymentMethod === "CARD"
+    ) {
       if (!cardName.trim() || !cardNumber.trim()) {
         setError("Please fill in your card details");
         return false;
@@ -121,7 +175,9 @@ function CheckoutContent() {
             });
             router.push(`/user/order-success?orderId=${order.orderId}`);
           } catch (err: any) {
-            setError(err?.response?.data?.message || "Payment verification failed");
+            setError(
+              err?.response?.data?.message || "Payment verification failed",
+            );
             setPlacingOrder(false);
           }
         },
@@ -175,9 +231,20 @@ function CheckoutContent() {
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <div className="flex items-center gap-2 mb-5">
-                <MapPin size={18} className="text-blue-600" />
-                <h2 className="font-bold text-gray-900">Shipping Address</h2>
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <MapPin size={18} className="text-blue-600" />
+                  <h2 className="font-bold text-gray-900">Shipping Address</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={locationLoading}
+                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                >
+                  <LocateFixed size={15} />
+                  {locationLoading ? "Locating..." : "Use My Current Location"}
+                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -220,7 +287,9 @@ function CheckoutContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">CITY</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    CITY
+                  </label>
                   <input
                     name="city"
                     value={form.city}
@@ -242,15 +311,21 @@ function CheckoutContent() {
                       className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      ZIP CODE
+                      ZIP CODE{" "}
+                      {pincodeLoading && (
+                        <span className="text-blue-500">(looking up...)</span>
+                      )}
                     </label>
                     <input
                       name="zip"
                       value={form.zip}
                       onChange={handleChange}
-                      placeholder="10001"
+                      onBlur={handlePincodeBlur}
+                      placeholder="e.g. 284003"
+                      maxLength={6}
                       className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -288,7 +363,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">Credit Card</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    Credit Card
+                  </p>
                   <p className="text-xs text-gray-400">Visa, Master</p>
                 </button>
                 <button
@@ -300,7 +377,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">UPI / Wallet</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    UPI / Wallet
+                  </p>
                   <p className="text-xs text-gray-400">GPay, PhonePe</p>
                 </button>
                 <button
@@ -312,7 +391,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">Cash on Delivery</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    Cash on Delivery
+                  </p>
                   <p className="text-xs text-gray-400">Pay at your door</p>
                 </button>
               </div>
@@ -342,16 +423,16 @@ function CheckoutContent() {
                     />
                   </div>
                   <p className="text-xs text-gray-400">
-                    You&apos;ll be redirected to our secure Razorpay checkout to complete this
-                    payment.
+                    You&apos;ll be redirected to our secure Razorpay checkout to
+                    complete this payment.
                   </p>
                 </div>
               )}
 
               {paymentMethod === "UPI" && (
                 <p className="text-sm text-gray-500">
-                  You&apos;ll be redirected to Razorpay to complete payment via UPI or your
-                  preferred wallet.
+                  You&apos;ll be redirected to Razorpay to complete payment via
+                  UPI or your preferred wallet.
                 </p>
               )}
 
@@ -379,7 +460,8 @@ function CheckoutContent() {
                           alt={item.productName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
                           }}
                         />
                       ) : (
@@ -390,7 +472,9 @@ function CheckoutContent() {
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {item.productName}
                       </p>
-                      <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                      <p className="text-xs text-gray-400">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">
                       ₹{item.subtotal.toFixed(2)}
@@ -402,7 +486,9 @@ function CheckoutContent() {
               <div className="border-t border-gray-100 pt-4 space-y-2.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
+                  <span className="text-gray-900 font-medium">
+                    ₹{subtotal.toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -410,13 +496,19 @@ function CheckoutContent() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Tax</span>
-                  <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
+                  <span className="text-gray-900 font-medium">
+                    ₹{tax.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                <span className="font-semibold text-gray-900">Total amount</span>
-                <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">
+                  Total amount
+                </span>
+                <span className="text-xl font-bold text-gray-900">
+                  ₹{total.toFixed(2)}
+                </span>
               </div>
 
               {error && (
