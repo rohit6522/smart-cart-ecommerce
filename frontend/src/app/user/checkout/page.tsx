@@ -314,7 +314,7 @@ function CheckoutContent() {
 
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      ZIP CODE{" "}
+                      PIN CODE{" "}
                       {pincodeLoading && (
                         <span className="text-blue-500">(looking up...)</span>
                       )}
