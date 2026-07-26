@@ -11,13 +11,32 @@ import { Truck, FileText, Package, ShoppingCart } from "lucide-react";
 
 type TabKey = "ALL" | "PROCESSING" | "SHIPPED" | "DELIVERED";
 
+// const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
+//   PENDING: "PROCESSING",
+//   CONFIRMED: "PROCESSING",
+//   OUT_FOR_DELIVERY: "SHIPPED",
+//   DELIVERED: "DELIVERED",
+//   CANCELLED: "PROCESSING",
+// };
+
 const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
   PENDING: "PROCESSING",
   CONFIRMED: "PROCESSING",
   OUT_FOR_DELIVERY: "SHIPPED",
   DELIVERED: "DELIVERED",
   CANCELLED: "PROCESSING",
+  RETURN_REQUESTED: "DELIVERED",
+  RETURNED: "DELIVERED",
+  RETURN_REJECTED: "DELIVERED",
 };
+
+// const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
+//   PENDING: "bg-yellow-50 text-yellow-700",
+//   CONFIRMED: "bg-blue-50 text-blue-700",
+//   OUT_FOR_DELIVERY: "bg-blue-50 text-blue-700",
+//   DELIVERED: "bg-green-50 text-green-700",
+//   CANCELLED: "bg-red-50 text-red-700",
+// };
 
 const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
   PENDING: "bg-yellow-50 text-yellow-700",
@@ -25,7 +44,18 @@ const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "bg-blue-50 text-blue-700",
   DELIVERED: "bg-green-50 text-green-700",
   CANCELLED: "bg-red-50 text-red-700",
+  RETURN_REQUESTED: "bg-orange-50 text-orange-700",
+  RETURNED: "bg-green-50 text-green-700",
+  RETURN_REJECTED: "bg-red-50 text-red-700",
 };
+
+// const STATUS_LABEL: Record<OrderStatus, string> = {
+//   PENDING: "PENDING",
+//   CONFIRMED: "CONFIRMED",
+//   OUT_FOR_DELIVERY: "SHIPPED",
+//   DELIVERED: "DELIVERED",
+//   CANCELLED: "CANCELLED",
+// };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING: "PENDING",
@@ -33,7 +63,18 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "SHIPPED",
   DELIVERED: "DELIVERED",
   CANCELLED: "CANCELLED",
+  RETURN_REQUESTED: "RETURN REQUESTED",
+  RETURNED: "RETURNED",
+  RETURN_REJECTED: "RETURN REJECTED",
 };
+
+// const STATUS_MESSAGE: Record<OrderStatus, string> = {
+//   PENDING: "Your order has been placed and is awaiting confirmation.",
+//   CONFIRMED: "Your order has been confirmed and is being prepared.",
+//   OUT_FOR_DELIVERY: "Your package is currently in transit.",
+//   DELIVERED: "Your package has been delivered.",
+//   CANCELLED: "This order was cancelled.",
+// };
 
 const STATUS_MESSAGE: Record<OrderStatus, string> = {
   PENDING: "Your order has been placed and is awaiting confirmation.",
@@ -41,6 +82,9 @@ const STATUS_MESSAGE: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "Your package is currently in transit.",
   DELIVERED: "Your package has been delivered.",
   CANCELLED: "This order was cancelled.",
+  RETURN_REQUESTED: "Your return request is awaiting approval.",
+  RETURNED: "Your order has been returned successfully.",
+  RETURN_REJECTED: "Your return request was rejected.",
 };
 
 function OrderHistoryContent() {
