@@ -16,6 +16,9 @@ const STATUS_OPTIONS: OrderStatus[] = [
   "OUT_FOR_DELIVERY",
   "DELIVERED",
   "CANCELLED",
+  "RETURN_REQUESTED",
+  "RETURNED",
+  "RETURN_REJECTED",
 ];
 
 function AdminOrdersContent() {
@@ -55,14 +58,14 @@ function AdminOrdersContent() {
     }
   };
 
-  const handleResolveReturn = async (orderId: number, approve: boolean) => {
-    try {
-      await resolveReturn(orderId, approve);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to resolve return", err);
-    }
-  };
+const handleResolveReturn = async (orderId: number, approve: boolean) => {
+  try {
+    await resolveReturn(orderId, approve);
+    fetchOrders();
+  } catch (err) {
+    console.error("Failed to resolve return", err);
+  }
+};
 
   const filteredOrders =
     filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
@@ -144,32 +147,68 @@ function AdminOrdersContent() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <select
-                      value={order.status}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          order.orderId,
-                          e.target.value as OrderStatus,
-                        )
-                      }
-                      disabled={updatingId === order.orderId}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                      {STATUS_OPTIONS.map((s) => (
-                        <option key={s} value={s}>
-                          {s.replace(/_/g, " ")}
-                        </option>
-                      ))}
-                    </select>
-
-                    {!order.deliveryBoyName && order.status !== "CANCELLED" && (
-                      <button
-                        onClick={() => setAssignModalOrderId(order.orderId)}
-                        className="flex items-center gap-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-2 rounded-lg text-sm font-medium"
+                    {order.status === "RETURN_REQUESTED" ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleResolveReturn(order.orderId, true)
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-3 py-2 rounded-lg"
+                        >
+                          Approve Return
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleResolveReturn(order.orderId, false)
+                          }
+                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-3 py-2 rounded-lg"
+                        >
+                          Reject Return
+                        </button>
+                      </div>
+                    ) : order.status === "RETURNED" ||
+                      order.status === "RETURN_REJECTED" ? (
+                      <span className="text-sm text-gray-500 italic px-3 py-2">
+                        {order.status === "RETURNED"
+                          ? "Return completed"
+                          : "Return was rejected"}
+                      </span>
+                    ) : (
+                      <select
+                        value={order.status}
+                        onChange={(e) =>
+                          handleStatusChange(
+                            order.orderId,
+                            e.target.value as OrderStatus,
+                          )
+                        }
+                        disabled={updatingId === order.orderId}
+                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                       >
-                        <Truck size={14} /> Assign
-                      </button>
+                        {[
+                          "PENDING",
+                          "CONFIRMED",
+                          "OUT_FOR_DELIVERY",
+                          "DELIVERED",
+                          "CANCELLED",
+                        ].map((s) => (
+                          <option key={s} value={s}>
+                            {s.replace(/_/g, " ")}
+                          </option>
+                        ))}
+                      </select>
                     )}
+
+                    {!order.deliveryBoyName &&
+                      order.status !== "CANCELLED" &&
+                      order.status !== "RETURN_REQUESTED" && (
+                        <button
+                          onClick={() => setAssignModalOrderId(order.orderId)}
+                          className="flex items-center gap-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-2 rounded-lg text-sm font-medium"
+                        >
+                          <Truck size={14} /> Assign
+                        </button>
+                      )}
                   </div>
 
                   {order.status === "RETURN_REQUESTED" && (
