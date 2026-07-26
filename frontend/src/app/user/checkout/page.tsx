@@ -183,7 +183,7 @@ function CheckoutContent() {
             const order = await checkout({
               deliveryAddress: buildAddressString(),
               couponCode: appliedCoupon?.code,
-              deliveryAddress: buildAddressString(),
+  
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
