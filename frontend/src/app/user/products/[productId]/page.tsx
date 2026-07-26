@@ -109,19 +109,31 @@ function ProductDetailContent() {
           <div className="h-72 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
             {product.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <ShoppingCart className="text-gray-300" size={48} />
             )}
           </div>
 
           <div>
-            <span className="text-xs text-blue-600 font-medium">{product.category}</span>
-            <h1 className="text-2xl font-bold text-gray-900 mt-1 mb-2">{product.name}</h1>
+            <span className="text-xs text-blue-600 font-medium">
+              {product.category}
+            </span>
+            <h1 className="text-2xl font-bold text-gray-900 mt-1 mb-2">
+              {product.name}
+            </h1>
 
             {product.totalReviews > 0 && (
               <div className="mb-3">
-                <StarRating rating={product.averageRating} size={18} showCount={product.totalReviews} />
+                <StarRating
+                  rating={product.averageRating}
+                  size={18}
+                  showCount={product.totalReviews}
+                />
               </div>
             )}
 
@@ -133,18 +145,34 @@ function ProductDetailContent() {
                   <span className="text-2xl font-bold text-gray-900">
                     ₹{product.discountedPrice.toFixed(2)}
                   </span>
-                  <span className="text-gray-400 line-through">₹{product.price.toFixed(2)}</span>
+                  <span className="text-gray-400 line-through">
+                    ₹{product.price.toFixed(2)}
+                  </span>
                   <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
                     {product.discountPercentage}% OFF
                   </span>
                 </>
               ) : (
-                <span className="text-2xl font-bold text-gray-900">₹{product.price.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  ₹{product.price.toFixed(2)}
+                </span>
               )}
             </div>
 
-            <p className={`text-sm mb-4 ${outOfStock ? "text-red-500" : "text-gray-500"}`}>
-              {outOfStock ? "Out of stock" : `${product.stockQuantity} in stock`}
+            <p
+              className={`text-sm mb-4 font-medium ${
+                outOfStock
+                  ? "text-red-500"
+                  : product.stockQuantity <= 5
+                    ? "text-orange-600 animate-pulse"
+                    : "text-gray-500"
+              }`}
+            >
+              {outOfStock
+                ? "Out of stock"
+                : product.stockQuantity <= 5
+                  ? `⚡ Hurry! Only ${product.stockQuantity} left in stock`
+                  : `${product.stockQuantity} in stock`}
             </p>
 
             {!outOfStock && (
@@ -156,9 +184,13 @@ function ProductDetailContent() {
                   >
                     <Minus size={15} />
                   </button>
-                  <span className="w-8 text-center font-medium">{quantity}</span>
+                  <span className="w-8 text-center font-medium">
+                    {quantity}
+                  </span>
                   <button
-                    onClick={() => setQuantity((q) => Math.min(product.stockQuantity, q + 1))}
+                    onClick={() =>
+                      setQuantity((q) => Math.min(product.stockQuantity, q + 1))
+                    }
                     className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
                   >
                     <Plus size={15} />
@@ -178,7 +210,9 @@ function ProductDetailContent() {
 
         {/* Reviews Section */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Customer Reviews</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">
+            Customer Reviews
+          </h2>
 
           {/* Write a review */}
           <div className="border border-gray-100 rounded-xl p-4 mb-6 bg-gray-50">
@@ -212,7 +246,9 @@ function ProductDetailContent() {
               rows={2}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            {reviewError && <p className="text-red-600 text-sm mb-2">{reviewError}</p>}
+            {reviewError && (
+              <p className="text-red-600 text-sm mb-2">{reviewError}</p>
+            )}
             <button
               onClick={handleSubmitReview}
               disabled={submitting}
@@ -224,13 +260,20 @@ function ProductDetailContent() {
 
           {/* Review list */}
           {reviews.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No reviews yet. Be the first!</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No reviews yet. Be the first!
+            </p>
           ) : (
             <div className="space-y-4">
               {reviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-100 pb-4 last:border-0">
+                <div
+                  key={review.id}
+                  className="border-b border-gray-100 pb-4 last:border-0"
+                >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-gray-900 text-sm">{review.userName}</span>
+                    <span className="font-medium text-gray-900 text-sm">
+                      {review.userName}
+                    </span>
                     <span className="text-xs text-gray-400">
                       {new Date(review.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",
@@ -240,7 +283,11 @@ function ProductDetailContent() {
                     </span>
                   </div>
                   <StarRating rating={review.rating} />
-                  {review.comment && <p className="text-sm text-gray-600 mt-1.5">{review.comment}</p>}
+                  {review.comment && (
+                    <p className="text-sm text-gray-600 mt-1.5">
+                      {review.comment}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

@@ -116,9 +116,19 @@ export default function ProductCard({
             )}
           </div>
           <span
-            className={`text-xs ${outOfStock ? "text-red-500" : "text-gray-400"}`}
+            className={`text-xs font-medium ${
+              outOfStock
+                ? "text-red-500"
+                : product.stockQuantity <= 5
+                  ? "text-orange-600 animate-pulse"
+                  : "text-gray-400"
+            }`}
           >
-            {outOfStock ? "Out of stock" : `${product.stockQuantity} in stock`}
+            {outOfStock
+              ? "Out of stock"
+              : product.stockQuantity <= 5
+                ? `Only ${product.stockQuantity} left!`
+                : `${product.stockQuantity} in stock`}
           </span>
         </div>
 
