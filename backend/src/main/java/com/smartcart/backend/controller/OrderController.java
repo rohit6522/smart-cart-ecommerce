@@ -55,6 +55,25 @@ public class OrderController {
         return success(orderService.updateOrderStatus(orderId, request), "Order status updated");
     }
 
+
+    @PutMapping("/api/user/orders/{orderId}/cancel")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
+            @PathVariable Long orderId, @Valid @RequestBody CancelOrderRequest request) {
+        return success(orderService.cancelOrder(orderId, request.getReason()), "Order cancelled successfully");
+    }
+
+    @PutMapping("/api/user/orders/{orderId}/return")
+    public ResponseEntity<ApiResponse<OrderResponse>> requestReturn(
+            @PathVariable Long orderId, @Valid @RequestBody ReturnRequest request) {
+        return success(orderService.requestReturn(orderId, request.getReason()), "Return request submitted");
+    }
+
+    @PutMapping("/api/admin/orders/{orderId}/resolve-return")
+    public ResponseEntity<ApiResponse<OrderResponse>> resolveReturn(
+            @PathVariable Long orderId, @RequestParam boolean approve) {
+        return success(orderService.resolveReturn(orderId, approve), "Return request resolved");
+    }
+
     private ResponseEntity<ApiResponse<OrderResponse>> success(OrderResponse data, String message) {
         return ResponseEntity.ok(ApiResponse.<OrderResponse>builder()
                 .success(true)

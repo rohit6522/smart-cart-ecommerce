@@ -44,11 +44,17 @@ public class Order {
     }
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+        PENDING, CONFIRMED, OUT_FOR_DELIVERY, DELIVERED, CANCELLED,
+        RETURN_REQUESTED, RETURNED, RETURN_REJECTED
     }
 
     private String razorpayOrderId;
     private String razorpayPaymentId;
+
+    private String cancellationReason;
+    private String returnReason;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime returnRequestedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

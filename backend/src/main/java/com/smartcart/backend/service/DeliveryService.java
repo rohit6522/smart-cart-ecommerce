@@ -91,9 +91,9 @@ public class DeliveryService {
         if (request.getStatus() == DeliveryAssignment.DeliveryStatus.DELIVERED) {
             assignment.setDeliveredAt(LocalDateTime.now());
 
-            // Sync the order status too
             Order order = assignment.getOrder();
             order.setStatus(Order.OrderStatus.DELIVERED);
+            order.setDeliveredAt(LocalDateTime.now());
             orderRepository.save(order);
         }
 

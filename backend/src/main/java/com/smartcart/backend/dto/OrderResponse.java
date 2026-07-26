@@ -25,4 +25,11 @@ public class OrderResponse {
     private String deliveryBoyName;
     private String deliveryBoyPhone;
     private String paymentStatus;
+
+    private String cancellationReason;
+    private String returnReason;
+    private String deliveredAt; // as ISO string
+    private String returnRequestedAt;
+    private boolean canCancel;
+    private boolean canReturn;
 }

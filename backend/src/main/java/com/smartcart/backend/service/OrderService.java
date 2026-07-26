@@ -9,13 +9,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OrderService {
+public class    OrderService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
@@ -109,6 +109,96 @@ public class OrderService {
 
 
 
+    // ---------- Cancel an order (only PENDING or CONFIRMED, before shipping) ----------
+    @Transactional
+    public OrderResponse cancelOrder(Long orderId, String reason) {
+        User user = getCurrentUser();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException("Order not found", HttpStatus.NOT_FOUND));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ApiException("This order does not belong to you", HttpStatus.FORBIDDEN);
+        }
+
+        if (order.getStatus() != Order.OrderStatus.PENDING && order.getStatus() != Order.OrderStatus.CONFIRMED) {
+            throw new ApiException("Order can only be cancelled before it is shipped", HttpStatus.BAD_REQUEST);
+        }
+
+        // Restore stock for each item
+        List<OrderItem> items = orderItemRepository.findAll().stream()
+                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+                .toList();
+
+        for (OrderItem item : items) {
+            Product product = item.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
+        order = orderRepository.save(order);
+
+        return mapToResponse(order);
+    }
+
+    // ---------- Request a return (only within 7 days of delivery) ----------
+    public OrderResponse requestReturn(Long orderId, String reason) {
+        User user = getCurrentUser();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException("Order not found", HttpStatus.NOT_FOUND));
+
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new ApiException("This order does not belong to you", HttpStatus.FORBIDDEN);
+        }
+
+        if (order.getStatus() != Order.OrderStatus.DELIVERED) {
+            throw new ApiException("Only delivered orders can be returned", HttpStatus.BAD_REQUEST);
+        }
+
+        if (order.getDeliveredAt() == null ||
+                order.getDeliveredAt().isBefore(LocalDateTime.now().minusDays(7))) {
+            throw new ApiException("Return window has expired (7 days from delivery)", HttpStatus.BAD_REQUEST);
+        }
+
+        order.setStatus(Order.OrderStatus.RETURN_REQUESTED);
+        order.setReturnReason(reason);
+        order.setReturnRequestedAt(LocalDateTime.now());
+        order = orderRepository.save(order);
+
+        return mapToResponse(order);
+    }
+
+    // ---------- ADMIN: approve or reject a return request ----------
+    @Transactional
+    public OrderResponse resolveReturn(Long orderId, boolean approve) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApiException("Order not found", HttpStatus.NOT_FOUND));
+
+        if (order.getStatus() != Order.OrderStatus.RETURN_REQUESTED) {
+            throw new ApiException("No pending return request for this order", HttpStatus.BAD_REQUEST);
+        }
+
+        if (approve) {
+            // Restore stock since the item is coming back
+            List<OrderItem> items = orderItemRepository.findAll().stream()
+                    .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+                    .toList();
+            for (OrderItem item : items) {
+                Product product = item.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+                productRepository.save(product);
+            }
+            order.setStatus(Order.OrderStatus.RETURNED);
+        } else {
+            order.setStatus(Order.OrderStatus.RETURN_REJECTED);
+        }
+
+        order = orderRepository.save(order);
+        return mapToResponse(order);
+    }
+
+
     // ---------- Get logged-in user's order history ----------
     public List<OrderResponse> getMyOrders() {
         User user = getCurrentUser();
@@ -157,7 +247,6 @@ public class OrderService {
                 .filter(oi -> oi.getOrder().getId().equals(order.getId()))
                 .toList();
 
-
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
             BigDecimal subtotal = item.getPriceAtPurchase().multiply(BigDecimal.valueOf(item.getQuantity()));
             return OrderItemResponse.builder()
@@ -183,6 +272,13 @@ public class OrderService {
             deliveryBoyPhone = deliveryBoy.getPhone();
         }
 
+        boolean canCancel = order.getStatus() == Order.OrderStatus.PENDING
+                || order.getStatus() == Order.OrderStatus.CONFIRMED;
+
+        boolean canReturn = order.getStatus() == Order.OrderStatus.DELIVERED
+                && order.getDeliveredAt() != null
+                && order.getDeliveredAt().isAfter(LocalDateTime.now().minusDays(7));
+
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
@@ -193,6 +289,12 @@ public class OrderService {
                 .createdAt(order.getCreatedAt())
                 .deliveryBoyName(deliveryBoyName)
                 .deliveryBoyPhone(deliveryBoyPhone)
+                .cancellationReason(order.getCancellationReason())
+                .returnReason(order.getReturnReason())
+                .deliveredAt(order.getDeliveredAt() != null ? order.getDeliveredAt().toString() : null)
+                .returnRequestedAt(order.getReturnRequestedAt() != null ? order.getReturnRequestedAt().toString() : null)
+                .canCancel(canCancel)
+                .canReturn(canReturn)
                 .build();
 
     }
