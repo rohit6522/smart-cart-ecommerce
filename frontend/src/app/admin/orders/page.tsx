@@ -6,7 +6,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import OrderStatusBadge from "@/components/user/OrderStatusBadge";
 import AssignDeliveryModal from "@/components/admin/AssignDeliveryModal";
-import { getAllOrders, updateOrderStatus } from "@/lib/orderApi";
+import { getAllOrders, updateOrderStatus, resolveReturn } from "@/lib/orderApi";
 import { OrderResponse, OrderStatus } from "@/types";
 import { ArrowLeft, Package, Truck } from "lucide-react";
 
@@ -22,7 +22,9 @@ function AdminOrdersContent() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
-  const [assignModalOrderId, setAssignModalOrderId] = useState<number | null>(null);
+  const [assignModalOrderId, setAssignModalOrderId] = useState<number | null>(
+    null,
+  );
   const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
   const router = useRouter();
 
@@ -50,6 +52,15 @@ function AdminOrdersContent() {
       console.error("Failed to update status", err);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const handleResolveReturn = async (orderId: number, approve: boolean) => {
+    try {
+      await resolveReturn(orderId, approve);
+      fetchOrders();
+    } catch (err) {
+      console.error("Failed to resolve return", err);
     }
   };
 
@@ -87,7 +98,10 @@ function AdminOrdersContent() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 bg-white border border-gray-200 rounded-xl animate-pulse" />
+              <div
+                key={i}
+                className="h-24 bg-white border border-gray-200 rounded-xl animate-pulse"
+              />
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
@@ -111,14 +125,17 @@ function AdminOrdersContent() {
                       <OrderStatusBadge status={order.status} />
                     </div>
                     <p className="text-sm text-gray-500">
-                      {order.items.length} item{order.items.length !== 1 ? "s" : ""} · ₹
+                      {order.items.length} item
+                      {order.items.length !== 1 ? "s" : ""} · ₹
                       {order.totalAmount.toFixed(2)} ·{" "}
                       {new Date(order.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
                       })}
                     </p>
-                    <p className="text-xs text-gray-400 mt-1">{order.deliveryAddress}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {order.deliveryAddress}
+                    </p>
                     {order.deliveryBoyName && (
                       <p className="text-xs text-purple-600 mt-1 flex items-center gap-1">
                         <Truck size={12} /> Assigned to {order.deliveryBoyName}
@@ -130,7 +147,10 @@ function AdminOrdersContent() {
                     <select
                       value={order.status}
                       onChange={(e) =>
-                        handleStatusChange(order.orderId, e.target.value as OrderStatus)
+                        handleStatusChange(
+                          order.orderId,
+                          e.target.value as OrderStatus,
+                        )
                       }
                       disabled={updatingId === order.orderId}
                       className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
@@ -151,6 +171,25 @@ function AdminOrdersContent() {
                       </button>
                     )}
                   </div>
+
+                  {order.status === "RETURN_REQUESTED" && (
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => handleResolveReturn(order.orderId, true)}
+                        className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg"
+                      >
+                        Approve Return
+                      </button>
+                      <button
+                        onClick={() =>
+                          handleResolveReturn(order.orderId, false)
+                        }
+                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg"
+                      >
+                        Reject Return
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -35,3 +35,25 @@ export const updateOrderStatus = async (orderId: number, status: OrderStatus) =>
   });
   return res.data.data;
 };
+
+
+export const cancelOrder = async (orderId: number, reason: string) => {
+  const res = await api.put<ApiResponse<OrderResponse>>(`/api/user/orders/${orderId}/cancel`, {
+    reason,
+  });
+  return res.data.data;
+};
+
+export const requestReturn = async (orderId: number, reason: string) => {
+  const res = await api.put<ApiResponse<OrderResponse>>(`/api/user/orders/${orderId}/return`, {
+    reason,
+  });
+  return res.data.data;
+};
+
+export const resolveReturn = async (orderId: number, approve: boolean) => {
+  const res = await api.put<ApiResponse<OrderResponse>>(
+    `/api/admin/orders/${orderId}/resolve-return?approve=${approve}`
+  );
+  return res.data.data;
+};

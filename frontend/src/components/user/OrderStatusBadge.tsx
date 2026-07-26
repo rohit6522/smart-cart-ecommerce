@@ -10,6 +10,9 @@ const statusStyles: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "bg-purple-50 text-purple-700",
   DELIVERED: "bg-green-50 text-green-700",
   CANCELLED: "bg-red-50 text-red-700",
+  RETURN_REQUESTED: "bg-orange-50 text-orange-700",
+  RETURNED: "bg-gray-100 text-gray-700",
+  RETURN_REJECTED: "bg-red-50 text-red-700",
 };
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -18,6 +21,9 @@ const statusLabels: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "Out for Delivery",
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
+  RETURN_REQUESTED: "Return Requested",
+  RETURNED: "Returned",
+  RETURN_REJECTED: "Return Rejected",
 };
 
 export default function OrderStatusBadge({ status }: OrderStatusBadgeProps) {

@@ -89,22 +89,15 @@ export interface WishlistItem {
   product: Product;
 }
 
-// ---------- Orders ----------
 export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
   | "OUT_FOR_DELIVERY"
   | "DELIVERED"
-  | "CANCELLED";
-
-export interface OrderItem {
-  productId: number;
-  productName: string;
-  imageUrl: string;
-  quantity: number;
-  priceAtPurchase: number;
-  subtotal: number;
-}
+  | "CANCELLED"
+  | "RETURN_REQUESTED"
+  | "RETURNED"
+  | "RETURN_REJECTED";
 
 export interface OrderResponse {
   orderId: number;
@@ -115,8 +108,23 @@ export interface OrderResponse {
   createdAt: string;
   deliveryBoyName: string | null;
   deliveryBoyPhone: string | null;
-  paymentStatus: string; // add this line
+  paymentStatus: string;
+  cancellationReason: string | null;
+  returnReason: string | null;
+  deliveredAt: string | null;
+  returnRequestedAt: string | null;
+  canCancel: boolean;
+  canReturn: boolean;
 }
+
+  export interface OrderItem {
+    productId: number;
+    productName: string;
+    imageUrl: string;
+    quantity: number;
+    priceAtPurchase: number;
+    subtotal: number;
+  }
 
 // ---------- Delivery ----------
 export type DeliveryStatus = "ASSIGNED" | "PICKED_UP" | "DELIVERED";

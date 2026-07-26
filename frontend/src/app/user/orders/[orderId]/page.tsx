@@ -9,13 +9,16 @@ import { getOrderById } from "@/lib/orderApi";
 import { OrderResponse } from "@/types";
 import { ArrowLeft, MapPin, Truck, Phone, CheckCircle2 } from "lucide-react";
 
+import CancelReturnModal from "@/components/user/CancelReturnModal";
+import { cancelOrder, requestReturn } from "@/lib/orderApi";
+import { XCircle, RotateCcw } from "lucide-react";
 const STATUS_STEPS = ["PENDING", "CONFIRMED", "OUT_FOR_DELIVERY", "DELIVERED"];
 
 function OrderDetailContent() {
   const params = useParams();
   const router = useRouter();
   const orderId = Number(params.orderId);
-
+  const [modalMode, setModalMode] = useState<"cancel" | "return" | null>(null);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +31,16 @@ function OrderDetailContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancel = async (reason: string) => {
+    const updated = await cancelOrder(order!.orderId, reason);
+    setOrder(updated);
+  };
+
+  const handleReturn = async (reason: string) => {
+    const updated = await requestReturn(order!.orderId, reason);
+    setOrder(updated);
   };
 
   useEffect(() => {
@@ -154,6 +167,38 @@ function OrderDetailContent() {
               )}
             </div>
           )}
+          {(order.canCancel || order.canReturn) && (
+            <div className="flex gap-3 mt-5 pt-5 border-t border-gray-100">
+              {order.canCancel && (
+                <button
+                  onClick={() => setModalMode("cancel")}
+                  className="flex items-center gap-1.5 text-sm text-red-600 border border-red-200 hover:bg-red-50 px-4 py-2 rounded-lg font-medium"
+                >
+                  <XCircle size={15} /> Cancel Order
+                </button>
+              )}
+              {order.canReturn && (
+                <button
+                  onClick={() => setModalMode("return")}
+                  className="flex items-center gap-1.5 text-sm text-orange-600 border border-orange-200 hover:bg-orange-50 px-4 py-2 rounded-lg font-medium"
+                >
+                  <RotateCcw size={15} /> Return Order
+                </button>
+              )}
+            </div>
+          )}
+
+          {order.cancellationReason && (
+            <div className="bg-red-50 text-red-700 text-sm px-4 py-2.5 rounded-lg mt-4">
+              <strong>Cancellation reason:</strong> {order.cancellationReason}
+            </div>
+          )}
+
+          {order.returnReason && (
+            <div className="bg-orange-50 text-orange-700 text-sm px-4 py-2.5 rounded-lg mt-4">
+              <strong>Return reason:</strong> {order.returnReason}
+            </div>
+          )}
         </div>
 
         {/* Order Items */}
@@ -181,6 +226,13 @@ function OrderDetailContent() {
           </div>
         </div>
       </div>
+
+      <CancelReturnModal
+        isOpen={modalMode !== null}
+        onClose={() => setModalMode(null)}
+        mode={modalMode ?? "cancel"}
+        onSubmit={modalMode === "cancel" ? handleCancel : handleReturn}
+      />
     </div>
   );
 }
