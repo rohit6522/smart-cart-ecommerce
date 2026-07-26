@@ -8,8 +8,8 @@ interface CancelReturnModalProps {
   onClose: () => void;
   mode: "cancel" | "return";
   onSubmit: (reason: string) => Promise<void>;
+  deliveryAddress?: string;
 }
-
 const CANCEL_REASONS = [
   "Ordered by mistake",
   "Found a better price elsewhere",
@@ -26,7 +26,7 @@ const RETURN_REASONS = [
   "Other",
 ];
 
-export default function CancelReturnModal({ isOpen, onClose, mode, onSubmit }: CancelReturnModalProps) {
+export default function CancelReturnModal({ isOpen, onClose, mode, onSubmit, deliveryAddress }: CancelReturnModalProps) {
   const [selectedReason, setSelectedReason] = useState("");
   const [customReason, setCustomReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -60,11 +60,16 @@ export default function CancelReturnModal({ isOpen, onClose, mode, onSubmit }: C
       onClose={onClose}
       title={mode === "cancel" ? "Cancel Order" : "Return Order"}
     >
-      <p className="text-sm text-gray-500 mb-4">
-        {mode === "cancel"
-          ? "Please tell us why you're cancelling this order."
-          : "Returns are accepted within 7 days of delivery. Please tell us the reason."}
-      </p>
+     {mode === "return" && (
+  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4 text-sm text-blue-800 space-y-1">
+    <p>
+      📍 <strong>Pickup from:</strong> {deliveryAddress || "your delivery address"}
+    </p>
+    <p>
+      💵 <strong>Refund method:</strong> Cash refund on pickup, once the item passes inspection.
+    </p>
+  </div>
+)}
 
       <div className="space-y-2 mb-4">
         {reasons.map((reason) => (

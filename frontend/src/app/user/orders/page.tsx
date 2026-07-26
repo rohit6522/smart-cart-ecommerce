@@ -1,23 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import OrderStatusTabs from "@/components/user/OrderStatusTabs";
-import { getMyOrders } from "@/lib/orderApi";
+import CancelReturnModal from "@/components/user/CancelReturnModal";
+import { getMyOrders, cancelOrder, requestReturn } from "@/lib/orderApi";
 import { OrderResponse, OrderStatus } from "@/types";
-import { Truck, FileText, Package, ShoppingCart } from "lucide-react";
+import {
+  Truck,
+  FileText,
+  Package,
+  ShoppingCart,
+  XCircle,
+  RotateCcw,
+  CheckCircle2,
+} from "lucide-react";
 
 type TabKey = "ALL" | "PROCESSING" | "SHIPPED" | "DELIVERED";
 
-// const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
-//   PENDING: "PROCESSING",
-//   CONFIRMED: "PROCESSING",
-//   OUT_FOR_DELIVERY: "SHIPPED",
-//   DELIVERED: "DELIVERED",
-//   CANCELLED: "PROCESSING",
-// };
+
 
 const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
   PENDING: "PROCESSING",
@@ -30,13 +34,7 @@ const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
   RETURN_REJECTED: "DELIVERED",
 };
 
-// const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
-//   PENDING: "bg-yellow-50 text-yellow-700",
-//   CONFIRMED: "bg-blue-50 text-blue-700",
-//   OUT_FOR_DELIVERY: "bg-blue-50 text-blue-700",
-//   DELIVERED: "bg-green-50 text-green-700",
-//   CANCELLED: "bg-red-50 text-red-700",
-// };
+
 
 const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
   PENDING: "bg-yellow-50 text-yellow-700",
@@ -45,17 +43,9 @@ const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
   DELIVERED: "bg-green-50 text-green-700",
   CANCELLED: "bg-red-50 text-red-700",
   RETURN_REQUESTED: "bg-orange-50 text-orange-700",
-  RETURNED: "bg-green-50 text-green-700",
+  RETURNED: "bg-gray-100 text-gray-700",
   RETURN_REJECTED: "bg-red-50 text-red-700",
 };
-
-// const STATUS_LABEL: Record<OrderStatus, string> = {
-//   PENDING: "PENDING",
-//   CONFIRMED: "CONFIRMED",
-//   OUT_FOR_DELIVERY: "SHIPPED",
-//   DELIVERED: "DELIVERED",
-//   CANCELLED: "CANCELLED",
-// };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING: "PENDING",
@@ -68,40 +58,64 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   RETURN_REJECTED: "RETURN REJECTED",
 };
 
-// const STATUS_MESSAGE: Record<OrderStatus, string> = {
-//   PENDING: "Your order has been placed and is awaiting confirmation.",
-//   CONFIRMED: "Your order has been confirmed and is being prepared.",
-//   OUT_FOR_DELIVERY: "Your package is currently in transit.",
-//   DELIVERED: "Your package has been delivered.",
-//   CANCELLED: "This order was cancelled.",
-// };
-
 const STATUS_MESSAGE: Record<OrderStatus, string> = {
   PENDING: "Your order has been placed and is awaiting confirmation.",
   CONFIRMED: "Your order has been confirmed and is being prepared.",
   OUT_FOR_DELIVERY: "Your package is currently in transit.",
   DELIVERED: "Your package has been delivered.",
   CANCELLED: "This order was cancelled.",
-  RETURN_REQUESTED: "Your return request is awaiting approval.",
-  RETURNED: "Your order has been returned successfully.",
-  RETURN_REJECTED: "Your return request was rejected.",
+  RETURN_REQUESTED: "Your return request is being reviewed.",
+  RETURNED: "This order has been returned and refunded.",
+  RETURN_REJECTED: "Your return request was not approved.",
 };
-
 function OrderHistoryContent() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabKey>("ALL");
   const router = useRouter();
+  const [modalOrder, setModalOrder] = useState<OrderResponse | null>(null);
+  const [modalMode, setModalMode] = useState<"cancel" | "return">("cancel");
 
-  useEffect(() => {
+  const fetchOrders = () => {
     getMyOrders()
       .then((data) => setOrders(data.slice().reverse()))
       .catch((err) => console.error("Failed to fetch orders", err))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
 
+  const handleCancel = async (reason: string) => {
+    if (!modalOrder) return;
+    await cancelOrder(modalOrder.orderId, reason);
+    fetchOrders();
+  };
+
+  const handleReturn = async (reason: string) => {
+    if (!modalOrder) return;
+    await requestReturn(modalOrder.orderId, reason);
+    fetchOrders();
+  };
+
+  const openCancelModal = (order: OrderResponse) => {
+    setModalOrder(order);
+    setModalMode("cancel");
+  };
+
+  const openReturnModal = (order: OrderResponse) => {
+    setModalOrder(order);
+    setModalMode("return");
+  };
+
   const counts = useMemo(() => {
-    const c: Record<TabKey, number> = { ALL: orders.length, PROCESSING: 0, SHIPPED: 0, DELIVERED: 0 };
+    const c: Record<TabKey, number> = {
+      ALL: orders.length,
+      PROCESSING: 0,
+      SHIPPED: 0,
+      DELIVERED: 0,
+    };
     orders.forEach((o) => {
       const tab = STATUS_TO_TAB[o.status];
       c[tab]++;
@@ -117,22 +131,34 @@ function OrderHistoryContent() {
   const estimateDelivery = (createdAt: string) => {
     const d = new Date(createdAt);
     d.setDate(d.getDate() + 3);
-    return d.toLocaleDateString("en-IN", { weekday: "long", month: "long", day: "numeric" });
+    return d.toLocaleDateString("en-IN", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar title="Smart Cart" />
+  <div className="min-h-screen bg-gray-50 flex flex-col">
+    <Navbar title="Smart Cart" />
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
+
         <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
 
-        <OrderStatusTabs active={activeTab} onChange={setActiveTab} counts={counts} />
+        <OrderStatusTabs
+          active={activeTab}
+          onChange={setActiveTab}
+          counts={counts}
+        />
 
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-48 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-48 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
@@ -159,11 +185,14 @@ function OrderHistoryContent() {
                       <div>
                         <p className="text-gray-400 text-xs">Order Placed</p>
                         <p className="font-semibold text-gray-900">
-                          {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {new Date(order.createdAt).toLocaleDateString(
+                            "en-IN",
+                            {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
                         </p>
                       </div>
                       <div>
@@ -174,12 +203,19 @@ function OrderHistoryContent() {
                       </div>
                       <div>
                         <p className="text-gray-400 text-xs">Order ID</p>
-                        <p className="font-semibold text-gray-900">#ORD-{order.orderId}</p>
+                        <p className="font-semibold text-gray-900">
+                          #ORD-{order.orderId}
+                        </p>
                       </div>
                     </div>
 
                     <button
-                      onClick={() => window.open(`/user/orders/${order.orderId}/invoice`, "_blank")}
+                      onClick={() =>
+                        window.open(
+                          `/user/orders/${order.orderId}/invoice`,
+                          "_blank",
+                        )
+                      }
                       className="flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-100 text-sm font-medium px-3.5 py-2 rounded-lg"
                     >
                       <FileText size={14} /> View Invoice
@@ -191,14 +227,21 @@ function OrderHistoryContent() {
                     <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
                       <Truck className="text-blue-600" size={18} />
                     </div>
+
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold text-gray-900">
                           {order.status === "DELIVERED"
                             ? "Delivered"
                             : order.status === "CANCELLED"
-                            ? "Order Cancelled"
-                            : `Arriving ${estimateDelivery(order.createdAt)}`}
+                              ? "Order Cancelled"
+                              : order.status === "RETURN_REQUESTED"
+                                ? "Return Requested"
+                                : order.status === "RETURNED"
+                                  ? "Returned"
+                                  : order.status === "RETURN_REJECTED"
+                                    ? "Return Rejected"
+                                    : `Arriving ${estimateDelivery(order.createdAt)}`}
                         </h3>
                         <span
                           className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_BADGE_STYLES[order.status]}`}
@@ -206,7 +249,23 @@ function OrderHistoryContent() {
                           {STATUS_LABEL[order.status]}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-500">{STATUS_MESSAGE[order.status]}</p>
+                      <p className="text-sm text-gray-500">
+                        {STATUS_MESSAGE[order.status]}
+                      </p>
+                      {order.status === "DELIVERED" && order.deliveredAt && (
+                        <p className="flex items-center gap-1.5 text-xs text-green-600 mt-1">
+                          <CheckCircle2 size={13} />
+                          Delivered on{" "}
+                          {new Date(order.deliveredAt).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -226,7 +285,8 @@ function OrderHistoryContent() {
                               alt={item.productName}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
                               }}
                             />
                           ) : (
@@ -241,25 +301,56 @@ function OrderHistoryContent() {
                       )}
                     </div>
                     <p className="text-sm text-gray-700">
-                      <span className="font-semibold text-gray-900">{firstItemName}</span>
-                      {otherCount > 0 && ` and ${otherCount} other item${otherCount > 1 ? "s" : ""}`}
+                      <span className="font-semibold text-gray-900">
+                        {firstItemName}
+                      </span>
+                      {otherCount > 0 &&
+                        ` and ${otherCount} other item${otherCount > 1 ? "s" : ""}`}
                     </p>
                   </div>
 
                   {/* Action buttons */}
-                  <div className="px-6 pb-5 flex gap-3 border-t border-gray-100 pt-4">
+                  <div className="px-6 pb-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+                    {/* Track Package only makes sense while the order is still in transit */}
+                    {(order.status === "PENDING" ||
+                      order.status === "CONFIRMED" ||
+                      order.status === "OUT_FOR_DELIVERY") && (
+                      <button
+                        onClick={() =>
+                          router.push(`/user/orders/${order.orderId}`)
+                        }
+                        className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg"
+                      >
+                        Track Package
+                      </button>
+                    )}
+
                     <button
-                      onClick={() => router.push(`/user/orders/${order.orderId}`)}
-                      className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg"
-                    >
-                      Track Package
-                    </button>
-                    <button
-                      onClick={() => router.push(`/user/orders/${order.orderId}`)}
+                      onClick={() =>
+                        router.push(`/user/orders/${order.orderId}`)
+                      }
                       className="flex-1 sm:flex-none border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-medium px-5 py-2.5 rounded-lg"
                     >
                       View Order Details
                     </button>
+
+                    {order.canCancel && (
+                      <button
+                        onClick={() => openCancelModal(order)}
+                        className="flex items-center gap-1.5 text-sm text-red-600 border border-red-200 hover:bg-red-50 px-4 py-2.5 rounded-lg font-medium"
+                      >
+                        <XCircle size={15} /> Cancel Order
+                      </button>
+                    )}
+
+                    {order.canReturn && (
+                      <button
+                        onClick={() => openReturnModal(order)}
+                        className="flex items-center gap-1.5 text-sm text-orange-600 border border-orange-200 hover:bg-orange-50 px-4 py-2.5 rounded-lg font-medium"
+                      >
+                        <RotateCcw size={15} /> Return Order
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -267,6 +358,16 @@ function OrderHistoryContent() {
           </div>
         )}
       </div>
+
+       <Footer />
+
+       <CancelReturnModal
+      isOpen={modalOrder !== null}
+      onClose={() => setModalOrder(null)}
+      mode={modalMode}
+      onSubmit={modalMode === "cancel" ? handleCancel : handleReturn}
+      deliveryAddress={modalOrder?.deliveryAddress}
+    />
     </div>
   );
 }
