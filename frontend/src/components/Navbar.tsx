@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, ShoppingCart, ShoppingBag, Search } from "lucide-react";
+import { LogOut, ShoppingCart, ShoppingBag, Search, Heart } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface NavbarProps {
   title: string;
@@ -37,11 +38,14 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const { refreshWishlist } = useWishlist();
+
   useEffect(() => {
     if (user?.role === "USER") {
       refreshCartCount();
+      refreshWishlist();
     }
-  }, [user, refreshCartCount]);
+  }, [user, refreshCartCount, refreshWishlist]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -80,6 +84,18 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
             scrolled ? "px-6 py-2.5" : "px-6 py-3"
           }`}
         >
+          <Link
+            href="/user/wishlist"
+            className={`p-2 rounded-lg transition ${
+              pathname === "/user/wishlist"
+                ? "bg-blue-50 text-blue-600"
+                : "text-gray-500 hover:bg-gray-100"
+            }`}
+            title="Wishlist"
+          >
+            <Heart size={20} />
+          </Link>
+
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <ShoppingCart className="text-blue-600" size={22} />
             <span className="font-bold text-lg text-gray-900 hidden sm:inline whitespace-nowrap">

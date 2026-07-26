@@ -6,6 +6,9 @@ import { ShoppingCart, Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import StarRating from "./StarRating";
 import Link from "next/link";
+
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/context/WishlistContext";
 interface ProductCardProps {
   product: Product;
   onAddToCart: (productId: number, quantity: number) => Promise<void>;
@@ -33,11 +36,28 @@ export default function ProductCard({
     }
   };
 
+  const { wishlistedIds, toggleWishlist } = useWishlist();
+  const isWishlisted = wishlistedIds.has(product.id);
   const outOfStock = product.stockQuantity <= 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col">
       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            toggleWishlist(product.id);
+          }}
+          className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition"
+        >
+          <Heart
+            size={16}
+            className={
+              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-400"
+            }
+          />
+        </button>
+
         {product.discountPercentage > 0 && (
           <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
             {product.discountPercentage}% OFF

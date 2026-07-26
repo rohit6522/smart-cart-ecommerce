@@ -84,6 +84,11 @@ export interface CartResponse {
   percentageUsed: number;
 }
 
+export interface WishlistItem {
+  wishlistId: number;
+  product: Product;
+}
+
 // ---------- Orders ----------
 export type OrderStatus =
   | "PENDING"
