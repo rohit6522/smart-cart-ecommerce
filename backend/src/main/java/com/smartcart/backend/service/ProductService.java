@@ -5,6 +5,7 @@ import com.smartcart.backend.dto.ProductResponse;
 import com.smartcart.backend.entity.Product;
 import com.smartcart.backend.exception.ApiException;
 import com.smartcart.backend.repository.ProductRepository;
+import com.smartcart.backend.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
 
     public ProductResponse createProduct(ProductRequest request) {
         Product product = Product.builder()
@@ -80,6 +82,9 @@ public class ProductService {
             discountedPrice = product.getPrice().subtract(discountAmount);
         }
 
+        Double avgRating = reviewRepository.getAverageRating(product.getId());
+        Long reviewCount = reviewRepository.getReviewCount(product.getId());
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -91,6 +96,9 @@ public class ProductService {
                 .category(product.getCategory())
                 .imageUrl(product.getImageUrl())
                 .createdAt(product.getCreatedAt())
+            .averageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0)
+                .totalReviews(reviewCount != null ? reviewCount : 0L)
                 .build();
+
     }
 }

@@ -24,4 +24,6 @@ public class ProductResponse {
 
     private BigDecimal discountPercentage;
     private BigDecimal discountedPrice; // computed field, sent pre-calculated to frontend
+    private Double averageRating;
+    private Long totalReviews;
 }
