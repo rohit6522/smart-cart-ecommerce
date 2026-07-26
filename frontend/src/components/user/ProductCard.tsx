@@ -42,13 +42,12 @@ export default function ProductCard({
 
   return (
     <motion.div
-  initial={{ opacity: 0, y: 15 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.3 }}
-  whileHover={{ y: -4 }}
-  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
->
-
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -4 }}
+      className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+    >
       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
         <button
           onClick={(e) => {
@@ -159,17 +158,20 @@ export default function ProductCard({
               </button>
             </div>
 
-            <button
+            <motion.button
               onClick={handleAdd}
               disabled={adding}
-              className={`w-full py-2 rounded-lg font-medium text-sm transition ${
+              whileTap={{ scale: 0.95 }}
+              animate={added ? { scale: [1, 1.05, 1] } : {}}
+              transition={{ duration: 0.3 }}
+              className={`w-full py-2 rounded-lg font-medium text-sm transition-colors ${
                 added
                   ? "bg-green-100 text-green-700"
                   : "bg-blue-600 hover:bg-blue-700 text-white"
               } disabled:opacity-50`}
             >
               {added ? "Added ✓" : adding ? "Adding..." : "Add to Cart"}
-            </button>
+            </motion.button>
           </>
         )}
       </div>

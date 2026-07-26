@@ -8,7 +8,7 @@ import OrderStatusBadge from "@/components/user/OrderStatusBadge";
 import { getOrderById } from "@/lib/orderApi";
 import { OrderResponse } from "@/types";
 import { ArrowLeft, MapPin, Truck, Phone, CheckCircle2 } from "lucide-react";
-
+import { motion } from "framer-motion";
 import CancelReturnModal from "@/components/user/CancelReturnModal";
 import { cancelOrder, requestReturn } from "@/lib/orderApi";
 import { XCircle, RotateCcw } from "lucide-react";
@@ -114,7 +114,6 @@ function OrderDetailContent() {
             })}
           </p>
 
-          {/* Status Tracker */}
           {!isCancelled && (
             <div className="flex items-center mt-6 mb-2">
               {STATUS_STEPS.map((step, idx) => (
@@ -122,25 +121,46 @@ function OrderDetailContent() {
                   key={step}
                   className="flex items-center flex-1 last:flex-none"
                 >
-                  <div
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      backgroundColor:
+                        idx <= currentStepIndex ? "#2563eb" : "#f3f4f6",
+                      scale: idx === currentStepIndex ? 1.15 : 1,
+                    }}
+                    transition={{ duration: 0.4 }}
                     className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      idx <= currentStepIndex
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-100 text-gray-400"
+                      idx <= currentStepIndex ? "text-white" : "text-gray-400"
                     }`}
                   >
                     {idx <= currentStepIndex ? (
-                      <CheckCircle2 size={16} />
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 15,
+                          delay: 0.1,
+                        }}
+                      >
+                        <CheckCircle2 size={16} />
+                      </motion.div>
                     ) : (
                       idx + 1
                     )}
-                  </div>
+                  </motion.div>
                   {idx < STATUS_STEPS.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-1 ${
-                        idx < currentStepIndex ? "bg-blue-600" : "bg-gray-100"
-                      }`}
-                    />
+                    <div className="flex-1 h-0.5 mx-1 bg-gray-100 relative overflow-hidden">
+                      <motion.div
+                        initial={false}
+                        animate={{
+                          width: idx < currentStepIndex ? "100%" : "0%",
+                        }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="absolute inset-y-0 left-0 bg-blue-600"
+                      />
+                    </div>
                   )}
                 </div>
               ))}

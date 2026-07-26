@@ -4,6 +4,8 @@ import { useState } from "react";
 import { CartItem } from "@/types";
 import { Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
+
 interface CartItemRowProps {
   item: CartItem;
   onUpdateQuantity: (cartItemId: number, quantity: number) => Promise<void>;
@@ -41,10 +43,13 @@ export default function CartItemRow({
   };
 
   return (
-    <div
-      className={`flex items-start gap-4 py-5 border-b border-gray-100 last:border-0 transition ${
-        removing ? "opacity-40" : ""
-      }`}
+    <motion.div
+      layout
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: removing ? 0.4 : 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+      transition={{ duration: 0.25 }}
+      className="flex items-start gap-4 py-5 border-b border-gray-100 last:border-0"
     >
       <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
         {item.imageUrl ? (
@@ -103,6 +108,6 @@ export default function CartItemRow({
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

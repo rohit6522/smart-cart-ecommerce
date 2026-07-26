@@ -9,7 +9,7 @@ import { getCart, updateCartItem, removeCartItem } from "@/lib/cartApi";
 import { CartResponse } from "@/types";
 import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard } from "lucide-react";
 import Link from "next/link";
-
+import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 
 function CartContent() {
@@ -38,13 +38,13 @@ function CartContent() {
   const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
     const updated = await updateCartItem(cartItemId, quantity);
     setCart(updated);
-     refreshCartCount(); 
+    refreshCartCount();
   };
 
   const handleRemove = async (cartItemId: number) => {
     const updated = await removeCartItem(cartItemId);
     setCart(updated);
-     refreshCartCount(); 
+    refreshCartCount();
   };
 
   if (loading) {
@@ -93,15 +93,16 @@ function CartContent() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Items list */}
             <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl px-6">
-              {cart.items.map((item) => (
-                <CartItemRow
-                  key={item.id}
-                  item={item}
-                  onUpdateQuantity={handleUpdateQuantity}
-                  onRemove={handleRemove}
-                />
-              ))}
-
+              <AnimatePresence mode="popLayout">
+                {cart.items.map((item) => (
+                  <CartItemRow
+                    key={item.id}
+                    item={item}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onRemove={handleRemove}
+                  />
+                ))}
+              </AnimatePresence>
               <div className="py-4">
                 <button
                   onClick={() => router.push("/user")}
