@@ -60,3 +60,35 @@ body {
 .animate-category-scroll {
   animation: category-scroll 25s linear infinite;
 }
+
+
+/* Subtle press-down feedback on all interactive buttons */
+button:not(:disabled) {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Smooth transitions for hover states everywhere */
+a, button {
+  transition-property: background-color, color, border-color, transform, box-shadow, opacity;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Shimmer effect for loading skeletons - replaces plain pulse where used */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+}

@@ -20,7 +20,7 @@ import {
   ChevronRight,
   ShoppingCart,
 } from "lucide-react";
-
+// import Toast from "@/components/ui/Toast";
 import { applyCoupon } from "@/lib/couponApi";
 import { Tag, X } from "lucide-react";
 

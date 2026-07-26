@@ -11,6 +11,7 @@ import { addToCart } from "@/lib/cartApi";
 import { useCart } from "@/context/CartContext";
 import { WishlistItem } from "@/types";
 import { ArrowLeft, Heart } from "lucide-react";
+import Toast from "@/components/ui/Toast";
 
 function WishlistContent() {
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -72,11 +73,7 @@ function WishlistContent() {
         )}
       </div>
 
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-lg">
-          {toast}
-        </div>
-      )}
+     <Toast message={toast} />
 
       <Footer />
     </div>

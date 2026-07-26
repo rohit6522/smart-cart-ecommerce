@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-
+import { motion, AnimatePresence } from "framer-motion";
 interface NavbarProps {
   title: string;
   onSearch?: (query: string) => void;
@@ -156,11 +156,25 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                   title="Cart"
                 >
                   <ShoppingBag size={20} />
-                  {itemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center px-1">
-                      {itemCount > 99 ? "99+" : itemCount}
-                    </span>
-                  )}
+
+                  <AnimatePresence>
+                    {itemCount > 0 && (
+                      <motion.span
+                        key={itemCount}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 15,
+                        }}
+                        className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4.5 h-4.5 min-w-[18px] min-h-[18px] rounded-full flex items-center justify-center px-1"
+                      >
+                        {itemCount > 99 ? "99+" : itemCount}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </Link>
                 <Link
                   href="/user/profile"

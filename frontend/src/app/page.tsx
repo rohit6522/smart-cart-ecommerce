@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Product } from "@/types";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
+import Toast from "@/components/ui/Toast";
 
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -124,11 +125,7 @@ export default function HomePage() {
         )}
       </div>
 
-      {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-lg">
-          {toast}
-        </div>
-      )}
+     <Toast message={toast} />
     </div>
   );
 }

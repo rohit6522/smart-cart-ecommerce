@@ -6,7 +6,7 @@ import { ShoppingCart, Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import StarRating from "./StarRating";
 import Link from "next/link";
-
+import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 interface ProductCardProps {
@@ -41,7 +41,14 @@ export default function ProductCard({
   const outOfStock = product.stockQuantity <= 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition flex flex-col">
+    <motion.div
+  initial={{ opacity: 0, y: 15 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.3 }}
+  whileHover={{ y: -4 }}
+  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+>
+
       <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
         <button
           onClick={(e) => {
@@ -166,6 +173,6 @@ export default function ProductCard({
           </>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
