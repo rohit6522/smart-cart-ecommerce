@@ -125,8 +125,13 @@ public class    OrderService {
         }
 
         // Restore stock for each item
+//        List<OrderItem> items = orderItemRepository.findAll().stream()
+//                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+//                .toList();
+
+        Long orderIdForFilter = order.getId();
         List<OrderItem> items = orderItemRepository.findAll().stream()
-                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+                .filter(oi -> oi.getOrder().getId().equals(orderIdForFilter))
                 .toList();
 
         for (OrderItem item : items) {
@@ -181,9 +186,17 @@ public class    OrderService {
 
         if (approve) {
             // Restore stock since the item is coming back
+
+//            List<OrderItem> items = orderItemRepository.findAll().stream()
+//                    .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+//                    .toList();
+
+            Long orderIdForFilter = order.getId();
             List<OrderItem> items = orderItemRepository.findAll().stream()
-                    .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+                    .filter(oi -> oi.getOrder().getId().equals(orderIdForFilter))
                     .toList();
+
+
             for (OrderItem item : items) {
                 Product product = item.getProduct();
                 product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
@@ -242,9 +255,16 @@ public class    OrderService {
     }
 
     private OrderResponse mapToResponse(Order order) {
-        List<OrderItem> items = orderItemRepository.findAll()
-                .stream()
-                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+
+
+//        List<OrderItem> items = orderItemRepository.findAll()
+//                .stream()
+//                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
+//                .toList();
+
+        Long orderIdForFilter = order.getId();
+        List<OrderItem> items = orderItemRepository.findAll().stream()
+                .filter(oi -> oi.getOrder().getId().equals(orderIdForFilter))
                 .toList();
 
         List<OrderItemResponse> itemResponses = items.stream().map(item -> {
