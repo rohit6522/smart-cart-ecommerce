@@ -63,4 +63,9 @@ public class Order {
     public enum PaymentStatus {
         PENDING, PAID, FAILED
     }
+
+    private String couponCode;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discountAmount;
 }

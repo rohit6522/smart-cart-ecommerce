@@ -13,4 +13,6 @@ public class CheckoutRequest {
     private String razorpayOrderId;
     private String razorpayPaymentId;
     private String razorpaySignature;
+
+    private String couponCode;
 }

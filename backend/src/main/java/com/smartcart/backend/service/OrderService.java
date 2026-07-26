@@ -27,7 +27,7 @@ public class    OrderService {
     private final DeliveryAssignmentRepository deliveryAssignmentRepository;
     private final SecurityUtil securityUtil;
     private final EmailService emailService;
-
+    private final CouponService couponService;
     private final PaymentService paymentService; // add this field with other repositories
 
     @Transactional
@@ -74,6 +74,16 @@ public class    OrderService {
                 .map(item -> item.getPriceAtAdd().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        String appliedCouponCode = null;
+
+        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
+            discountAmount = couponService.getDiscountForCheckout(request.getCouponCode(), user, totalAmount);
+            appliedCouponCode = request.getCouponCode().toUpperCase();
+            totalAmount = totalAmount.subtract(discountAmount);
+        }
+
         Order order = Order.builder()
                 .user(user)
                 .totalAmount(totalAmount)
@@ -82,6 +92,8 @@ public class    OrderService {
                 .paymentStatus(paymentStatus)
                 .razorpayOrderId(request.getRazorpayOrderId())
                 .razorpayPaymentId(request.getRazorpayPaymentId())
+                .couponCode(appliedCouponCode)
+                .discountAmount(discountAmount)
                 .build();
         order = orderRepository.save(order);
 
@@ -256,12 +268,6 @@ public class    OrderService {
 
     private OrderResponse mapToResponse(Order order) {
 
-
-//        List<OrderItem> items = orderItemRepository.findAll()
-//                .stream()
-//                .filter(oi -> oi.getOrder().getId().equals(order.getId()))
-//                .toList();
-
         Long orderIdForFilter = order.getId();
         List<OrderItem> items = orderItemRepository.findAll().stream()
                 .filter(oi -> oi.getOrder().getId().equals(orderIdForFilter))
@@ -315,6 +321,8 @@ public class    OrderService {
                 .returnRequestedAt(order.getReturnRequestedAt() != null ? order.getReturnRequestedAt().toString() : null)
                 .canCancel(canCancel)
                 .canReturn(canReturn)
+                .couponCode(order.getCouponCode())
+                .discountAmount(order.getDiscountAmount())
                 .build();
 
     }

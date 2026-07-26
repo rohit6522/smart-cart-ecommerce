@@ -32,4 +32,9 @@ public class OrderResponse {
     private String returnRequestedAt;
     private boolean canCancel;
     private boolean canReturn;
+
+    private String couponCode;
+    private BigDecimal discountAmount;
+
+    
 }
