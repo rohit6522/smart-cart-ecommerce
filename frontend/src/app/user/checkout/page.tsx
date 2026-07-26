@@ -21,8 +21,18 @@ import {
   ShoppingCart,
 } from "lucide-react";
 
+import { applyCoupon } from "@/lib/couponApi";
+import { Tag, X } from "lucide-react";
+
 function CheckoutContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState("");
@@ -137,7 +147,10 @@ function CheckoutContent() {
   const handleCodOrder = async () => {
     setPlacingOrder(true);
     try {
-      const order = await checkout({ deliveryAddress: buildAddressString() });
+      const order = await checkout({
+        deliveryAddress: buildAddressString(),
+        couponCode: appliedCoupon?.code,
+      });
       router.push(`/user/order-success?orderId=${order.orderId}`);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Checkout failed. Try again.");
@@ -168,6 +181,8 @@ function CheckoutContent() {
         handler: async (response: RazorpaySuccessResponse) => {
           try {
             const order = await checkout({
+              deliveryAddress: buildAddressString(),
+              couponCode: appliedCoupon?.code,
               deliveryAddress: buildAddressString(),
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
@@ -204,6 +219,30 @@ function CheckoutContent() {
     }
   };
 
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const result = await applyCoupon(couponCode.trim());
+      setAppliedCoupon({
+        code: result.code,
+        discountAmount: result.discountAmount,
+      });
+    } catch (err: any) {
+      setCouponError(err?.response?.data?.message || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    setCouponError("");
+  };
+
   if (loading || !cart) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -216,8 +255,9 @@ function CheckoutContent() {
   }
 
   const subtotal = cart.cartTotal;
-  const tax = subtotal * 0.06;
-  const total = subtotal + tax;
+  const discount = appliedCoupon?.discountAmount ?? 0;
+  const tax = (subtotal - discount) * 0.06;
+  const total = subtotal - discount + tax;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -483,13 +523,62 @@ function CheckoutContent() {
                 ))}
               </div>
 
-              <div className="border-t border-gray-100 pt-4 space-y-2.5 text-sm">
+              {/* Coupon input */}
+              <div className="border-t border-gray-100 pt-4 mb-4">
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-green-50 text-green-700 text-sm px-3 py-2.5 rounded-lg">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Tag size={14} /> {appliedCoupon.code} applied
+                    </span>
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="hover:text-green-900"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) =>
+                          setCouponCode(e.target.value.toUpperCase())
+                        }
+                        placeholder="Enter coupon code"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={applyingCoupon}
+                        className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                      >
+                        {applyingCoupon ? "..." : "Apply"}
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="text-red-600 text-xs mt-1.5">
+                        {couponError}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div className="pt-2 space-y-2.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
                   <span className="text-gray-900 font-medium">
                     ₹{subtotal.toFixed(2)}
                   </span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Coupon Discount</span>
+                    <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
                   <span className="text-green-600 font-medium">Free</span>

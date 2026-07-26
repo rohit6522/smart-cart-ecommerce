@@ -6,8 +6,8 @@ interface CheckoutPayload {
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
+  couponCode?: string;
 }
-
 export const checkout = async (payload: CheckoutPayload) => {
   const res = await api.post<ApiResponse<OrderResponse>>("/api/user/orders/checkout", payload);
   return res.data.data;

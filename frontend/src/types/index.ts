@@ -115,6 +115,9 @@ export interface OrderResponse {
   returnRequestedAt: string | null;
   canCancel: boolean;
   canReturn: boolean;
+
+  couponCode: string | null;
+discountAmount: number;
 }
 
   export interface OrderItem {
@@ -125,6 +128,13 @@ export interface OrderResponse {
     priceAtPurchase: number;
     subtotal: number;
   }
+
+  export interface CouponValidation {
+  code: string;
+  discountAmount: number;
+  cartTotal: number;
+  finalTotal: number;
+} 
 
 // ---------- Delivery ----------
 export type DeliveryStatus = "ASSIGNED" | "PICKED_UP" | "DELIVERED";
