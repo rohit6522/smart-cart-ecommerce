@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Product } from "@/types";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
 import Image from "next/image";
-
+import StarRating from "./StarRating";
+import Link from "next/link";
 interface ProductCardProps {
   product: Product;
   onAddToCart: (productId: number, quantity: number) => Promise<void>;
@@ -60,7 +61,19 @@ export default function ProductCard({
         <span className="text-xs text-blue-600 font-medium mb-1">
           {product.category}
         </span>
-        <h3 className="font-semibold text-gray-900 mb-1">{product.name}</h3>
+        <Link href={`/user/products/${product.id}`}>
+          <h3 className="font-semibold text-gray-900 mb-1 hover:text-blue-600">
+            {product.name}
+          </h3>
+        </Link>
+        {product.totalReviews > 0 && (
+          <div className="mb-1.5">
+            <StarRating
+              rating={product.averageRating}
+              showCount={product.totalReviews}
+            />
+          </div>
+        )}
         <p className="text-sm text-gray-500 mb-3 line-clamp-2 flex-1">
           {product.description}
         </p>

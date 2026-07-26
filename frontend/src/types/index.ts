@@ -35,6 +35,21 @@ export interface Product {
   category: string;
   imageUrl: string;
   createdAt: string;
+  averageRating: number;
+  totalReviews: number;
+}
+
+export interface Review {
+  id: number;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface ReviewPayload {
+  rating: number;
+  comment: string;
 }
 
 export interface ProductPayload {
