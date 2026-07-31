@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
-
+import { NotificationProvider } from "@/context/NotificationContext";
 export const metadata: Metadata = {
   title: "Smart Cart - Shop Smarter",
   description: "Smart Shopping Cart with Real-Time Budget Tracking",
@@ -24,7 +24,9 @@ export default function RootLayout({
         />
         <AuthProvider>
           <CartProvider>
-            <WishlistProvider>{children}</WishlistProvider>
+            <WishlistProvider>
+              <NotificationProvider>{children}</NotificationProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

@@ -8,6 +8,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
+import NotificationBell from "./user/NotificationBell";
+import { useNotifications } from "@/context/NotificationContext";
+
 interface NavbarProps {
   title: string;
   onSearch?: (query: string) => void;
@@ -20,7 +23,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
   const [scrolled, setScrolled] = useState(false);
-
+const { refreshUnreadCount } = useNotifications();
   useEffect(() => {
     let ticking = false;
 
@@ -40,12 +43,13 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
   const { refreshWishlist } = useWishlist();
 
-  useEffect(() => {
-    if (user?.role === "USER") {
-      refreshCartCount();
-      refreshWishlist();
-    }
-  }, [user, refreshCartCount, refreshWishlist]);
+useEffect(() => {
+  if (user?.role === "USER") {
+    refreshCartCount();
+    refreshWishlist();
+    refreshUnreadCount();
+  }
+}, [user, refreshCartCount, refreshWishlist, refreshUnreadCount]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -134,6 +138,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
             {user?.role === "USER" && (
               <>
+               <NotificationBell />
                 <Link
                   href="/user/wishlist"
                   className={`p-2 rounded-lg transition ${

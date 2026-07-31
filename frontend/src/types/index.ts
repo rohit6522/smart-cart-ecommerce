@@ -195,3 +195,13 @@ export interface AddressPayload {
   zip: string;
   isDefault: boolean;
 }
+
+
+export interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  orderId: number | null;
+  isRead: boolean;
+  createdAt: string;
+}
