@@ -9,18 +9,34 @@ import { OrderResponse } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 import { ShoppingBag, Truck, Clock } from "lucide-react";
 import Link from "next/link";
+import { getMyReferralInfo } from "@/lib/authApi";
+import { ReferralInfo } from "@/types";
+import { Gift, Copy, Check } from "lucide-react";
 
 function ProfileDashboardContent() {
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [referral, setReferral] = useState<ReferralInfo | null>(null);
+const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    getMyOrders()
-      .then((data) => setOrders(data.slice().reverse()))
-      .catch((err) => console.error("Failed to load orders", err))
-      .finally(() => setLoading(false));
-  }, []);
+ useEffect(() => {
+  getMyOrders()
+    .then((data) => setOrders(data.slice().reverse()))
+    .catch((err) => console.error("Failed to load orders", err))
+    .finally(() => setLoading(false));
+
+  getMyReferralInfo()
+    .then(setReferral)
+    .catch((err) => console.error("Failed to load referral info", err));
+}, []);
+
+const handleCopyCode = () => {
+  if (!referral) return;
+  navigator.clipboard.writeText(referral.referralCode);
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2000);
+};
 
   const inTransit = orders.filter((o) => o.status === "OUT_FOR_DELIVERY").length;
   const pending = orders.filter((o) => o.status === "PENDING" || o.status === "CONFIRMED").length;
@@ -97,7 +113,33 @@ function ProfileDashboardContent() {
               </div>
             )}
           </div>
+
+          {referral && (
+  <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-2xl p-5 mt-6 text-white">
+    <div className="flex items-center gap-2 mb-2">
+      <Gift size={18} />
+      <h3 className="font-semibold">Refer & Earn</h3>
+    </div>
+    <p className="text-sm text-purple-100 mb-4">
+      Share your code with friends. You both get ₹100 off on your next order (min. ₹300)!
+    </p>
+    <div className="flex items-center gap-2 bg-white/15 rounded-lg p-3">
+      <span className="flex-1 font-mono font-bold tracking-wide">{referral.referralCode}</span>
+      <button
+        onClick={handleCopyCode}
+        className="flex items-center gap-1.5 bg-white text-purple-700 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-purple-50"
+      >
+        {copied ? <Check size={13} /> : <Copy size={13} />}
+        {copied ? "Copied!" : "Copy"}
+      </button>
+    </div>
+    <p className="text-xs text-purple-100 mt-3">
+      👥 {referral.totalReferred} friend{referral.totalReferred !== 1 ? "s" : ""} joined using your code
+    </p>
+  </div>
+)}
         </div>
+
       </div>
     </div>
   );

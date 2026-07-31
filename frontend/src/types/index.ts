@@ -215,3 +215,18 @@ export interface DeliveryEarnings {
   earningsThisMonth: number;
   perDeliveryFee: number;
 }
+
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  address?: string;
+  role?: Role;
+  referralCode?: string;
+}
+
+export interface ReferralInfo {
+  referralCode: string;
+  totalReferred: number;
+}

@@ -19,11 +19,15 @@ export default function RegisterPage() {
     phone: "",
     address: "",
     role: "USER" as Role,
+    referralCode: "",
   });
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -42,7 +46,9 @@ export default function RegisterPage() {
       });
       router.push(getDashboardPath(data.role));
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Registration failed. Try again.");
+      setError(
+        err?.response?.data?.message || "Registration failed. Try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -51,8 +57,12 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-2xl font-bold mb-1 text-gray-900">Create Account</h1>
-        <p className="text-gray-500 mb-6">Join Smart Cart and shop within budget</p>
+        <h1 className="text-2xl font-bold mb-1 text-gray-900">
+          Create Account
+        </h1>
+        <p className="text-gray-500 mb-6">
+          Join Smart Cart and shop within budget
+        </p>
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">
@@ -107,14 +117,22 @@ export default function RegisterPage() {
 
           <select
             name="role"
-            value={form.role} 
+            value={form.role}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="USER">Shopper</option>
             <option value="DELIVERY_BOY">Delivery Partner</option>
-           
           </select>
+
+          <input
+            type="text"
+            name="referralCode"
+            placeholder="Referral Code (optional)"
+            value={form.referralCode}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
           <button
             type="submit"
@@ -127,7 +145,10 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 font-medium hover:underline">
+          <Link
+            href="/login"
+            className="text-blue-600 font-medium hover:underline"
+          >
             Login
           </Link>
         </p>
