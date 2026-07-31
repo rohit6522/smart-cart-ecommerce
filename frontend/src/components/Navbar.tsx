@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut, ShoppingCart, ShoppingBag, Search, Heart } from "lucide-react";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationBell from "./user/NotificationBell";
 import { useNotifications } from "@/context/NotificationContext";
+import SearchSuggestions from "./user/SearchSuggestions";
 
 interface NavbarProps {
   title: string;
@@ -22,8 +23,10 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-const { refreshUnreadCount } = useNotifications();
+  const { refreshUnreadCount } = useNotifications();
+
   useEffect(() => {
     let ticking = false;
 
@@ -43,23 +46,42 @@ const { refreshUnreadCount } = useNotifications();
 
   const { refreshWishlist } = useWishlist();
 
-useEffect(() => {
-  if (user?.role === "USER") {
-    refreshCartCount();
-    refreshWishlist();
-    refreshUnreadCount();
-  }
-}, [user, refreshCartCount, refreshWishlist, refreshUnreadCount]);
+  useEffect(() => {
+    if (user?.role === "USER") {
+      refreshCartCount();
+      refreshWishlist();
+      refreshUnreadCount();
+    }
+  }, [user, refreshCartCount, refreshWishlist, refreshUnreadCount]);
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchValue(value);
+    setShowSuggestions(value.trim().length > 0);
     if (onSearch) {
       onSearch(value);
     }
   };
 
   const handleSearchFocus = () => {
+    if (searchValue.trim()) {
+      setShowSuggestions(true);
+    }
     if (
       !onSearch &&
       user?.role === "USER" &&
@@ -97,7 +119,10 @@ useEffect(() => {
 
           {/* Search bar - only for guests and USER role, not for Admin/Delivery */}
           {(!user || user.role === "USER") && (
-            <div className="flex-1 flex justify-center">
+            <div
+              className="flex-1 flex justify-center relative"
+              ref={searchContainerRef}
+            >
               <div className="relative w-full max-w-md">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -108,9 +133,20 @@ useEffect(() => {
                   value={searchValue}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") setShowSuggestions(false);
+                  }}
                   placeholder="Search products..."
                   className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
                 />
+                <AnimatePresence>
+                  {showSuggestions && (
+                    <SearchSuggestions
+                      query={searchValue}
+                      onClose={() => setShowSuggestions(false)}
+                    />
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           )}
@@ -138,7 +174,7 @@ useEffect(() => {
 
             {user?.role === "USER" && (
               <>
-               <NotificationBell />
+                <NotificationBell />
                 <Link
                   href="/user/wishlist"
                   className={`p-2 rounded-lg transition ${
