@@ -12,6 +12,10 @@ import { addToCart } from "@/lib/cartApi";
 import { Product, Review } from "@/types";
 import { ArrowLeft, ShoppingCart, Plus, Minus } from "lucide-react";
 
+import { useMemo } from "react";
+import { getAllProducts } from "@/lib/productApi";
+import ProductCard from "@/components/user/ProductCard";
+
 function ProductDetailContent() {
   const params = useParams();
   const router = useRouter();
@@ -19,6 +23,7 @@ function ProductDetailContent() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [toast, setToast] = useState("");
@@ -30,18 +35,27 @@ function ProductDetailContent() {
 
   const fetchData = async () => {
     try {
-      const [productData, reviewsData] = await Promise.all([
+      const [productData, reviewsData, allProductsData] = await Promise.all([
         getProductById(productId),
         getProductReviews(productId),
+        getAllProducts(),
       ]);
       setProduct(productData);
       setReviews(reviewsData);
+      setAllProducts(allProductsData);
     } catch (err) {
       console.error("Failed to load product", err);
     } finally {
       setLoading(false);
     }
   };
+
+  const similarProducts = useMemo(() => {
+    if (!product) return [];
+    return allProducts
+      .filter((p) => p.category === product.category && p.id !== product.id)
+      .slice(0, 8);
+  }, [allProducts, product]);
 
   useEffect(() => {
     if (productId) fetchData();
@@ -213,6 +227,21 @@ function ProductDetailContent() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">
             Customer Reviews
           </h2>
+
+          {similarProducts.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                You May Also Like
+              </h2>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+                {similarProducts.map((p) => (
+                  <div key={p.id} className="flex-shrink-0 w-52">
+                    <ProductCard product={p} onAddToCart={handleAddToCart} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Write a review */}
           <div className="border border-gray-100 rounded-xl p-4 mb-6 bg-gray-50">
