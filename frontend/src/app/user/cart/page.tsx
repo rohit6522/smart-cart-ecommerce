@@ -11,13 +11,16 @@ import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
+import { getMyCoupons } from "@/lib/couponApi";
+import { CouponInfo } from "@/types";
+import { Tag } from "lucide-react";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [promoCode, setPromoCode] = useState("");
   const router = useRouter();
-
+  const [myCoupons, setMyCoupons] = useState<CouponInfo[]>([]);
   const { refreshCartCount } = useCart();
 
   const fetchCart = async () => {
@@ -33,6 +36,9 @@ function CartContent() {
 
   useEffect(() => {
     fetchCart();
+    getMyCoupons()
+      .then(setMyCoupons)
+      .catch(() => {});
   }, []);
 
   const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
@@ -132,6 +138,29 @@ function CartContent() {
                   </button>
                 </div>
               </div>
+
+              {myCoupons.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-xs text-gray-400">
+                    Your available coupons:
+                  </p>
+                  {myCoupons.map((c) => (
+                    <div
+                      key={c.id}
+                      className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-xs"
+                    >
+                      <Tag
+                        size={12}
+                        className="text-orange-600 flex-shrink-0"
+                      />
+                      <span className="font-mono font-bold text-orange-700">
+                        {c.code}
+                      </span>
+                      <span className="text-orange-600">— {c.description}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="bg-white border border-gray-200 rounded-2xl p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Order Summary</h3>

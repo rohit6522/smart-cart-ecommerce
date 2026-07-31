@@ -68,4 +68,14 @@ public class CouponController {
                 .data(null)
                 .build());
     }
+
+    @GetMapping("/api/user/coupons/my")
+    public ResponseEntity<ApiResponse<List<CouponResponse>>> getMyCoupons() {
+        List<CouponResponse> coupons = couponService.getMyCoupons();
+        return ResponseEntity.ok(ApiResponse.<List<CouponResponse>>builder()
+                .success(true)
+                .message("Your coupons fetched successfully")
+                .data(coupons)
+                .build());
+    }
 }

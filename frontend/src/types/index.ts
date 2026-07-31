@@ -230,3 +230,13 @@ export interface ReferralInfo {
   referralCode: string;
   totalReferred: number;
 }
+
+export interface CouponInfo {
+  id: number;
+  code: string;
+  description: string;
+  discountType: "PERCENTAGE" | "FLAT";
+  discountValue: number;
+  minOrderValue: number;
+  firstOrderOnly: boolean;
+}

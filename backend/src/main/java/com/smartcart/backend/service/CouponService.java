@@ -64,7 +64,7 @@ public class CouponService {
         if (coupon.getAssignedUser() != null && !coupon.getAssignedUser().getId().equals(user.getId())) {
             throw new ApiException("This coupon is not valid for your account", HttpStatus.FORBIDDEN);
         }
-        
+
         if (cartTotal.compareTo(coupon.getMinOrderValue()) < 0) {
             throw new ApiException(
                     "Minimum order value of ₹" + coupon.getMinOrderValue() + " required for this coupon",
@@ -149,6 +149,15 @@ public class CouponService {
 
     public void deleteCoupon(Long id) {
         couponRepository.deleteById(id);
+    }
+
+    public List<CouponResponse> getMyCoupons() {
+        User user = getCurrentUser();
+        return couponRepository.findAll().stream()
+                .filter(c -> Boolean.TRUE.equals(c.getActive()))
+                .filter(c -> c.getAssignedUser() == null || c.getAssignedUser().getId().equals(user.getId()))
+                .map(this::mapToResponse)
+                .toList();
     }
 
     private CouponResponse mapToResponse(Coupon coupon) {
