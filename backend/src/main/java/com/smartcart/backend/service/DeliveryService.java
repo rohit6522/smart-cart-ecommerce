@@ -8,7 +8,8 @@ import com.smartcart.backend.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class DeliveryService {
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
     private final NotificationService notificationService;
+    private static final BigDecimal PER_DELIVERY_FEE = BigDecimal.valueOf(40);
     // ---------- ADMIN: get list of all delivery boys ----------
     public List<DeliveryBoyResponse> getAllDeliveryBoys() {
         return userRepository.findAll().stream()
@@ -115,6 +117,39 @@ public class DeliveryService {
 
         assignment = deliveryAssignmentRepository.save(assignment);
         return mapToResponse(assignment);
+    }
+
+
+    public DeliveryEarningsResponse getMyEarnings() {
+        User deliveryBoy = getCurrentUser();
+        List<DeliveryAssignment> allAssignments = deliveryAssignmentRepository.findByDeliveryBoyId(deliveryBoy.getId());
+
+        List<DeliveryAssignment> completed = allAssignments.stream()
+                .filter(a -> a.getStatus() == DeliveryAssignment.DeliveryStatus.DELIVERED && a.getDeliveredAt() != null)
+                .toList();
+
+        LocalDate today = LocalDate.now();
+
+        long deliveriesToday = completed.stream()
+                .filter(a -> a.getDeliveredAt().toLocalDate().isEqual(today))
+                .count();
+
+        long deliveriesThisMonth = completed.stream()
+                .filter(a -> a.getDeliveredAt().toLocalDate().getMonth() == today.getMonth()
+                        && a.getDeliveredAt().toLocalDate().getYear() == today.getYear())
+                .count();
+
+        long totalDeliveries = completed.size();
+
+        return DeliveryEarningsResponse.builder()
+                .totalDeliveries(totalDeliveries)
+                .deliveriesToday(deliveriesToday)
+                .deliveriesThisMonth(deliveriesThisMonth)
+                .totalEarnings(PER_DELIVERY_FEE.multiply(BigDecimal.valueOf(totalDeliveries)))
+                .earningsToday(PER_DELIVERY_FEE.multiply(BigDecimal.valueOf(deliveriesToday)))
+                .earningsThisMonth(PER_DELIVERY_FEE.multiply(BigDecimal.valueOf(deliveriesThisMonth)))
+                .perDeliveryFee(PER_DELIVERY_FEE)
+                .build();
     }
 
     // ================= PRIVATE HELPERS =================

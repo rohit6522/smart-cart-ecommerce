@@ -51,6 +51,17 @@ public class DeliveryController {
         return success(deliveryService.updateDeliveryStatus(assignmentId, request), "Delivery status updated");
     }
 
+
+    @GetMapping("/api/delivery/earnings")
+    public ResponseEntity<ApiResponse<DeliveryEarningsResponse>> getMyEarnings() {
+        DeliveryEarningsResponse earnings = deliveryService.getMyEarnings();
+        return ResponseEntity.ok(ApiResponse.<DeliveryEarningsResponse>builder()
+                .success(true)
+                .message("Earnings fetched successfully")
+                .data(earnings)
+                .build());
+    }
+
     private ResponseEntity<ApiResponse<DeliveryAssignmentResponse>> success(DeliveryAssignmentResponse data, String message) {
         return ResponseEntity.ok(ApiResponse.<DeliveryAssignmentResponse>builder()
                 .success(true)
