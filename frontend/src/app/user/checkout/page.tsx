@@ -13,6 +13,11 @@ import { createRazorpayOrder } from "@/lib/paymentApi";
 import { useAuth } from "@/context/AuthContext";
 import { CartResponse } from "@/types";
 import { RazorpaySuccessResponse } from "@/types/razorpay";
+
+import { getMyAddresses } from "@/lib/addressApi";
+import { Address } from "@/types";
+import { MapPin as MapPinIcon, Check } from "lucide-react";
+
 import {
   MapPin,
   CreditCard,
@@ -38,6 +43,11 @@ function CheckoutContent() {
   const [error, setError] = useState("");
   const router = useRouter();
   const { user } = useAuth();
+
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null,
+  );
 
   const [form, setForm] = useState({
     firstName: "",
@@ -67,6 +77,43 @@ function CheckoutContent() {
       })
       .catch((err) => console.error("Failed to load cart", err))
       .finally(() => setLoading(false));
+  }, [router]);
+
+  const selectAddress = (address: Address) => {
+    setSelectedAddressId(address.id);
+    const [firstName, ...rest] = address.fullName.split(" ");
+    setForm({
+      firstName: firstName || "",
+      lastName: rest.join(" ") || "",
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zip: address.zip,
+      phone: address.phone,
+    });
+  };
+
+  useEffect(() => {
+    getCart()
+      .then((data) => {
+        if (data.items.length === 0) {
+          router.push("/user/cart");
+          return;
+        }
+        setCart(data);
+      })
+      .catch((err) => console.error("Failed to load cart", err))
+      .finally(() => setLoading(false));
+
+    getMyAddresses()
+      .then((addresses) => {
+        setSavedAddresses(addresses);
+        const defaultAddr = addresses.find((a) => a.isDefault);
+        if (defaultAddr) {
+          selectAddress(defaultAddr);
+        }
+      })
+      .catch((err) => console.error("Failed to load addresses", err));
   }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +230,7 @@ function CheckoutContent() {
             const order = await checkout({
               deliveryAddress: buildAddressString(),
               couponCode: appliedCoupon?.code,
-  
+
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
@@ -286,6 +333,44 @@ function CheckoutContent() {
                   {locationLoading ? "Locating..." : "Use My Current Location"}
                 </button>
               </div>
+              {savedAddresses.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                  {savedAddresses.map((addr) => (
+                    <button
+                      key={addr.id}
+                      type="button"
+                      onClick={() => selectAddress(addr)}
+                      className={`text-left border rounded-xl p-3 relative transition ${
+                        selectedAddressId === addr.id
+                          ? "border-blue-500 ring-1 ring-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {selectedAddressId === addr.id && (
+                        <Check
+                          size={16}
+                          className="absolute top-3 right-3 text-blue-600"
+                        />
+                      )}
+                      <span className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded-full font-medium text-gray-600">
+                        {addr.label}
+                      </span>
+                      <p className="text-sm font-medium text-gray-900 mt-1.5">
+                        {addr.fullName}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        {addr.street}, {addr.city}, {addr.state} {addr.zip}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-xs text-gray-400 mb-3">
+                {savedAddresses.length > 0
+                  ? "Or enter a new address below:"
+                  : "Enter your delivery address:"}
+              </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

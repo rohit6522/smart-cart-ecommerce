@@ -171,3 +171,27 @@ export interface RazorpayOrderResponse {
   amount: number;
   currency: string;
 }
+
+
+export interface Address {
+  id: number;
+  label: string;
+  fullName: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  isDefault: boolean;
+}
+
+export interface AddressPayload {
+  label: string;
+  fullName: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  isDefault: boolean;
+}
