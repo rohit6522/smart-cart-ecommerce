@@ -49,6 +49,10 @@ public class Coupon {
         if (firstOrderOnly == null) firstOrderOnly = false;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "assigned_user_id")
+    private User assignedUser; // null = public coupon, otherwise only this user can use it
+    
     public enum DiscountType {
         PERCENTAGE, FLAT
     }

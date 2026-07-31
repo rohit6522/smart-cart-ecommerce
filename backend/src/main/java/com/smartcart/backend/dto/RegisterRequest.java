@@ -20,6 +20,7 @@ public class RegisterRequest {
 
     private String phone;
     private String address;
+    private String referralCode; // optional, code entered by the new user
 
     // USER, ADMIN, or DELIVERY_BOY - defaults to USER if not provided
     private User.Role role;

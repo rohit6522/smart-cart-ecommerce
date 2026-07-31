@@ -36,6 +36,12 @@ public class User {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+
+    @Column(unique = true)
+    private String referralCode;
+
+    private String referredByCode; // the code THIS user entered at signup, if any
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

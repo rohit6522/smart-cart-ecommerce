@@ -33,4 +33,14 @@ public class AuthController {
                 .data(response)
                 .build());
     }
+
+    @GetMapping("/api/user/referral")
+    public ResponseEntity<ApiResponse<MyReferralResponse>> getMyReferralInfo() {
+        MyReferralResponse response = authService.getMyReferralInfo();
+        return ResponseEntity.ok(ApiResponse.<MyReferralResponse>builder()
+                .success(true)
+                .message("Referral info fetched")
+                .data(response)
+                .build());
+    }
 }

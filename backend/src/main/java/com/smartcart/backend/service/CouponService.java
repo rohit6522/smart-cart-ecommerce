@@ -61,6 +61,10 @@ public class CouponService {
             throw new ApiException("This coupon has expired", HttpStatus.BAD_REQUEST);
         }
 
+        if (coupon.getAssignedUser() != null && !coupon.getAssignedUser().getId().equals(user.getId())) {
+            throw new ApiException("This coupon is not valid for your account", HttpStatus.FORBIDDEN);
+        }
+        
         if (cartTotal.compareTo(coupon.getMinOrderValue()) < 0) {
             throw new ApiException(
                     "Minimum order value of ₹" + coupon.getMinOrderValue() + " required for this coupon",
