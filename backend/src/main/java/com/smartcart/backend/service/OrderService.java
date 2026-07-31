@@ -29,6 +29,7 @@ public class    OrderService {
     private final EmailService emailService;
     private final CouponService couponService;
     private final PaymentService paymentService; // add this field with other repositories
+    private final NotificationService notificationService;
 
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
@@ -96,6 +97,13 @@ public class    OrderService {
                 .discountAmount(discountAmount)
                 .build();
         order = orderRepository.save(order);
+
+        notificationService.notify(
+                user,
+                "Order Placed",
+                "Your order #" + order.getId() + " has been placed successfully.",
+                order.getId()
+        );
 
         for (CartItem item : cartItems) {
             OrderItem orderItem = OrderItem.builder()
@@ -255,9 +263,15 @@ public class    OrderService {
         order.setStatus(request.getStatus());
         order = orderRepository.save(order);
 
+        notificationService.notify(
+                order.getUser(),
+                "Order Update",
+                "Your order #" + order.getId() + " is now " + request.getStatus().name().replace("_", " ") + ".",
+                order.getId()
+        );
+
         return mapToResponse(order);
     }
-
     // ================= PRIVATE HELPERS =================
 
     private User getCurrentUser() {

@@ -20,7 +20,7 @@ public class DeliveryService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final SecurityUtil securityUtil;
-
+    private final NotificationService notificationService;
     // ---------- ADMIN: get list of all delivery boys ----------
     public List<DeliveryBoyResponse> getAllDeliveryBoys() {
         return userRepository.findAll().stream()
@@ -63,6 +63,13 @@ public class DeliveryService {
         order.setStatus(Order.OrderStatus.OUT_FOR_DELIVERY);
         orderRepository.save(order);
 
+        notificationService.notify(
+                order.getUser(),
+                "Order Shipped",
+                "Your order #" + order.getId() + " is out for delivery.",
+                order.getId()
+        );
+
         return mapToResponse(assignment);
     }
 
@@ -95,7 +102,16 @@ public class DeliveryService {
             order.setStatus(Order.OrderStatus.DELIVERED);
             order.setDeliveredAt(LocalDateTime.now());
             orderRepository.save(order);
+
+            notificationService.notify(
+                    order.getUser(),
+                    "Order Delivered",
+                    "Your order #" + order.getId() + " has been delivered. Enjoy your purchase!",
+                    order.getId()
+            );
         }
+
+
 
         assignment = deliveryAssignmentRepository.save(assignment);
         return mapToResponse(assignment);
