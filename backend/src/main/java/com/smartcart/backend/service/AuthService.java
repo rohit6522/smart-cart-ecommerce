@@ -142,6 +142,12 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
+        // Backfill referral code if somehow missing (e.g. older accounts)
+        if (user.getReferralCode() == null) {
+            user.setReferralCode(generateReferralCode());
+            userRepository.save(user);
+        }
+
         long totalReferred = userRepository.findAll().stream()
                 .filter(u -> user.getReferralCode().equals(u.getReferredByCode()))
                 .count();
