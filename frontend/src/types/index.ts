@@ -205,3 +205,13 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface DeliveryEarnings {
+  totalDeliveries: number;
+  deliveriesToday: number;
+  deliveriesThisMonth: number;
+  totalEarnings: number;
+  earningsToday: number;
+  earningsThisMonth: number;
+  perDeliveryFee: number;
+}

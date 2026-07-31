@@ -1,5 +1,5 @@
 import api from "./axios";
-import { ApiResponse, DeliveryAssignment, DeliveryBoy, DeliveryStatus } from "@/types";
+import { ApiResponse, DeliveryAssignment, DeliveryBoy, DeliveryStatus ,DeliveryEarnings} from "@/types";
 
 // Admin only
 export const getAllDeliveryBoys = async () => {
@@ -26,5 +26,11 @@ export const updateDeliveryStatus = async (assignmentId: number, status: Deliver
     `/api/delivery/${assignmentId}/status`,
     { status }
   );
+  return res.data.data;
+};
+
+
+export const getMyEarnings = async () => {
+  const res = await api.get<ApiResponse<DeliveryEarnings>>("/api/delivery/earnings");
   return res.data.data;
 };

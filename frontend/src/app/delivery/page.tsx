@@ -7,9 +7,13 @@ import DeliveryCard from "@/components/delivery/DeliveryCard";
 import { getMyDeliveries, updateDeliveryStatus } from "@/lib/deliveryApi";
 import { DeliveryAssignment, DeliveryStatus } from "@/types";
 import { Truck, PackageCheck, Clock } from "lucide-react";
+import { getMyEarnings } from "@/lib/deliveryApi";
+import { DeliveryEarnings } from "@/types";
+import { IndianRupee, CalendarDays, TrendingUp } from "lucide-react";
 
 function DeliveryDashboardContent() {
   const [deliveries, setDeliveries] = useState<DeliveryAssignment[]>([]);
+  const [earnings, setEarnings] = useState<DeliveryEarnings | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"ACTIVE" | "COMPLETED">("ACTIVE");
 
@@ -26,23 +30,30 @@ function DeliveryDashboardContent() {
 
   useEffect(() => {
     fetchDeliveries();
+    getMyEarnings()
+      .then(setEarnings)
+      .catch((err) => console.error("Failed to load earnings", err));
   }, []);
 
-  const handleUpdateStatus = async (assignmentId: number, status: DeliveryStatus) => {
+  const handleUpdateStatus = async (
+    assignmentId: number,
+    status: DeliveryStatus,
+  ) => {
     await updateDeliveryStatus(assignmentId, status);
     fetchDeliveries();
   };
 
   const activeDeliveries = useMemo(
     () => deliveries.filter((d) => d.status !== "DELIVERED"),
-    [deliveries]
+    [deliveries],
   );
   const completedDeliveries = useMemo(
     () => deliveries.filter((d) => d.status === "DELIVERED"),
-    [deliveries]
+    [deliveries],
   );
 
-  const visibleDeliveries = filter === "ACTIVE" ? activeDeliveries : completedDeliveries;
+  const visibleDeliveries =
+    filter === "ACTIVE" ? activeDeliveries : completedDeliveries;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,6 +61,51 @@ function DeliveryDashboardContent() {
 
       <div className="max-w-3xl mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">My Deliveries</h1>
+
+        {/* Earnings summary */}
+        {earnings && (
+          <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 mb-6 text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-sm text-blue-100">Total Earnings</p>
+                <p className="text-3xl font-bold flex items-center gap-1">
+                  <IndianRupee size={22} /> {earnings.totalEarnings.toFixed(0)}
+                </p>
+              </div>
+              <div className="bg-white/15 p-3 rounded-xl">
+                <TrendingUp size={22} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/20">
+              <div>
+                <p className="text-xs text-blue-100 flex items-center gap-1">
+                  <CalendarDays size={12} /> Today
+                </p>
+                <p className="text-lg font-bold">
+                  ₹{earnings.earningsToday.toFixed(0)}{" "}
+                  <span className="text-xs font-normal text-blue-100">
+                    ({earnings.deliveriesToday} deliveries)
+                  </span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-blue-100 flex items-center gap-1">
+                  <CalendarDays size={12} /> This Month
+                </p>
+                <p className="text-lg font-bold">
+                  ₹{earnings.earningsThisMonth.toFixed(0)}{" "}
+                  <span className="text-xs font-normal text-blue-100">
+                    ({earnings.deliveriesThisMonth} deliveries)
+                  </span>
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-blue-100 mt-3">
+              ₹{earnings.perDeliveryFee.toFixed(0)} earned per completed
+              delivery
+            </p>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -59,7 +115,9 @@ function DeliveryDashboardContent() {
             </div>
             <div>
               <p className="text-xs text-gray-500">Active</p>
-              <p className="text-lg font-bold text-gray-900">{activeDeliveries.length}</p>
+              <p className="text-lg font-bold text-gray-900">
+                {activeDeliveries.length}
+              </p>
             </div>
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
@@ -68,7 +126,9 @@ function DeliveryDashboardContent() {
             </div>
             <div>
               <p className="text-xs text-gray-500">Completed</p>
-              <p className="text-lg font-bold text-gray-900">{completedDeliveries.length}</p>
+              <p className="text-lg font-bold text-gray-900">
+                {completedDeliveries.length}
+              </p>
             </div>
           </div>
         </div>
@@ -100,14 +160,19 @@ function DeliveryDashboardContent() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-40 bg-white border border-gray-200 rounded-xl animate-pulse" />
+              <div
+                key={i}
+                className="h-40 bg-white border border-gray-200 rounded-xl animate-pulse"
+              />
             ))}
           </div>
         ) : visibleDeliveries.length === 0 ? (
           <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
             <Truck className="mx-auto text-gray-300 mb-3" size={40} />
             <p className="text-gray-500">
-              {filter === "ACTIVE" ? "No active deliveries right now." : "No completed deliveries yet."}
+              {filter === "ACTIVE"
+                ? "No active deliveries right now."
+                : "No completed deliveries yet."}
             </p>
           </div>
         ) : (
