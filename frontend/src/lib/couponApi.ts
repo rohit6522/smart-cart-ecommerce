@@ -1,6 +1,5 @@
 import api from "./axios";
-import { ApiResponse, CouponValidation } from "@/types";
-import { CouponResponse } from "@/types";
+import { ApiResponse, CouponValidation, CouponInfo } from "@/types";
 
 export const applyCoupon = async (code: string) => {
   const res = await api.post<ApiResponse<CouponValidation>>("/api/user/coupon/apply", { code });
