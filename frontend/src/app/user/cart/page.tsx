@@ -14,11 +14,20 @@ import { useCart } from "@/context/CartContext";
 import { getMyCoupons } from "@/lib/couponApi";
 import { CouponInfo } from "@/types";
 import { Tag } from "lucide-react";
+import { applyCoupon } from "@/lib/couponApi";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
+
   const [promoCode, setPromoCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
   const router = useRouter();
   const [myCoupons, setMyCoupons] = useState<CouponInfo[]>([]);
   const { refreshCartCount } = useCart();
@@ -40,6 +49,26 @@ function CartContent() {
       .then(setMyCoupons)
       .catch(() => {});
   }, []);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const result = await applyCoupon(promoCode.trim());
+      setAppliedCoupon({
+        code: result.code,
+        discountAmount: result.discountAmount,
+      });
+      // Carry it forward so Checkout page can pre-apply it without retyping
+      sessionStorage.setItem("pendingCoupon", result.code);
+    } catch (err: any) {
+      setCouponError(err?.response?.data?.message || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
     const updated = await updateCartItem(cartItemId, quantity);
@@ -125,18 +154,78 @@ function CartContent() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Have a promo code?
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    placeholder="E.g. SAVE20"
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium">
-                    Apply
-                  </button>
-                </div>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-green-50 text-green-700 text-sm px-3 py-2.5 rounded-lg">
+                    <span className="font-medium">
+                      ✓ {appliedCoupon.code} applied (-₹
+                      {appliedCoupon.discountAmount.toFixed(2)})
+                    </span>
+                    <button
+                      onClick={() => {
+                        setAppliedCoupon(null);
+                        setPromoCode("");
+                        sessionStorage.removeItem("pendingCoupon");
+                      }}
+                      className="text-green-800 hover:underline text-xs"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) =>
+                          setPromoCode(e.target.value.toUpperCase())
+                        }
+                        placeholder="E.g. WELCOME1000"
+                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={handleApplyPromo}
+                        disabled={applyingCoupon}
+                        className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+                      >
+                        {applyingCoupon ? "..." : "Apply"}
+                      </button>
+                    </div>
+                    {couponError && (
+                      <p className="text-red-600 text-xs mt-1.5">
+                        {couponError}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {myCoupons.length > 0 && !appliedCoupon && (
+                  <div className="mt-3 space-y-1.5">
+                    <p className="text-xs text-gray-400">
+                      Your available coupons:
+                    </p>
+                    {myCoupons.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => {
+                          setPromoCode(c.code);
+                        }}
+                        className="w-full flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-xs hover:bg-orange-100 transition text-left"
+                      >
+                        <Tag
+                          size={12}
+                          className="text-orange-600 flex-shrink-0"
+                        />
+                        <span className="font-mono font-bold text-orange-700">
+                          {c.code}
+                        </span>
+                        <span className="text-orange-600">
+                          — {c.description}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {myCoupons.length > 0 && (

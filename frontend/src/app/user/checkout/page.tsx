@@ -198,6 +198,7 @@ function CheckoutContent() {
         deliveryAddress: buildAddressString(),
         couponCode: appliedCoupon?.code,
       });
+      sessionStorage.removeItem("pendingCoupon");
       router.push(`/user/order-success?orderId=${order.orderId}`);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Checkout failed. Try again.");
@@ -225,16 +226,17 @@ function CheckoutContent() {
           email: user?.email,
         },
         theme: { color: "#2563eb" },
+
         handler: async (response: RazorpaySuccessResponse) => {
           try {
             const order = await checkout({
               deliveryAddress: buildAddressString(),
-              couponCode: appliedCoupon?.code,
-
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
+              couponCode: appliedCoupon?.code,
             });
+            sessionStorage.removeItem("pendingCoupon");
             router.push(`/user/order-success?orderId=${order.orderId}`);
           } catch (err: any) {
             setError(
@@ -243,6 +245,7 @@ function CheckoutContent() {
             setPlacingOrder(false);
           }
         },
+
         modal: {
           ondismiss: () => setPlacingOrder(false),
         },
