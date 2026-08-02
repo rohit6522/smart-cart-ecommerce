@@ -9,6 +9,7 @@ import { getAllOrders } from "@/lib/orderApi";
 import { Product, OrderResponse } from "@/types";
 import { Package, ShoppingBag, IndianRupee, Clock } from "lucide-react";
 import Link from "next/link";
+import { BarChart3 } from "lucide-react";
 
 function AdminDashboardContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,31 +37,51 @@ function AdminDashboardContent() {
       <Navbar title="Admin Panel" />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Admin Dashboard
+        </h1>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {loading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-24 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
             ))
           ) : (
             <>
-              <StatCard label="Total Products" value={products.length} icon={Package} color="blue" />
-              <StatCard label="Total Orders" value={orders.length} icon={ShoppingBag} color="purple" />
+              <StatCard
+                label="Total Products"
+                value={products.length}
+                icon={Package}
+                color="blue"
+              />
+              <StatCard
+                label="Total Orders"
+                value={orders.length}
+                icon={ShoppingBag}
+                color="purple"
+              />
               <StatCard
                 label="Total Revenue"
                 value={`₹${totalRevenue.toFixed(2)}`}
                 icon={IndianRupee}
                 color="green"
               />
-              <StatCard label="Pending Orders" value={pendingOrders} icon={Clock} color="yellow" />
+              <StatCard
+                label="Pending Orders"
+                value={pendingOrders}
+                icon={Clock}
+                color="yellow"
+              />
             </>
           )}
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <Link
             href="/admin/products"
             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
@@ -70,7 +91,9 @@ function AdminDashboardContent() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Manage Products</h3>
-              <p className="text-sm text-gray-500">Add, edit, or remove products</p>
+              <p className="text-sm text-gray-500">
+                Add, edit, or remove products
+              </p>
             </div>
           </Link>
 
@@ -83,7 +106,24 @@ function AdminDashboardContent() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900">Manage Orders</h3>
-              <p className="text-sm text-gray-500">View orders and assign delivery</p>
+              <p className="text-sm text-gray-500">
+                View orders and assign delivery
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/analytics"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-green-50 p-3 rounded-xl">
+              <BarChart3 className="text-green-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Sales Analytics</h3>
+              <p className="text-sm text-gray-500">
+                Revenue trends and insights
+              </p>
             </div>
           </Link>
         </div>
@@ -92,7 +132,10 @@ function AdminDashboardContent() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-gray-900">Recent Orders</h3>
-            <Link href="/admin/orders" className="text-sm text-blue-600 hover:underline">
+            <Link
+              href="/admin/orders"
+              className="text-sm text-blue-600 hover:underline"
+            >
               View all →
             </Link>
           </div>
@@ -112,9 +155,13 @@ function AdminDashboardContent() {
                     key={order.orderId}
                     className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 text-sm"
                   >
-                    <span className="text-gray-900 font-medium">Order #{order.orderId}</span>
+                    <span className="text-gray-900 font-medium">
+                      Order #{order.orderId}
+                    </span>
                     <span className="text-gray-500">{order.status}</span>
-                    <span className="font-semibold text-gray-900">₹{order.totalAmount.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">
+                      ₹{order.totalAmount.toFixed(2)}
+                    </span>
                   </div>
                 ))}
             </div>

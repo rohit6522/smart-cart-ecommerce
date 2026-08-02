@@ -240,3 +240,30 @@ export interface CouponInfo {
   minOrderValue: number;
   firstOrderOnly: boolean;
 }
+
+
+export interface DailyRevenue {
+  date: string;
+  revenue: number;
+}
+
+export interface CategorySales {
+  category: string;
+  revenue: number;
+  orderCount: number;
+}
+
+export interface TopProduct {
+  productName: string;
+  unitsSold: number;
+  revenue: number;
+}
+
+export interface AnalyticsData {
+  revenueTrend: DailyRevenue[];
+  categorySales: CategorySales[];
+  topProducts: TopProduct[];
+  totalRevenue: number;
+  totalOrders: number;
+  averageOrderValue: number;
+}
