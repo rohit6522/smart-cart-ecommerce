@@ -1,7 +1,5 @@
 "use client";
 
-import { lookupPincode, getCurrentLocationAddress } from "@/lib/locationUtils";
-import { LocateFixed } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -10,44 +8,21 @@ import CheckoutStepper from "@/components/user/CheckoutStepper";
 import { getCart } from "@/lib/cartApi";
 import { checkout } from "@/lib/orderApi";
 import { createRazorpayOrder } from "@/lib/paymentApi";
-import { useAuth } from "@/context/AuthContext";
-import { CartResponse } from "@/types";
-import { RazorpaySuccessResponse } from "@/types/razorpay";
-
-import { getMyAddresses } from "@/lib/addressApi";
-import { Address } from "@/types";
-import { MapPin as MapPinIcon, Check } from "lucide-react";
-
-import {
-  MapPin,
-  CreditCard,
-  ChevronLeft,
-  ChevronRight,
-  ShoppingCart,
-} from "lucide-react";
-// import Toast from "@/components/ui/Toast";
 import { applyCoupon } from "@/lib/couponApi";
-import { Tag, X } from "lucide-react";
+import { getMyAddresses } from "@/lib/addressApi";
+import { useAuth } from "@/context/AuthContext";
+import { CartResponse, Address } from "@/types";
+import { RazorpaySuccessResponse } from "@/types/razorpay";
+import { MapPin, CreditCard, ChevronLeft, ChevronRight, ShoppingCart, Check, LocateFixed } from "lucide-react";
+import { lookupPincode, getCurrentLocationAddress } from "@/lib/locationUtils";
 
 function CheckoutContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<{
-    code: string;
-    discountAmount: number;
-  } | null>(null);
-  const [couponError, setCouponError] = useState("");
-  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
   const { user } = useAuth();
-
-  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
-    null,
-  );
 
   const [form, setForm] = useState({
     firstName: "",
@@ -58,40 +33,20 @@ function CheckoutContent() {
     zip: "",
     phone: "",
   });
-  const [pincodeLoading, setPincodeLoading] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">(
-    "COD",
-  );
+
+  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">("COD");
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
 
-  useEffect(() => {
-    getCart()
-      .then((data) => {
-        if (data.items.length === 0) {
-          router.push("/user/cart");
-          return;
-        }
-        setCart(data);
-      })
-      .catch((err) => console.error("Failed to load cart", err))
-      .finally(() => setLoading(false));
-  }, [router]);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [pincodeLoading, setPincodeLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
 
-  const selectAddress = (address: Address) => {
-    setSelectedAddressId(address.id);
-    const [firstName, ...rest] = address.fullName.split(" ");
-    setForm({
-      firstName: firstName || "",
-      lastName: rest.join(" ") || "",
-      street: address.street,
-      city: address.city,
-      state: address.state,
-      zip: address.zip,
-      phone: address.phone,
-    });
-  };
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
+  const [couponError, setCouponError] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   useEffect(() => {
     getCart()
@@ -109,33 +64,53 @@ function CheckoutContent() {
       .then((addresses) => {
         setSavedAddresses(addresses);
         const defaultAddr = addresses.find((a) => a.isDefault);
-        if (defaultAddr) {
-          selectAddress(defaultAddr);
-        }
+        if (defaultAddr) selectAddress(defaultAddr);
       })
       .catch((err) => console.error("Failed to load addresses", err));
+
+    // If a coupon was applied on the Cart page, re-apply it here automatically
+    const pendingCode = sessionStorage.getItem("pendingCoupon");
+    if (pendingCode) {
+      applyCoupon(pendingCode)
+        .then((result) => {
+          setAppliedCoupon({ code: result.code, discountAmount: result.discountAmount });
+          setPromoCode(result.code);
+        })
+        .catch(() => {
+          sessionStorage.removeItem("pendingCoupon");
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
+
+  const selectAddress = (address: Address) => {
+    setSelectedAddressId(address.id);
+    const [firstName, ...rest] = address.fullName.split(" ");
+    setForm({
+      firstName: firstName || "",
+      lastName: rest.join(" ") || "",
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zip: address.zip,
+      phone: address.phone,
+    });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handlePincodeBlur = async () => {
-    const zip = form.zip.trim();
-    if (zip.length !== 6 || !/^\d{6}$/.test(zip)) return;
-
+    if (form.zip.length !== 6 || !/^\d{6}$/.test(form.zip)) return;
     setPincodeLoading(true);
     try {
-      const result = await lookupPincode(zip);
+      const result = await lookupPincode(form.zip);
       if (result) {
-        setForm((prev) => ({
-          ...prev,
-          city: result.city,
-          state: result.state,
-        }));
+        setForm((prev) => ({ ...prev, city: result.city, state: result.state }));
       }
-    } catch (err) {
-      console.error("Pincode lookup failed", err);
+    } catch {
+      // silent fail
     } finally {
       setPincodeLoading(false);
     }
@@ -160,6 +135,28 @@ function CheckoutContent() {
     }
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const result = await applyCoupon(promoCode.trim());
+      setAppliedCoupon({ code: result.code, discountAmount: result.discountAmount });
+      sessionStorage.setItem("pendingCoupon", result.code);
+    } catch (err: any) {
+      setCouponError(err?.response?.data?.message || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setPromoCode("");
+    sessionStorage.removeItem("pendingCoupon");
+  };
+
   const buildAddressString = () => {
     return `${form.firstName} ${form.lastName}, ${form.street}, ${form.city}, ${form.state} ${form.zip}. Phone: ${form.phone}`;
   };
@@ -178,14 +175,9 @@ function CheckoutContent() {
       setError("Please fill in all shipping address fields");
       return false;
     }
-    if (
-      (paymentMethod === "CARD" || paymentMethod === "UPI") &&
-      paymentMethod === "CARD"
-    ) {
-      if (!cardName.trim() || !cardNumber.trim()) {
-        setError("Please fill in your card details");
-        return false;
-      }
+    if (paymentMethod === "CARD" && (!cardName.trim() || !cardNumber.trim())) {
+      setError("Please fill in your card details");
+      return false;
     }
     return true;
   };
@@ -206,7 +198,7 @@ function CheckoutContent() {
     }
   };
 
-  // ---------- Razorpay online payment (covers both "Card" and "UPI/Wallet" selections) ----------
+  // ---------- Razorpay online payment ----------
   const handleOnlineOrder = async () => {
     setPlacingOrder(true);
     setError("");
@@ -226,7 +218,6 @@ function CheckoutContent() {
           email: user?.email,
         },
         theme: { color: "#2563eb" },
-
         handler: async (response: RazorpaySuccessResponse) => {
           try {
             const order = await checkout({
@@ -239,13 +230,10 @@ function CheckoutContent() {
             sessionStorage.removeItem("pendingCoupon");
             router.push(`/user/order-success?orderId=${order.orderId}`);
           } catch (err: any) {
-            setError(
-              err?.response?.data?.message || "Payment verification failed",
-            );
+            setError(err?.response?.data?.message || "Payment verification failed");
             setPlacingOrder(false);
           }
         },
-
         modal: {
           ondismiss: () => setPlacingOrder(false),
         },
@@ -267,30 +255,6 @@ function CheckoutContent() {
     } else {
       handleOnlineOrder();
     }
-  };
-
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return;
-    setApplyingCoupon(true);
-    setCouponError("");
-    try {
-      const result = await applyCoupon(couponCode.trim());
-      setAppliedCoupon({
-        code: result.code,
-        discountAmount: result.discountAmount,
-      });
-    } catch (err: any) {
-      setCouponError(err?.response?.data?.message || "Invalid coupon code");
-      setAppliedCoupon(null);
-    } finally {
-      setApplyingCoupon(false);
-    }
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCode("");
-    setCouponError("");
   };
 
   if (loading || !cart) {
@@ -336,6 +300,7 @@ function CheckoutContent() {
                   {locationLoading ? "Locating..." : "Use My Current Location"}
                 </button>
               </div>
+
               {savedAddresses.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
                   {savedAddresses.map((addr) => (
@@ -350,17 +315,12 @@ function CheckoutContent() {
                       }`}
                     >
                       {selectedAddressId === addr.id && (
-                        <Check
-                          size={16}
-                          className="absolute top-3 right-3 text-blue-600"
-                        />
+                        <Check size={16} className="absolute top-3 right-3 text-blue-600" />
                       )}
                       <span className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded-full font-medium text-gray-600">
                         {addr.label}
                       </span>
-                      <p className="text-sm font-medium text-gray-900 mt-1.5">
-                        {addr.fullName}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900 mt-1.5">{addr.fullName}</p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                         {addr.street}, {addr.city}, {addr.state} {addr.zip}
                       </p>
@@ -370,16 +330,12 @@ function CheckoutContent() {
               )}
 
               <p className="text-xs text-gray-400 mb-3">
-                {savedAddresses.length > 0
-                  ? "Or enter a new address below:"
-                  : "Enter your delivery address:"}
+                {savedAddresses.length > 0 ? "Or enter a new address below:" : "Enter your delivery address:"}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    FIRST NAME
-                  </label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">FIRST NAME</label>
                   <input
                     name="firstName"
                     value={form.firstName}
@@ -389,9 +345,7 @@ function CheckoutContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    LAST NAME
-                  </label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">LAST NAME</label>
                   <input
                     name="lastName"
                     value={form.lastName}
@@ -402,9 +356,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    STREET ADDRESS
-                  </label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">STREET ADDRESS</label>
                   <input
                     name="street"
                     value={form.street}
@@ -415,9 +367,7 @@ function CheckoutContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    CITY
-                  </label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">CITY</label>
                   <input
                     name="city"
                     value={form.city}
@@ -428,9 +378,7 @@ function CheckoutContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      STATE
-                    </label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">STATE</label>
                     <input
                       name="state"
                       value={form.state}
@@ -439,13 +387,9 @@ function CheckoutContent() {
                       className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      PIN CODE{" "}
-                      {pincodeLoading && (
-                        <span className="text-blue-500">(looking up...)</span>
-                      )}
+                      ZIP CODE {pincodeLoading && <span className="text-blue-500">(looking up...)</span>}
                     </label>
                     <input
                       name="zip"
@@ -460,9 +404,7 @@ function CheckoutContent() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                    PHONE NUMBER
-                  </label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">PHONE NUMBER</label>
                   <input
                     name="phone"
                     value={form.phone}
@@ -491,9 +433,7 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">
-                    Credit Card
-                  </p>
+                  <p className="font-medium text-gray-900 text-sm">Credit Card</p>
                   <p className="text-xs text-gray-400">Visa, Master</p>
                 </button>
                 <button
@@ -505,9 +445,7 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">
-                    UPI / Wallet
-                  </p>
+                  <p className="font-medium text-gray-900 text-sm">UPI / Wallet</p>
                   <p className="text-xs text-gray-400">GPay, PhonePe</p>
                 </button>
                 <button
@@ -519,9 +457,7 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">
-                    Cash on Delivery
-                  </p>
+                  <p className="font-medium text-gray-900 text-sm">Cash on Delivery</p>
                   <p className="text-xs text-gray-400">Pay at your door</p>
                 </button>
               </div>
@@ -529,9 +465,7 @@ function CheckoutContent() {
               {paymentMethod === "CARD" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      CARDHOLDER NAME
-                    </label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">CARDHOLDER NAME</label>
                     <input
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
@@ -540,9 +474,7 @@ function CheckoutContent() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      CARD NUMBER
-                    </label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">CARD NUMBER</label>
                     <input
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
@@ -551,16 +483,14 @@ function CheckoutContent() {
                     />
                   </div>
                   <p className="text-xs text-gray-400">
-                    You&apos;ll be redirected to our secure Razorpay checkout to
-                    complete this payment.
+                    You&apos;ll be redirected to our secure Razorpay checkout to complete this payment.
                   </p>
                 </div>
               )}
 
               {paymentMethod === "UPI" && (
                 <p className="text-sm text-gray-500">
-                  You&apos;ll be redirected to Razorpay to complete payment via
-                  UPI or your preferred wallet.
+                  You&apos;ll be redirected to Razorpay to complete payment via UPI or your preferred wallet.
                 </p>
               )}
 
@@ -588,8 +518,7 @@ function CheckoutContent() {
                           alt={item.productName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display =
-                              "none";
+                            (e.target as HTMLImageElement).style.display = "none";
                           }}
                         />
                       ) : (
@@ -597,12 +526,8 @@ function CheckoutContent() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {item.productName}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{item.productName}</p>
+                      <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">
                       ₹{item.subtotal.toFixed(2)}
@@ -611,18 +536,15 @@ function CheckoutContent() {
                 ))}
               </div>
 
-              {/* Coupon input */}
+              {/* Coupon box */}
               <div className="border-t border-gray-100 pt-4 mb-4">
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between bg-green-50 text-green-700 text-sm px-3 py-2.5 rounded-lg">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Tag size={14} /> {appliedCoupon.code} applied
+                    <span className="font-medium">
+                      ✓ {appliedCoupon.code} (-₹{appliedCoupon.discountAmount.toFixed(2)})
                     </span>
-                    <button
-                      onClick={handleRemoveCoupon}
-                      className="hover:text-green-900"
-                    >
-                      <X size={15} />
+                    <button onClick={handleRemoveCoupon} className="text-green-800 hover:underline text-xs">
+                      Remove
                     </button>
                   </div>
                 ) : (
@@ -630,36 +552,28 @@ function CheckoutContent() {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        value={couponCode}
-                        onChange={(e) =>
-                          setCouponCode(e.target.value.toUpperCase())
-                        }
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                         placeholder="Enter coupon code"
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
-                        onClick={handleApplyCoupon}
+                        onClick={handleApplyPromo}
                         disabled={applyingCoupon}
                         className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                       >
                         {applyingCoupon ? "..." : "Apply"}
                       </button>
                     </div>
-                    {couponError && (
-                      <p className="text-red-600 text-xs mt-1.5">
-                        {couponError}
-                      </p>
-                    )}
+                    {couponError && <p className="text-red-600 text-xs mt-1.5">{couponError}</p>}
                   </>
                 )}
               </div>
 
-              <div className="pt-2 space-y-2.5 text-sm">
+              <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span className="text-gray-900 font-medium">
-                    ₹{subtotal.toFixed(2)}
-                  </span>
+                  <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
@@ -673,25 +587,17 @@ function CheckoutContent() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Tax</span>
-                  <span className="text-gray-900 font-medium">
-                    ₹{tax.toFixed(2)}
-                  </span>
+                  <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                <span className="font-semibold text-gray-900">
-                  Total amount
-                </span>
-                <span className="text-xl font-bold text-gray-900">
-                  ₹{total.toFixed(2)}
-                </span>
+                <span className="font-semibold text-gray-900">Total amount</span>
+                <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
               </div>
 
               {error && (
-                <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mt-4">
-                  {error}
-                </div>
+                <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mt-4">{error}</div>
               )}
 
               <button
