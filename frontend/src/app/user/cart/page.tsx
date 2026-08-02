@@ -94,9 +94,11 @@ function CartContent() {
   }
 
   const isEmpty = !cart || cart.items.length === 0;
+
   const subtotal = cart?.cartTotal ?? 0;
-  const tax = subtotal * 0.06; // 6% estimated tax, purely cosmetic for now
-  const total = subtotal + tax;
+  const discount = appliedCoupon?.discountAmount ?? 0;
+  const tax = (subtotal - discount) * 0.06;
+  const total = subtotal - discount + tax;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -254,13 +256,21 @@ function CartContent() {
               <div className="bg-white border border-gray-200 rounded-2xl p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Order Summary</h3>
 
-                <div className="space-y-2.5 text-sm">
+                <div className="border-t border-gray-100 pt-4 space-y-2.5 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
                     <span className="text-gray-900 font-medium">
                       ₹{subtotal.toFixed(2)}
                     </span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Coupon Discount</span>
+                      <span className="font-medium">
+                        -₹{discount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
                     <span className="text-green-600 font-medium">Free</span>
@@ -271,6 +281,13 @@ function CartContent() {
                       ₹{tax.toFixed(2)}
                     </span>
                   </div>
+                </div>
+
+                <div className="flex justify-between items-center mb-4 pb-4 border-b    border-gray-100">
+                  <span className="text-gray-600">Cart Total</span>
+                  <span className="text-xl font-bold text-gray-900">
+                    ₹{cart.cartTotal.toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
