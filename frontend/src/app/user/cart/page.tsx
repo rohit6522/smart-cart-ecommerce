@@ -6,15 +6,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import CartItemRow from "@/components/user/CartItemRow";
 import { getCart, updateCartItem, removeCartItem } from "@/lib/cartApi";
-import { CartResponse } from "@/types";
-import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard } from "lucide-react";
+import { CartResponse, CouponInfo } from "@/types";
+import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard, Tag } from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
-import { getMyCoupons } from "@/lib/couponApi";
-import { CouponInfo } from "@/types";
-import { Tag } from "lucide-react";
-import { applyCoupon } from "@/lib/couponApi";
+import { getMyCoupons, applyCoupon } from "@/lib/couponApi";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -68,6 +65,12 @@ function CartContent() {
     } finally {
       setApplyingCoupon(false);
     }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setPromoCode("");
+    sessionStorage.removeItem("pendingCoupon");
   };
 
   const handleUpdateQuantity = async (cartItemId: number, quantity: number) => {
@@ -152,6 +155,7 @@ function CartContent() {
 
             {/* Right: Promo + Summary */}
             <div className="space-y-5">
+              {/* Promo code box - the ONLY coupon UI block on this page */}
               <div className="bg-white border border-gray-200 rounded-2xl p-5">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Have a promo code?
@@ -163,11 +167,7 @@ function CartContent() {
                       {appliedCoupon.discountAmount.toFixed(2)})
                     </span>
                     <button
-                      onClick={() => {
-                        setAppliedCoupon(null);
-                        setPromoCode("");
-                        sessionStorage.removeItem("pendingCoupon");
-                      }}
+                      onClick={handleRemoveCoupon}
                       className="text-green-800 hover:underline text-xs"
                     >
                       Remove
@@ -179,9 +179,7 @@ function CartContent() {
                       <input
                         type="text"
                         value={promoCode}
-                        onChange={(e) =>
-                          setPromoCode(e.target.value.toUpperCase())
-                        }
+                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                         placeholder="E.g. WELCOME1000"
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -194,81 +192,42 @@ function CartContent() {
                       </button>
                     </div>
                     {couponError && (
-                      <p className="text-red-600 text-xs mt-1.5">
-                        {couponError}
-                      </p>
+                      <p className="text-red-600 text-xs mt-1.5">{couponError}</p>
                     )}
                   </>
                 )}
 
                 {myCoupons.length > 0 && !appliedCoupon && (
                   <div className="mt-3 space-y-1.5">
-                    <p className="text-xs text-gray-400">
-                      Your available coupons:
-                    </p>
+                    <p className="text-xs text-gray-400">Your available coupons:</p>
                     {myCoupons.map((c) => (
                       <button
                         key={c.id}
-                        onClick={() => {
-                          setPromoCode(c.code);
-                        }}
+                        onClick={() => setPromoCode(c.code)}
                         className="w-full flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-xs hover:bg-orange-100 transition text-left"
                       >
-                        <Tag
-                          size={12}
-                          className="text-orange-600 flex-shrink-0"
-                        />
-                        <span className="font-mono font-bold text-orange-700">
-                          {c.code}
-                        </span>
-                        <span className="text-orange-600">
-                          — {c.description}
-                        </span>
+                        <Tag size={12} className="text-orange-600 flex-shrink-0" />
+                        <span className="font-mono font-bold text-orange-700">{c.code}</span>
+                        <span className="text-orange-600">— {c.description}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {myCoupons.length > 0 && (
-                <div className="mt-3 space-y-1.5">
-                  <p className="text-xs text-gray-400">
-                    Your available coupons:
-                  </p>
-                  {myCoupons.map((c) => (
-                    <div
-                      key={c.id}
-                      className="flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-xs"
-                    >
-                      <Tag
-                        size={12}
-                        className="text-orange-600 flex-shrink-0"
-                      />
-                      <span className="font-mono font-bold text-orange-700">
-                        {c.code}
-                      </span>
-                      <span className="text-orange-600">— {c.description}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
+              {/* Order Summary */}
               <div className="bg-white border border-gray-200 rounded-2xl p-5">
                 <h3 className="font-bold text-gray-900 mb-4">Order Summary</h3>
 
-                <div className="border-t border-gray-100 pt-4 space-y-2.5 text-sm">
+                <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="text-gray-900 font-medium">
-                      ₹{subtotal.toFixed(2)}
-                    </span>
+                    <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Coupon Discount</span>
-                      <span className="font-medium">
-                        -₹{discount.toFixed(2)}
-                      </span>
+                      <span className="font-medium">-₹{discount.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-gray-600">
@@ -277,26 +236,13 @@ function CartContent() {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Estimated Tax</span>
-                    <span className="text-gray-900 font-medium">
-                      ₹{tax.toFixed(2)}
-                    </span>
+                    <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center mb-4 pb-4 border-b    border-gray-100">
-                  <span className="text-gray-600">Cart Total</span>
-                  <span className="text-xl font-bold text-gray-900">
-                    ₹{cart.cartTotal.toFixed(2)}
-                  </span>
-                </div>
-
                 <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                  <span className="font-semibold text-gray-900">
-                    Total amount
-                  </span>
-                  <span className="text-xl font-bold text-gray-900">
-                    ₹{total.toFixed(2)}
-                  </span>
+                  <span className="font-semibold text-gray-900">Total amount</span>
+                  <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
                 </div>
 
                 <button
