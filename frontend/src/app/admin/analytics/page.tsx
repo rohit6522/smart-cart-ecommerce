@@ -7,7 +7,13 @@ import Navbar from "@/components/Navbar";
 import StatCard from "@/components/admin/StatCard";
 import { getAnalytics } from "@/lib/analyticsApi";
 import { AnalyticsData } from "@/types";
-import { ArrowLeft, TrendingUp, ShoppingBag, IndianRupee, Package } from "lucide-react";
+import {
+  ArrowLeft,
+  TrendingUp,
+  ShoppingBag,
+  IndianRupee,
+  Package,
+} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -24,7 +30,15 @@ import {
   Bar,
 } from "recharts";
 
-const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#16a34a", "#0891b2", "#ca8a04"];
+const COLORS = [
+  "#2563eb",
+  "#7c3aed",
+  "#db2777",
+  "#ea580c",
+  "#16a34a",
+  "#0891b2",
+  "#ca8a04",
+];
 
 function AnalyticsContent() {
   const [data, setData] = useState<AnalyticsData | null>(null);
@@ -52,7 +66,10 @@ function AnalyticsContent() {
   // Format dates for chart display (e.g. "Jul 25" instead of "2026-07-25")
   const chartRevenueTrend = data.revenueTrend.map((d) => ({
     ...d,
-    label: new Date(d.date).toLocaleDateString("en-IN", { month: "short", day: "numeric" }),
+    label: new Date(d.date).toLocaleDateString("en-IN", {
+      month: "short",
+      day: "numeric",
+    }),
   }));
 
   return (
@@ -67,7 +84,9 @@ function AnalyticsContent() {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Sales Analytics</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Sales Analytics
+        </h1>
 
         {/* Summary stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -77,7 +96,12 @@ function AnalyticsContent() {
             icon={IndianRupee}
             color="green"
           />
-          <StatCard label="Total Orders" value={data.totalOrders} icon={ShoppingBag} color="blue" />
+          <StatCard
+            label="Total Orders"
+            value={data.totalOrders}
+            icon={ShoppingBag}
+            color="blue"
+          />
           <StatCard
             label="Avg. Order Value"
             value={`₹${data.averageOrderValue.toFixed(2)}`}
@@ -88,14 +112,19 @@ function AnalyticsContent() {
 
         {/* Revenue trend line chart */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
-          <h2 className="font-bold text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h2>
+          <h2 className="font-bold text-gray-900 mb-4">
+            Revenue Trend (Last 30 Days)
+          </h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartRevenueTrend}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="label" tick={{ fontSize: 11 }} interval={4} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip
-                formatter={(value: number) => [`₹${value.toFixed(2)}`, "Revenue"]}
+                formatter={(value) => [
+                  `₹${Number(value).toFixed(2)}`,
+                  "Revenue",
+                ]}
                 contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb" }}
               />
               <Line
@@ -115,7 +144,9 @@ function AnalyticsContent() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
             <h2 className="font-bold text-gray-900 mb-4">Sales by Category</h2>
             {data.categorySales.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-12">No sales data yet.</p>
+              <p className="text-sm text-gray-400 text-center py-12">
+                No sales data yet.
+              </p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
@@ -126,14 +157,16 @@ function AnalyticsContent() {
                     cx="50%"
                     cy="50%"
                     outerRadius={90}
-                    label={(entry) => entry.category}
+                    label={(entry: any) => entry.category}
                     labelLine={false}
                   >
                     {data.categorySales.map((_, index) => (
                       <Cell key={index} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `₹${value.toFixed(2)}`} />
+                  <Tooltip
+                    formatter={(value) => `₹${Number(value).toFixed(2)}`}
+                  />{" "}
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -142,13 +175,25 @@ function AnalyticsContent() {
 
           {/* Top products bar chart */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="font-bold text-gray-900 mb-4">Top 5 Selling Products</h2>
+            <h2 className="font-bold text-gray-900 mb-4">
+              Top 5 Selling Products
+            </h2>
             {data.topProducts.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-12">No sales data yet.</p>
+              <p className="text-sm text-gray-400 text-center py-12">
+                No sales data yet.
+              </p>
             ) : (
               <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={data.topProducts} layout="vertical" margin={{ left: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                <BarChart
+                  data={data.topProducts}
+                  layout="vertical"
+                  margin={{ left: 20 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="#f0f0f0"
+                    horizontal={false}
+                  />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis
                     type="category"
@@ -156,8 +201,13 @@ function AnalyticsContent() {
                     tick={{ fontSize: 11 }}
                     width={110}
                   />
-                  <Tooltip formatter={(value: number) => [`${value} units`, "Sold"]} />
-                  <Bar dataKey="unitsSold" fill="#7c3aed" radius={[0, 4, 4, 0]} />
+                  <Tooltip formatter={(value) => [`${value} units`, "Sold"]} />
+
+                  <Bar
+                    dataKey="unitsSold"
+                    fill="#7c3aed"
+                    radius={[0, 4, 4, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
