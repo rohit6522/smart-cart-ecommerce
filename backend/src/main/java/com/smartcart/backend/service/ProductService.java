@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import com.smartcart.backend.dto.BulkUploadResponse;
+
 import java.util.List;
 
 @Service
@@ -67,6 +69,89 @@ public class ProductService {
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+    }
+
+    public BulkUploadResponse bulkUploadFromCsv(org.springframework.web.multipart.MultipartFile file) {
+        List<String> errors = new java.util.ArrayList<>();
+        int successCount = 0;
+        int failureCount = 0;
+
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(file.getInputStream()))) {
+
+            String headerLine = reader.readLine();
+            if (headerLine == null) {
+                throw new ApiException("CSV file is empty", HttpStatus.BAD_REQUEST);
+            }
+
+            // Expected header: name,description,price,discountPercentage,stockQuantity,category,imageUrl
+            String line;
+            int rowNumber = 1;
+
+            while ((line = reader.readLine()) != null) {
+                rowNumber++;
+                if (line.isBlank()) continue;
+
+                try {
+                    String[] fields = parseCsvLine(line);
+
+                    if (fields.length < 6) {
+                        errors.add("Row " + rowNumber + ": expected at least 6 columns, found " + fields.length);
+                        failureCount++;
+                        continue;
+                    }
+
+                    String name = fields[0].trim();
+                    String description = fields[1].trim();
+                    BigDecimal price = new BigDecimal(fields[2].trim());
+                    BigDecimal discountPercentage = fields[3].trim().isEmpty()
+                            ? BigDecimal.ZERO : new BigDecimal(fields[3].trim());
+                    Integer stockQuantity = Integer.parseInt(fields[4].trim());
+                    String category = fields[5].trim();
+                    String imageUrl = fields.length > 6 ? fields[6].trim() : "";
+
+                    if (name.isEmpty()) {
+                        errors.add("Row " + rowNumber + ": product name is required");
+                        failureCount++;
+                        continue;
+                    }
+
+                    Product product = Product.builder()
+                            .name(name)
+                            .description(description)
+                            .price(price)
+                            .discountPercentage(discountPercentage)
+                            .stockQuantity(stockQuantity)
+                            .category(category)
+                            .imageUrl(imageUrl)
+                            .build();
+
+                    productRepository.save(product);
+                    successCount++;
+
+                } catch (NumberFormatException e) {
+                    errors.add("Row " + rowNumber + ": invalid number format (" + e.getMessage() + ")");
+                    failureCount++;
+                } catch (Exception e) {
+                    errors.add("Row " + rowNumber + ": " + e.getMessage());
+                    failureCount++;
+                }
+            }
+
+        } catch (java.io.IOException e) {
+            throw new ApiException("Failed to read CSV file: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        return BulkUploadResponse.builder()
+                .successCount(successCount)
+                .failureCount(failureCount)
+                .errors(errors)
+                .build();
+    }
+
+    // Simple CSV line parser that handles basic comma-separated values
+    private String[] parseCsvLine(String line) {
+        return line.split(",", -1);
     }
 
     private ProductResponse mapToResponse(Product product) {

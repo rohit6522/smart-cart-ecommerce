@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.smartcart.backend.dto.BulkUploadResponse;
 import java.util.List;
 
 @RestController
@@ -69,6 +69,18 @@ public class ProductController {
                 .success(true)
                 .message("Product deleted successfully")
                 .data(null)
+                .build());
+    }
+
+
+    @PostMapping("/api/admin/products/bulk-upload")
+    public ResponseEntity<ApiResponse<BulkUploadResponse>> bulkUpload(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        BulkUploadResponse result = productService.bulkUploadFromCsv(file);
+        return ResponseEntity.ok(ApiResponse.<BulkUploadResponse>builder()
+                .success(true)
+                .message(result.getSuccessCount() + " products added, " + result.getFailureCount() + " failed")
+                .data(result)
                 .build());
     }
 }
