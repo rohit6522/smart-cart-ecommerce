@@ -15,6 +15,8 @@ import {
 } from "@/lib/productApi";
 import { Product, ProductPayload } from "@/types";
 import { ArrowLeft, Plus, Pencil, Trash2, ShoppingCart, X } from "lucide-react";
+import BulkUploadModal from "@/components/admin/BulkUploadModal";
+import { Upload } from "lucide-react";
 
 function AdminProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -24,6 +26,7 @@ function AdminProductsContent() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const router = useRouter();
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   const fetchProducts = async () => {
     try {
@@ -96,12 +99,20 @@ function AdminProductsContent() {
 
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Manage Products</h1>
-          <button
-            onClick={openAddModal}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm"
-          >
-            <Plus size={16} /> Add Product
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setBulkModalOpen(true)}
+              className="flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-lg font-medium text-sm"
+            >
+              <Upload size={16} /> Bulk Upload
+            </button>
+            <button
+              onClick={openAddModal}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm"
+            >
+              <Plus size={16} /> Add Product
+            </button>
+          </div>
         </div>
 
         {!loading && categories.length > 0 && (
@@ -228,6 +239,12 @@ function AdminProductsContent() {
           onCancel={() => setModalOpen(false)}
         />
       </Modal>
+
+      <BulkUploadModal
+        isOpen={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        onSuccess={fetchProducts}
+      />
     </div>
   );
 }

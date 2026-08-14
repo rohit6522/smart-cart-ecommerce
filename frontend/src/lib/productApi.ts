@@ -36,3 +36,21 @@ export const deleteProduct = async (id: number) => {
   productsCache = null;
   return res.data;
 };
+
+export interface BulkUploadResult {
+  successCount: number;
+  failureCount: number;
+  errors: string[];
+}
+
+export const bulkUploadProducts = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await api.post<ApiResponse<BulkUploadResult>>(
+    "/api/admin/products/bulk-upload",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  productsCache = null; // invalidate the products cache so new items show up immediately
+  return res.data.data;
+};
