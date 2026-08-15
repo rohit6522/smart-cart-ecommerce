@@ -2,9 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser } from "@/lib/authApi";
+import { loginUser, verifyOtp } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
+
 import Link from "next/link";
 
 function LoginForm() {
@@ -17,6 +18,10 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
+  const [otp, setOtp] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -28,19 +33,37 @@ function LoginForm() {
 
     try {
       const data = await loginUser(form);
-      login(data.token, {
-        userId: data.userId,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-      });
-      router.push(getDashboardPath(data.role));
+      setOtpEmail(data.email);
+      setStep("otp");
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Login failed. Check your credentials.");
+      setError(
+        err?.response?.data?.message || "Login failed. Check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const data = await verifyOtp(otpEmail, otp);
+    login(data.token, {
+      userId: data.userId,
+      name: data.name,
+      email: data.email,
+      role: data.role,
+    });
+    router.push(getDashboardPath(data.role));
+  } catch (err: any) {
+    setError(err?.response?.data?.message || "Invalid OTP. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -60,38 +83,74 @@ function LoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+       {step === "credentials" ? (
+  <form onSubmit={handleSubmit} className="space-y-4">
+    <input
+      type="email"
+      name="email"
+      placeholder="Email"
+      value={form.email}
+      onChange={handleChange}
+      required
+      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <input
+      type="password"
+      name="password"
+      placeholder="Password"
+      value={form.password}
+      onChange={handleChange}
+      required
+      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
+    <button
+      type="submit"
+      disabled={loading}
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
+    >
+      {loading ? "Sending OTP..." : "Continue"}
+    </button>
+  </form>
+) : (
+  <form onSubmit={handleVerifyOtp} className="space-y-4">
+    <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-lg">
+      We&apos;ve sent a 6-digit code to <strong>{otpEmail}</strong>. Enter it below to continue.
+    </div>
+    <input
+      type="text"
+      placeholder="Enter 6-digit OTP"
+      value={otp}
+      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+      maxLength={6}
+      required
+      className="w-full border border-gray-300 rounded-lg px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <button
+      type="submit"
+      disabled={loading || otp.length !== 6}
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
+    >
+      {loading ? "Verifying..." : "Verify & Login"}
+    </button>
+    <button
+      type="button"
+      onClick={() => setStep("credentials")}
+      className="w-full text-sm text-gray-500 hover:text-gray-700"
+    >
+      ← Back to login
+    </button>
+  </form>
+)}
+
+
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-blue-600 font-medium hover:underline">
+          <Link
+            href="/register"
+            className="text-blue-600 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>
@@ -102,7 +161,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-400">
+          Loading...
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

@@ -267,3 +267,8 @@ export interface AnalyticsData {
   totalOrders: number;
   averageOrderValue: number;
 }
+
+export interface LoginOtpResponse {
+  message: string;
+  email: string;
+}
