@@ -81,4 +81,35 @@ public class EmailService {
             log.error("Failed to send order confirmation email: {}", e.getMessage());
         }
     }
+
+    @Async
+    public void sendOtpEmail(User user, String otp) {
+        try {
+            String body = String.format(
+                    """
+                    Hi %s,
+    
+                    Your Smart Cart login verification code is:
+    
+                    %s
+    
+                    This code is valid for 5 minutes. If you didn't request this, please ignore this email.
+    
+                    Smart Cart Team
+                    """,
+                    user.getName(),
+                    otp
+            );
+
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(user.getEmail());
+            message.setSubject("Your Smart Cart Login Code: " + otp);
+            message.setText(body);
+
+            mailSender.send(message);
+            log.info("OTP email sent to {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send OTP email: {}", e.getMessage());
+        }
+    }
 }

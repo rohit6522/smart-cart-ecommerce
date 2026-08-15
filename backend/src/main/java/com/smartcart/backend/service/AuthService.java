@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import com.smartcart.backend.repository.LoginOtpRepository;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -28,6 +30,8 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final CouponRepository couponRepository;
     private final SecurityUtil securityUtil;
+    private final LoginOtpRepository loginOtpRepository;
+    private final EmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -158,14 +162,51 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) {
-
+    // ---------- Step 1: Verify credentials, then send OTP ----------
+    public LoginOtpResponse loginStepOne(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED);
         }
+
+        String otp = generateOtp();
+
+        LoginOtp loginOtp = LoginOtp.builder()
+                .email(user.getEmail())
+                .otpCode(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build();
+        loginOtpRepository.save(loginOtp);
+
+        emailService.sendOtpEmail(user, otp);
+
+        return LoginOtpResponse.builder()
+                .message("OTP sent to your registered email")
+                .email(user.getEmail())
+                .build();
+    }
+
+    // ---------- Step 2: Verify OTP, then issue JWT ----------
+    public AuthResponse verifyOtpAndLogin(VerifyOtpRequest request) {
+        LoginOtp loginOtp = loginOtpRepository
+                .findTopByEmailAndUsedFalseOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new ApiException("No OTP request found. Please login again.", HttpStatus.BAD_REQUEST));
+
+        if (loginOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ApiException("OTP has expired. Please login again.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!loginOtp.getOtpCode().equals(request.getOtp().trim())) {
+            throw new ApiException("Invalid OTP", HttpStatus.BAD_REQUEST);
+        }
+
+        loginOtp.setUsed(true);
+        loginOtpRepository.save(loginOtp);
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
@@ -177,4 +218,11 @@ public class AuthService {
                 .role(user.getRole().name())
                 .build();
     }
+
+    private String generateOtp() {
+        SecureRandom random = new SecureRandom();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+
 }
