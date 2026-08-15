@@ -21,3 +21,13 @@ export const getMyReferralInfo = async () => {
   return res.data.data;
 };
 
+export const updateProfilePhoto = async (base64Photo: string) => {
+  const res = await api.put<ApiResponse<string>>("/api/user/profile-photo", { profilePhoto: base64Photo });
+  return res.data.data;
+};
+
+export const getProfilePhoto = async () => {
+  const res = await api.get<ApiResponse<string | null>>("/api/user/profile-photo");
+  return res.data.data;
+};
+

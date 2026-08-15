@@ -277,3 +277,16 @@ export interface LoginOtpResponse {
   name?: string;
   role?: Role;
 }
+
+export interface ProfilePhoto {
+  profilePhoto: string | null;
+}
+
+export interface AuthResponse {
+  token: string;
+  userId: number;
+  name: string;
+  email: string;
+  role: Role;
+  profilePhoto?: string | null;
+}

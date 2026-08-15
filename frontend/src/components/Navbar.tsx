@@ -217,16 +217,28 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                     )}
                   </AnimatePresence>
                 </Link>
+
                 <Link
                   href="/user/profile"
-                  className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0 transition ${
+                  className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm flex-shrink-0 overflow-hidden transition ${
                     pathname === "/user/profile"
-                      ? "bg-blue-600 text-white"
+                      ? "ring-2 ring-blue-600"
                       : "bg-blue-50 text-blue-600 hover:bg-blue-100"
                   }`}
                   title="Profile"
                 >
-                  {user.name.charAt(0).toUpperCase()}
+                  {user.profilePhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.profilePhoto}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="bg-blue-50 w-full h-full flex items-center justify-center text-blue-600">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </Link>
               </>
             )}

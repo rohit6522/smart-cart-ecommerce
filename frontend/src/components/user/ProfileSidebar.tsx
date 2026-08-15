@@ -33,9 +33,16 @@ export default function ProfileSidebar() {
         Back to Shopping
       </Link>
       <div className="flex items-center gap-3 px-2 py-3 mb-2 border-b border-gray-100">
-        <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-          {user?.name?.charAt(0).toUpperCase()}
-        </div>
+
+       <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold overflow-hidden">
+  {user?.profilePhoto ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={user.profilePhoto} alt={user.name} className="w-full h-full object-cover" />
+  ) : (
+    user?.name?.charAt(0).toUpperCase()
+  )}
+</div>
+
         <div>
           <p className="font-semibold text-gray-900 text-sm">{user?.name}</p>
           <p className="text-xs text-gray-400">Shopper</p>

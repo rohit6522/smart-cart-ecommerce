@@ -3,6 +3,7 @@
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import ProfileSidebar from "@/components/user/ProfileSidebar";
+import ProfilePhotoUpload from "@/components/user/ProfilePhotoUpload";
 import { useAuth } from "@/context/AuthContext";
 
 function ProfileInfoContent() {
@@ -14,7 +15,11 @@ function ProfileInfoContent() {
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row gap-6">
         <ProfileSidebar />
         <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-6">
-          <h1 className="text-xl font-bold text-gray-900 mb-6">Profile Info</h1>
+<h1 className="text-xl font-bold text-gray-900 mb-6">Profile Info</h1>
+
+<div className="mb-6">
+  <ProfilePhotoUpload />
+</div>          
           <div className="space-y-4 max-w-md">
             <div>
               <p className="text-xs text-gray-500 mb-1">Name</p>

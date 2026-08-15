@@ -53,7 +53,7 @@ export default function Footer() {
               <MapPin size={15} /> Patna, Bihar, India
             </li>
             <li className="flex items-center gap-2">
-              <Phone size={15} /> +91 00000 00000
+              <Phone size={15} /> +91 9693031598
             </li>
             <li className="flex items-center gap-2">
               <Mail size={15} /> support@smartcart.in
@@ -74,7 +74,7 @@ export default function Footer() {
     ig
   </a>
   <a
-    href="#"
+    href="https://x.com/home"
     className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
   >
     x

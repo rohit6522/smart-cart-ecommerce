@@ -10,6 +10,7 @@ interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  profilePhoto?: string | null;
 }
 
 interface AuthContextType {
@@ -17,6 +18,7 @@ interface AuthContextType {
   loading: boolean;
   login: (token: string, user: AuthUser) => void;
   logout: () => void;
+  updatePhoto: (photo: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,9 +57,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   };
 
+  const updatePhoto = (photo: string) => {
+  if (user) {
+    const updated = { ...user, profilePhoto: photo };
+    setUser(updated);
+    Cookies.set("user", JSON.stringify(updated), { expires: 1 });
+  }
+};
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      {children}
+<AuthContext.Provider value={{ user, loading, login, logout, updatePhoto }}>
+        {children}
     </AuthContext.Provider>
   );
 }
