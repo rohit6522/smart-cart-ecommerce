@@ -32,7 +32,7 @@ public class AuthService {
     private final SecurityUtil securityUtil;
     private final LoginOtpRepository loginOtpRepository;
     private final ResendEmailService emailService;
-    
+
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -162,13 +162,26 @@ public class AuthService {
                 .build();
     }
 
-    // ---------- Step 1: Verify credentials, then send OTP ----------
     public LoginOtpResponse loginStepOne(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED);
+        }
+
+        // Only Admin accounts require OTP verification; everyone else logs in directly
+        if (user.getRole() != User.Role.ADMIN) {
+            String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+            return LoginOtpResponse.builder()
+                    .message("Login successful")
+                    .email(user.getEmail())
+                    .requiresOtp(false)
+                    .token(token)
+                    .userId(user.getId())
+                    .name(user.getName())
+                    .role(user.getRole().name())
+                    .build();
         }
 
         String otp = generateOtp();
@@ -185,6 +198,7 @@ public class AuthService {
         return LoginOtpResponse.builder()
                 .message("OTP sent to your registered email")
                 .email(user.getEmail())
+                .requiresOtp(true)
                 .build();
     }
 
