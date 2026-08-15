@@ -271,4 +271,9 @@ export interface AnalyticsData {
 export interface LoginOtpResponse {
   message: string;
   email: string;
+  requiresOtp: boolean;
+  token?: string;
+  userId?: number;
+  name?: string;
+  role?: Role;
 }

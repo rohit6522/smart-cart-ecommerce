@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { loginUser, verifyOtp } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
-
+import { Role } from "@/types";
 import Link from "next/link";
 
 function LoginForm() {
@@ -26,23 +26,35 @@ function LoginForm() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const data = await loginUser(form);
-      setOtpEmail(data.email);
-      setStep("otp");
-    } catch (err: any) {
-      setError(
-        err?.response?.data?.message || "Login failed. Check your credentials.",
-      );
-    } finally {
-      setLoading(false);
+  try {
+    const data = await loginUser(form);
+
+    if (!data.requiresOtp && data.token) {
+      // Non-admin: logged in directly, no OTP needed
+      login(data.token, {
+        userId: data.userId!,
+        name: data.name!,
+        email: data.email,
+        role: data.role as Role,
+      });
+      router.push(getDashboardPath(data.role as Role));
+      return;
     }
-  };
+
+    // Admin: proceed to OTP verification step
+    setOtpEmail(data.email);
+    setStep("otp");
+  } catch (err: any) {
+    setError(err?.response?.data?.message || "Login failed. Check your credentials.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
   e.preventDefault();
