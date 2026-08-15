@@ -55,4 +55,24 @@ public class AuthController {
     }
 
 
+    @PutMapping("/api/user/profile-photo")
+    public ResponseEntity<ApiResponse<String>> updateProfilePhoto(@Valid @RequestBody UpdateProfilePhotoRequest request) {
+        String photo = authService.updateProfilePhoto(request.getProfilePhoto());
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .message("Profile photo updated")
+                .data(photo)
+                .build());
+    }
+
+    @GetMapping("/api/user/profile-photo")
+    public ResponseEntity<ApiResponse<String>> getProfilePhoto() {
+        String photo = authService.getMyProfilePhoto();
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .success(true)
+                .message("Profile photo fetched")
+                .data(photo)
+                .build());
+    }
+
 }

@@ -239,4 +239,26 @@ public class AuthService {
     }
 
 
+    public String updateProfilePhoto(String base64Photo) {
+        String email = securityUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        // Basic size guard - base64 string shouldn't be excessively large (~2MB raw image limit)
+        if (base64Photo.length() > 3_000_000) {
+            throw new ApiException("Image is too large. Please use an image under 2MB.", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setProfilePhoto(base64Photo);
+        userRepository.save(user);
+        return base64Photo;
+    }
+
+    public String getMyProfilePhoto() {
+        String email = securityUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+        return user.getProfilePhoto();
+    }
+
 }

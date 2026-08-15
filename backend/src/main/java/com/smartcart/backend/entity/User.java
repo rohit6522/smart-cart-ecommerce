@@ -47,6 +47,10 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String profilePhoto; // stored as base64 data URL
+
     public enum Role {
         USER, ADMIN, DELIVERY_BOY
     }
