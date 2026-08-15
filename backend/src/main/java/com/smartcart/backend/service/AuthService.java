@@ -31,8 +31,8 @@ public class AuthService {
     private final CouponRepository couponRepository;
     private final SecurityUtil securityUtil;
     private final LoginOtpRepository loginOtpRepository;
-    private final BrevoEmailService emailService;
-
+    private final ResendEmailService emailService;
+    
     public AuthResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {

@@ -26,7 +26,7 @@ public class    OrderService {
     private final UserRepository userRepository;
     private final DeliveryAssignmentRepository deliveryAssignmentRepository;
     private final SecurityUtil securityUtil;
-    private final BrevoEmailService emailService;
+    private final ResendEmailService emailService;
     private final CouponService couponService;
     private final PaymentService paymentService; // add this field with other repositories
     private final NotificationService notificationService;

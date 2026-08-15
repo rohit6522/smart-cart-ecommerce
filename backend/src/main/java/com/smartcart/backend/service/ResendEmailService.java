@@ -18,47 +18,43 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BrevoEmailService {
+public class ResendEmailService {
 
-    @Value("${brevo.api.key}")
+    @Value("${resend.api.key}")
     private String apiKey;
 
-    @Value("${brevo.sender.email}")
+    @Value("${resend.sender.email}")
     private String senderEmail;
-
-    @Value("${brevo.sender.name}")
-    private String senderName;
 
     private final OrderItemRepository orderItemRepository;
 
     private WebClient buildClient() {
         return WebClient.builder()
-                .baseUrl("https://api.brevo.com/v3")
-                .defaultHeader("api-key", apiKey)
+                .baseUrl("https://api.resend.com")
+                .defaultHeader("Authorization", "Bearer " + apiKey)
                 .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("Accept", MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
-    private void sendEmail(String toEmail, String toName, String subject, String textContent) {
+    private void sendEmail(String toEmail, String subject, String textContent) {
         try {
             Map<String, Object> payload = Map.of(
-                    "sender", Map.of("name", senderName, "email", senderEmail),
-                    "to", List.of(Map.of("email", toEmail, "name", toName)),
+                    "from", "Smart Cart <" + senderEmail + ">",
+                    "to", List.of(toEmail),
                     "subject", subject,
-                    "textContent", textContent
+                    "text", textContent
             );
 
             buildClient().post()
-                    .uri("/smtp/email")
+                    .uri("/emails")
                     .bodyValue(payload)
                     .retrieve()
                     .toBodilessEntity()
                     .block();
 
-            log.info("Email sent via Brevo to {}", toEmail);
+            log.info("Email sent via Resend to {}", toEmail);
         } catch (Exception e) {
-            log.error("Failed to send email via Brevo: {}", e.getMessage());
+            log.error("Failed to send email via Resend: {}", e.getMessage());
         }
     }
 
@@ -68,7 +64,7 @@ public class BrevoEmailService {
                 "Hi %s,\n\nYour Smart Cart login verification code is:\n\n%s\n\nThis code is valid for 5 minutes. If you didn't request this, please ignore this email.\n\nSmart Cart Team",
                 user.getName(), otp
         );
-        sendEmail(user.getEmail(), user.getName(), "Your Smart Cart Login Code: " + otp, body);
+        sendEmail(user.getEmail(), "Your Smart Cart Login Code: " + otp, body);
     }
 
     @Async
@@ -98,6 +94,6 @@ public class BrevoEmailService {
                 order.getDeliveryAddress()
         );
 
-        sendEmail(user.getEmail(), user.getName(), "Order Confirmed - #ORD-" + order.getId(), body);
+        sendEmail(user.getEmail(), "Order Confirmed - #ORD-" + order.getId(), body);
     }
 }
