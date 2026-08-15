@@ -31,7 +31,7 @@ public class AuthService {
     private final CouponRepository couponRepository;
     private final SecurityUtil securityUtil;
     private final LoginOtpRepository loginOtpRepository;
-    private final EmailService emailService;
+    private final BrevoEmailService emailService;
 
     public AuthResponse register(RegisterRequest request) {
 
