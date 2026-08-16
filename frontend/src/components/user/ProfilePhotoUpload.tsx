@@ -11,41 +11,74 @@ export default function ProfilePhotoUpload() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      setError("Please select an image file");
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      setError("Image must be under 2MB");
-      return;
-    }
-
-    setError("");
-    setUploading(true);
-
+  const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = async () => {
-      const base64 = reader.result as string;
-      try {
-        await updateProfilePhoto(base64);
-        updatePhoto(base64);
-      } catch (err: any) {
-        setError(err?.response?.data?.message || "Failed to upload photo");
-      } finally {
-        setUploading(false);
-      }
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_SIZE = 300; // resize to max 300x300 for a profile avatar
+
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Compress as JPEG at 70% quality - keeps file size small
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+        resolve(compressedBase64);
+      };
+      img.onerror = () => reject(new Error("Failed to load image"));
+      img.src = e.target?.result as string;
     };
-    reader.onerror = () => {
-      setError("Failed to read the image file");
-      setUploading(false);
-    };
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
-  };
+  });
+};
+
+const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    setError("Please select an image file");
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    setError("Image must be under 5MB");
+    return;
+  }
+
+  setError("");
+  setUploading(true);
+
+  try {
+    const compressedBase64 = await compressImage(file);
+    await updateProfilePhoto(compressedBase64);
+    updatePhoto(compressedBase64);
+  } catch (err: any) {
+    setError(err?.response?.data?.message || "Failed to upload photo");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <div className="flex flex-col items-center">
