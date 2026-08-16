@@ -6,5 +6,5 @@ import lombok.Data;
 @Data
 public class UpdateProfilePhotoRequest {
     @NotBlank(message = "Photo data is required")
-    private String profilePhoto; // base64 data URL, e.g. "data:image/jpeg;base64,..."
+    private String profilePhoto;
 }
