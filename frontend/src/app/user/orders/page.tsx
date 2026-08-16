@@ -18,6 +18,7 @@ import {
   RotateCcw,
   CheckCircle2,
 } from "lucide-react";
+import EmptyState from "@/components/ui/EmptyState";
 
 type TabKey = "ALL" | "PROCESSING" | "SHIPPED" | "DELIVERED";
 
@@ -162,10 +163,13 @@ function OrderHistoryContent() {
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <Package className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-500">No orders in this category.</p>
-          </div>
+          <EmptyState
+  icon={Package}
+  title="No orders here yet"
+  description="Orders in this category will show up here once you place them."
+  actionLabel="Start Shopping"
+  actionHref="/user"
+/>
         ) : (
           <div className="space-y-5">
             {filteredOrders.map((order) => {

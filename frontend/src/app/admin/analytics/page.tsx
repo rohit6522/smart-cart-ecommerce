@@ -14,6 +14,8 @@ import {
   IndianRupee,
   Package,
 } from "lucide-react";
+import { SkeletonCard } from "@/components/ui/Skeleton";
+
 import {
   LineChart,
   Line,
@@ -53,15 +55,24 @@ function AnalyticsContent() {
   }, []);
 
   if (loading || !data) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar title="Admin Panel" />
-        <div className="max-w-6xl mx-auto px-6 py-8">
-          <div className="h-96 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar title="Admin Panel" />
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <SkeletonCard className="h-24" />
+          <SkeletonCard className="h-24" />
+          <SkeletonCard className="h-24" />
+        </div>
+        <SkeletonCard className="h-80 mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard className="h-72" />
+          <SkeletonCard className="h-72" />
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // Format dates for chart display (e.g. "Jul 25" instead of "2026-07-25")
   const chartRevenueTrend = data.revenueTrend.map((d) => ({

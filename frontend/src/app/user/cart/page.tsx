@@ -7,11 +7,18 @@ import Navbar from "@/components/Navbar";
 import CartItemRow from "@/components/user/CartItemRow";
 import { getCart, updateCartItem, removeCartItem } from "@/lib/cartApi";
 import { CartResponse, CouponInfo } from "@/types";
-import { ArrowLeft, ShoppingCart, ShoppingBag, CreditCard, Tag } from "lucide-react";
+import {
+  ArrowLeft,
+  ShoppingCart,
+  ShoppingBag,
+  CreditCard,
+  Tag,
+} from "lucide-react";
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { getMyCoupons, applyCoupon } from "@/lib/couponApi";
+import EmptyState from "@/components/ui/EmptyState";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -119,16 +126,13 @@ function CartContent() {
         </div>
 
         {isEmpty ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <ShoppingBag className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-500 mb-4">Your cart is empty</p>
-            <Link
-              href="/user"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium text-sm"
-            >
-              Browse Products
-            </Link>
-          </div>
+          <EmptyState
+            icon={ShoppingBag}
+            title="Your cart is empty"
+            description="Looks like you haven't added anything yet. Start exploring our products!"
+            actionLabel="Browse Products"
+            actionHref="/user"
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Items list */}
@@ -179,7 +183,9 @@ function CartContent() {
                       <input
                         type="text"
                         value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          setPromoCode(e.target.value.toUpperCase())
+                        }
                         placeholder="E.g. WELCOME1000"
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -192,23 +198,34 @@ function CartContent() {
                       </button>
                     </div>
                     {couponError && (
-                      <p className="text-red-600 text-xs mt-1.5">{couponError}</p>
+                      <p className="text-red-600 text-xs mt-1.5">
+                        {couponError}
+                      </p>
                     )}
                   </>
                 )}
 
                 {myCoupons.length > 0 && !appliedCoupon && (
                   <div className="mt-3 space-y-1.5">
-                    <p className="text-xs text-gray-400">Your available coupons:</p>
+                    <p className="text-xs text-gray-400">
+                      Your available coupons:
+                    </p>
                     {myCoupons.map((c) => (
                       <button
                         key={c.id}
                         onClick={() => setPromoCode(c.code)}
                         className="w-full flex items-center gap-2 bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 text-xs hover:bg-orange-100 transition text-left"
                       >
-                        <Tag size={12} className="text-orange-600 flex-shrink-0" />
-                        <span className="font-mono font-bold text-orange-700">{c.code}</span>
-                        <span className="text-orange-600">— {c.description}</span>
+                        <Tag
+                          size={12}
+                          className="text-orange-600 flex-shrink-0"
+                        />
+                        <span className="font-mono font-bold text-orange-700">
+                          {c.code}
+                        </span>
+                        <span className="text-orange-600">
+                          — {c.description}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -222,12 +239,16 @@ function CartContent() {
                 <div className="space-y-2.5 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
-                    <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">
+                      ₹{subtotal.toFixed(2)}
+                    </span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Coupon Discount</span>
-                      <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                      <span className="font-medium">
+                        -₹{discount.toFixed(2)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between text-gray-600">
@@ -236,13 +257,19 @@ function CartContent() {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Estimated Tax</span>
-                    <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
+                    <span className="text-gray-900 font-medium">
+                      ₹{tax.toFixed(2)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                  <span className="font-semibold text-gray-900">Total amount</span>
-                  <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                  <span className="font-semibold text-gray-900">
+                    Total amount
+                  </span>
+                  <span className="text-xl font-bold text-gray-900">
+                    ₹{total.toFixed(2)}
+                  </span>
                 </div>
 
                 <button

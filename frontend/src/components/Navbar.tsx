@@ -26,6 +26,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { refreshUnreadCount } = useNotifications();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let ticking = false;
@@ -67,6 +68,23 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is already typing in an input/textarea
+      const target = e.target as HTMLElement;
+      const isTyping =
+        target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+
+      if (e.key === "/" && !isTyping) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,6 +147,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                   size={16}
                 />
                 <input
+                  ref={searchInputRef}
                   type="text"
                   value={searchValue}
                   onChange={handleSearchChange}
@@ -136,7 +155,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                   onKeyDown={(e) => {
                     if (e.key === "Escape") setShowSuggestions(false);
                   }}
-                  placeholder="Search products..."
+                  placeholder="Search products... (Press / to focus)"
                   className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
                 />
                 <AnimatePresence>

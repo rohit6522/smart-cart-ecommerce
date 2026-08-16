@@ -110,7 +110,7 @@ function ProfileDashboardContent() {
             </div>
 
             {loading ? (
-              <div className="h-20 bg-gray-50 rounded-lg animate-pulse" />
+             <div className="h-20 skeleton-shimmer rounded-lg" />
             ) : orders.length === 0 ? (
               <p className="text-sm text-gray-500">No orders yet.</p>
             ) : (

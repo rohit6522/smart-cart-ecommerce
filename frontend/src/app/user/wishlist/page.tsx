@@ -12,6 +12,7 @@ import { useCart } from "@/context/CartContext";
 import { WishlistItem } from "@/types";
 import { ArrowLeft, Heart } from "lucide-react";
 import Toast from "@/components/ui/Toast";
+import EmptyState from "@/components/ui/EmptyState";
 
 function WishlistContent() {
   const [items, setItems] = useState<WishlistItem[]>([]);
@@ -56,24 +57,34 @@ function WishlistContent() {
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+              <div
+                key={i}
+                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
             ))}
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <Heart className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-500">Your wishlist is empty. Start saving products you love!</p>
-          </div>
+          <EmptyState
+            icon={Heart}
+            title="Your wishlist is empty"
+            description="Save products you love here so you can find them easily later."
+            actionLabel="Browse Products"
+            actionHref="/user"
+          />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {items.map((item) => (
-              <ProductCard key={item.wishlistId} product={item.product} onAddToCart={handleAddToCart} />
+              <ProductCard
+                key={item.wishlistId}
+                product={item.product}
+                onAddToCart={handleAddToCart}
+              />
             ))}
           </div>
         )}
       </div>
 
-     <Toast message={toast} />
+      <Toast message={toast} />
 
       <Footer />
     </div>
