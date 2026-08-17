@@ -31,3 +31,12 @@ export const getProfilePhoto = async () => {
   return res.data.data;
 };
 
+
+export const forgotPassword = async (email: string) => {
+  const res = await api.post<ApiResponse<LoginOtpResponse>>("/api/auth/forgot-password", { email });
+  return res.data.data;
+};
+
+export const resetPassword = async (email: string, otp: string, newPassword: string) => {
+  await api.post<ApiResponse<null>>("/api/auth/reset-password", { email, otp, newPassword });
+};

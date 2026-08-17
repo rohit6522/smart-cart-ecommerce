@@ -130,6 +130,12 @@ function LoginForm() {
               </button>
             </div>
 
+          <div className="text-right">
+  <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+    Forgot Password?
+  </Link>
+</div>
+
             <button
               type="submit"
               disabled={loading}
@@ -138,6 +144,8 @@ function LoginForm() {
               {loading ? "Sending OTP..." : "Continue"}
             </button>
           </form>
+
+
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-lg">
