@@ -261,4 +261,55 @@ public class AuthService {
         return user.getProfilePhoto();
     }
 
+    // ---------- Step 1: Send OTP for password reset ----------
+    public LoginOtpResponse forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ApiException("No account found with this email", HttpStatus.NOT_FOUND));
+
+        String otp = generateOtp();
+
+        LoginOtp loginOtp = LoginOtp.builder()
+                .email(user.getEmail())
+                .otpCode(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .build();
+        loginOtpRepository.save(loginOtp);
+
+        emailService.sendOtpEmail(user, otp);
+
+        return LoginOtpResponse.builder()
+                .message("OTP sent to your registered email")
+                .email(user.getEmail())
+                .requiresOtp(true)
+                .build();
+    }
+
+    // ---------- Step 2: Verify OTP and set new password ----------
+    public void resetPassword(ResetPasswordRequest request) {
+        LoginOtp loginOtp = loginOtpRepository
+                .findTopByEmailAndUsedFalseOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new ApiException("No OTP request found. Please try again.", HttpStatus.BAD_REQUEST));
+
+        if (loginOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ApiException("OTP has expired. Please try again.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!loginOtp.getOtpCode().equals(request.getOtp().trim())) {
+            throw new ApiException("Invalid OTP", HttpStatus.BAD_REQUEST);
+        }
+
+        if (request.getNewPassword().length() < 6) {
+            throw new ApiException("Password must be at least 6 characters", HttpStatus.BAD_REQUEST);
+        }
+
+        loginOtp.setUsed(true);
+        loginOtpRepository.save(loginOtp);
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
 }
