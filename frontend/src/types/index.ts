@@ -37,6 +37,8 @@ export interface Product {
   createdAt: string;
   averageRating: number;
   totalReviews: number;
+  variants: Variant[];
+
 }
 
 export interface Review {
@@ -60,6 +62,7 @@ export interface ProductPayload {
   stockQuantity: number;
   category: string;
   imageUrl: string;
+  variants: VariantPayload[];
 }
 
 // ---------- Cart / Budget ----------
@@ -71,6 +74,7 @@ export interface CartItem {
   priceAtAdd: number;
   quantity: number;
   subtotal: number;
+  variantLabel: string | null;
 }
 
 export interface CartResponse {
@@ -289,4 +293,17 @@ export interface AuthResponse {
   email: string;
   role: Role;
   profilePhoto?: string | null;
+}
+
+export interface Variant {
+  id: number;
+  variantType: string;
+  variantValue: string;
+  stockQuantity: number;
+}
+
+export interface VariantPayload {
+  variantType: string;
+  variantValue: string;
+  stockQuantity: number;
 }

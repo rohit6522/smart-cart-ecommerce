@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Product, ProductPayload } from "@/types";
+import { Plus, Trash2 } from "lucide-react";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -14,15 +15,22 @@ export default function ProductForm({
   onSubmit,
   onCancel,
 }: ProductFormProps) {
-  const [form, setForm] = useState<ProductPayload>({
-    name: initialData?.name ?? "",
-    description: initialData?.description ?? "",
-    price: initialData?.price ?? 0,
-    discountPercentage: initialData?.discountPercentage ?? 0,
-    stockQuantity: initialData?.stockQuantity ?? 0,
-    category: initialData?.category ?? "",
-    imageUrl: initialData?.imageUrl ?? "",
-  });
+
+ const [form, setForm] = useState<ProductPayload>({
+  name: initialData?.name ?? "",
+  description: initialData?.description ?? "",
+  price: initialData?.price ?? 0,
+  discountPercentage: initialData?.discountPercentage ?? 0,
+  stockQuantity: initialData?.stockQuantity ?? 0,
+  category: initialData?.category ?? "",
+  imageUrl: initialData?.imageUrl ?? "",
+  variants: initialData?.variants?.map((v) => ({
+    variantType: v.variantType,
+    variantValue: v.variantValue,
+    stockQuantity: v.stockQuantity,
+  })) ?? [],
+});
+
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -59,6 +67,27 @@ export default function ProductForm({
       setSaving(false);
     }
   };
+
+  const addVariant = () => {
+  setForm((prev) => ({
+    ...prev,
+    variants: [...prev.variants, { variantType: "Size", variantValue: "", stockQuantity: 0 }],
+  }));
+};
+
+const updateVariant = (index: number, field: string, value: string | number) => {
+  setForm((prev) => ({
+    ...prev,
+    variants: prev.variants.map((v, i) => (i === index ? { ...v, [field]: value } : v)),
+  }));
+};
+
+const removeVariant = (index: number) => {
+  setForm((prev) => ({
+    ...prev,
+    variants: prev.variants.filter((_, i) => i !== index),
+  }));
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,6 +183,59 @@ export default function ProductForm({
           </p>
         )}
       </div>
+
+      <div>
+  <div className="flex items-center justify-between mb-2">
+    <label className="block text-sm font-medium text-gray-700">
+      Variants <span className="text-gray-400 font-normal">(optional — e.g. Size, Color)</span>
+    </label>
+    <button
+      type="button"
+      onClick={addVariant}
+      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
+    >
+      <Plus size={13} /> Add Variant
+    </button>
+  </div>
+
+  {form.variants.length > 0 && (
+    <div className="space-y-2">
+      {form.variants.map((variant, index) => (
+        <div key={index} className="flex gap-2 items-center">
+          <select
+            value={variant.variantType}
+            onChange={(e) => updateVariant(index, "variantType", e.target.value)}
+            className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm w-24"
+          >
+            <option value="Size">Size</option>
+            <option value="Color">Color</option>
+          </select>
+          <input
+            type="text"
+            placeholder="e.g. M, Red"
+            value={variant.variantValue}
+            onChange={(e) => updateVariant(index, "variantValue", e.target.value)}
+            className="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+          />
+          <input
+            type="number"
+            placeholder="Stock"
+            value={variant.stockQuantity}
+            onChange={(e) => updateVariant(index, "stockQuantity", Number(e.target.value))}
+            className="w-20 border border-gray-300 rounded-lg px-2 py-1.5 text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => removeVariant(index)}
+            className="text-red-500 hover:text-red-600"
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

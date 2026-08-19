@@ -15,6 +15,7 @@ import { ArrowLeft, ShoppingCart, Plus, Minus } from "lucide-react";
 import { useMemo } from "react";
 import { getAllProducts } from "@/lib/productApi";
 import ProductCard from "@/components/user/ProductCard";
+import { Variant } from "@/types";
 
 function ProductDetailContent() {
   const params = useParams();
@@ -26,6 +27,7 @@ function ProductDetailContent() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [toast, setToast] = useState("");
 
   const [myRating, setMyRating] = useState(0);
@@ -57,20 +59,26 @@ function ProductDetailContent() {
       .slice(0, 8);
   }, [allProducts, product]);
 
-  useEffect(() => {
-    if (productId) fetchData();
-  }, [productId]);
+useEffect(() => {
+  if (product && product.variants.length > 0 && !selectedVariant) {
+    setSelectedVariant(product.variants[0]);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [product]);
+
+ 
 
   const handleAddToCart = async () => {
-    try {
-      await addToCart(productId, quantity);
-      setToast("Item added to cart!");
-      setTimeout(() => setToast(""), 2000);
-    } catch (err: any) {
-      setToast(err?.response?.data?.message || "Failed to add item");
-      setTimeout(() => setToast(""), 2500);
-    }
-  };
+  try {
+    await addToCart(productId, quantity, selectedVariant?.id);
+    setToast("Item added to cart!");
+    setTimeout(() => setToast(""), 2000);
+  } catch (err: any) {
+    setToast(err?.response?.data?.message || "Failed to add item");
+    setTimeout(() => setToast(""), 2500);
+  }
+};
+
 
   const handleSubmitReview = async () => {
     setReviewError("");
@@ -93,6 +101,7 @@ function ProductDetailContent() {
       setSubmitting(false);
     }
   };
+  
 
   if (loading || !product) {
     return (
@@ -104,6 +113,7 @@ function ProductDetailContent() {
       </div>
     );
   }
+  
 
   const outOfStock = product.stockQuantity <= 0;
 
@@ -172,6 +182,37 @@ function ProductDetailContent() {
                 </span>
               )}
             </div>
+            {product.variants.length > 0 && (
+  <div className="mb-4">
+    {/* Group variants by type (Size, Color) for cleaner display */}
+    {Array.from(new Set(product.variants.map((v) => v.variantType))).map((type) => (
+      <div key={type} className="mb-3">
+        <p className="text-xs font-medium text-gray-500 mb-1.5">{type}</p>
+        <div className="flex flex-wrap gap-2">
+          {product.variants
+            .filter((v) => v.variantType === type)
+            .map((variant) => (
+              <button
+                key={variant.id}
+                onClick={() => setSelectedVariant(variant)}
+                disabled={variant.stockQuantity === 0}
+                className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition ${
+                  selectedVariant?.id === variant.id
+                    ? "border-blue-500 bg-blue-50 text-blue-700"
+                    : variant.stockQuantity === 0
+                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                    : "border-gray-200 text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                {variant.variantValue}
+                {variant.stockQuantity === 0 && " (Out of stock)"}
+              </button>
+            ))}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
             <p
               className={`text-sm mb-4 font-medium ${
@@ -188,6 +229,7 @@ function ProductDetailContent() {
                   ? `⚡ Hurry! Only ${product.stockQuantity} left in stock`
                   : `${product.stockQuantity} in stock`}
             </p>
+
 
             {!outOfStock && (
               <>
