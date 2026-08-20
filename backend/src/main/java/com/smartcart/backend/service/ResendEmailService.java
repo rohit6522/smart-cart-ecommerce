@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import com.smartcart.backend.entity.Product;
 
 import java.util.List;
 import java.util.Map;
@@ -95,5 +96,19 @@ public class ResendEmailService {
         );
 
         sendEmail(user.getEmail(), "Order Confirmed - #ORD-" + order.getId(), body);
+    }
+
+    @Value("${admin.alert.email}")
+    private String adminAlertEmail;
+
+    @Async
+    public void sendLowStockAlert(List<Product> products) {
+        StringBuilder body = new StringBuilder("The following products are running low on stock:\n\n");
+        for (Product p : products) {
+            body.append(String.format("- %s: only %d left (Category: %s)%n", p.getName(), p.getStockQuantity(), p.getCategory()));
+        }
+        body.append("\nPlease restock soon to avoid running out.\n\nSmart Cart Admin Alerts");
+
+        sendEmail(adminAlertEmail, "⚠️ Low Stock Alert - " + products.size() + " product(s)", body.toString());
     }
 }

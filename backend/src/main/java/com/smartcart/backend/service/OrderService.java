@@ -105,6 +105,8 @@ public class    OrderService {
                 order.getId()
         );
 
+        List<Product> lowStockProducts = new java.util.ArrayList<>();
+
         for (CartItem item : cartItems) {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
@@ -117,6 +119,15 @@ public class    OrderService {
             Product product = item.getProduct();
             product.setStockQuantity(product.getStockQuantity() - item.getQuantity());
             productRepository.save(product);
+
+            // Flag for a low-stock alert if this order pushed it to 5 or below
+            if (product.getStockQuantity() <= 5) {
+                lowStockProducts.add(product);
+            }
+        }
+
+        if (!lowStockProducts.isEmpty()) {
+            emailService.sendLowStockAlert(lowStockProducts);
         }
 
         cartItemRepository.deleteAll(cartItems);

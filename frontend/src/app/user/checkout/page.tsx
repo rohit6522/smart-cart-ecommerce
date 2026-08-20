@@ -13,8 +13,19 @@ import { getMyAddresses } from "@/lib/addressApi";
 import { useAuth } from "@/context/AuthContext";
 import { CartResponse, Address } from "@/types";
 import { RazorpaySuccessResponse } from "@/types/razorpay";
-import { MapPin, CreditCard, ChevronLeft, ChevronRight, ShoppingCart, Check, LocateFixed } from "lucide-react";
+import {
+  MapPin,
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
+  ShoppingCart,
+  Check,
+  LocateFixed,
+} from "lucide-react";
 import { lookupPincode, getCurrentLocationAddress } from "@/lib/locationUtils";
+import { getMyCoupons, applyCoupon } from "@/lib/couponApi";
+import { CouponInfo } from "@/types";
+import { Tag } from "lucide-react";
 
 function CheckoutContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -34,17 +45,25 @@ function CheckoutContent() {
     phone: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">("COD");
+  const [paymentMethod, setPaymentMethod] = useState<"CARD" | "UPI" | "COD">(
+    "COD",
+  );
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
 
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
+    null,
+  );
   const [pincodeLoading, setPincodeLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
 
   const [promoCode, setPromoCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discountAmount: number } | null>(null);
+  const [myCoupons, setMyCoupons] = useState<CouponInfo[]>([]);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string;
+    discountAmount: number;
+  } | null>(null);
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
@@ -60,6 +79,10 @@ function CheckoutContent() {
       .catch((err) => console.error("Failed to load cart", err))
       .finally(() => setLoading(false));
 
+    getMyCoupons()
+      .then(setMyCoupons)
+      .catch(() => {});
+
     getMyAddresses()
       .then((addresses) => {
         setSavedAddresses(addresses);
@@ -73,7 +96,10 @@ function CheckoutContent() {
     if (pendingCode) {
       applyCoupon(pendingCode)
         .then((result) => {
-          setAppliedCoupon({ code: result.code, discountAmount: result.discountAmount });
+          setAppliedCoupon({
+            code: result.code,
+            discountAmount: result.discountAmount,
+          });
           setPromoCode(result.code);
         })
         .catch(() => {
@@ -107,7 +133,11 @@ function CheckoutContent() {
     try {
       const result = await lookupPincode(form.zip);
       if (result) {
-        setForm((prev) => ({ ...prev, city: result.city, state: result.state }));
+        setForm((prev) => ({
+          ...prev,
+          city: result.city,
+          state: result.state,
+        }));
       }
     } catch {
       // silent fail
@@ -141,10 +171,34 @@ function CheckoutContent() {
     setCouponError("");
     try {
       const result = await applyCoupon(promoCode.trim());
-      setAppliedCoupon({ code: result.code, discountAmount: result.discountAmount });
+      setAppliedCoupon({
+        code: result.code,
+        discountAmount: result.discountAmount,
+      });
       sessionStorage.setItem("pendingCoupon", result.code);
     } catch (err: any) {
       setCouponError(err?.response?.data?.message || "Invalid coupon code");
+      setAppliedCoupon(null);
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleCouponClick = async (code: string) => {
+    setPromoCode(code);
+    setApplyingCoupon(true);
+    setCouponError("");
+    try {
+      const result = await applyCoupon(code);
+      setAppliedCoupon({
+        code: result.code,
+        discountAmount: result.discountAmount,
+      });
+      sessionStorage.setItem("pendingCoupon", result.code);
+    } catch (err: any) {
+      setCouponError(
+        err?.response?.data?.message || "This coupon is not applicable",
+      );
       setAppliedCoupon(null);
     } finally {
       setApplyingCoupon(false);
@@ -230,7 +284,9 @@ function CheckoutContent() {
             sessionStorage.removeItem("pendingCoupon");
             router.push(`/user/order-success?orderId=${order.orderId}`);
           } catch (err: any) {
-            setError(err?.response?.data?.message || "Payment verification failed");
+            setError(
+              err?.response?.data?.message || "Payment verification failed",
+            );
             setPlacingOrder(false);
           }
         },
@@ -315,12 +371,17 @@ function CheckoutContent() {
                       }`}
                     >
                       {selectedAddressId === addr.id && (
-                        <Check size={16} className="absolute top-3 right-3 text-blue-600" />
+                        <Check
+                          size={16}
+                          className="absolute top-3 right-3 text-blue-600"
+                        />
                       )}
                       <span className="text-xs bg-white border border-gray-200 px-2 py-0.5 rounded-full font-medium text-gray-600">
                         {addr.label}
                       </span>
-                      <p className="text-sm font-medium text-gray-900 mt-1.5">{addr.fullName}</p>
+                      <p className="text-sm font-medium text-gray-900 mt-1.5">
+                        {addr.fullName}
+                      </p>
                       <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                         {addr.street}, {addr.city}, {addr.state} {addr.zip}
                       </p>
@@ -330,12 +391,16 @@ function CheckoutContent() {
               )}
 
               <p className="text-xs text-gray-400 mb-3">
-                {savedAddresses.length > 0 ? "Or enter a new address below:" : "Enter your delivery address:"}
+                {savedAddresses.length > 0
+                  ? "Or enter a new address below:"
+                  : "Enter your delivery address:"}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">FIRST NAME</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    FIRST NAME
+                  </label>
                   <input
                     name="firstName"
                     value={form.firstName}
@@ -345,7 +410,9 @@ function CheckoutContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">LAST NAME</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    LAST NAME
+                  </label>
                   <input
                     name="lastName"
                     value={form.lastName}
@@ -356,7 +423,9 @@ function CheckoutContent() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">STREET ADDRESS</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    STREET ADDRESS
+                  </label>
                   <input
                     name="street"
                     value={form.street}
@@ -367,7 +436,9 @@ function CheckoutContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">CITY</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    CITY
+                  </label>
                   <input
                     name="city"
                     value={form.city}
@@ -378,7 +449,9 @@ function CheckoutContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">STATE</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                      STATE
+                    </label>
                     <input
                       name="state"
                       value={form.state}
@@ -389,7 +462,10 @@ function CheckoutContent() {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                      ZIP CODE {pincodeLoading && <span className="text-blue-500">(looking up...)</span>}
+                      ZIP CODE{" "}
+                      {pincodeLoading && (
+                        <span className="text-blue-500">(looking up...)</span>
+                      )}
                     </label>
                     <input
                       name="zip"
@@ -404,7 +480,9 @@ function CheckoutContent() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-gray-500 mb-1.5">PHONE NUMBER</label>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                    PHONE NUMBER
+                  </label>
                   <input
                     name="phone"
                     value={form.phone}
@@ -433,7 +511,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">Credit Card</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    Credit Card
+                  </p>
                   <p className="text-xs text-gray-400">Visa, Master</p>
                 </button>
                 <button
@@ -445,7 +525,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">UPI / Wallet</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    UPI / Wallet
+                  </p>
                   <p className="text-xs text-gray-400">GPay, PhonePe</p>
                 </button>
                 <button
@@ -457,7 +539,9 @@ function CheckoutContent() {
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <p className="font-medium text-gray-900 text-sm">Cash on Delivery</p>
+                  <p className="font-medium text-gray-900 text-sm">
+                    Cash on Delivery
+                  </p>
                   <p className="text-xs text-gray-400">Pay at your door</p>
                 </button>
               </div>
@@ -465,7 +549,9 @@ function CheckoutContent() {
               {paymentMethod === "CARD" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">CARDHOLDER NAME</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                      CARDHOLDER NAME
+                    </label>
                     <input
                       value={cardName}
                       onChange={(e) => setCardName(e.target.value)}
@@ -474,7 +560,9 @@ function CheckoutContent() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">CARD NUMBER</label>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                      CARD NUMBER
+                    </label>
                     <input
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
@@ -483,14 +571,16 @@ function CheckoutContent() {
                     />
                   </div>
                   <p className="text-xs text-gray-400">
-                    You&apos;ll be redirected to our secure Razorpay checkout to complete this payment.
+                    You&apos;ll be redirected to our secure Razorpay checkout to
+                    complete this payment.
                   </p>
                 </div>
               )}
 
               {paymentMethod === "UPI" && (
                 <p className="text-sm text-gray-500">
-                  You&apos;ll be redirected to Razorpay to complete payment via UPI or your preferred wallet.
+                  You&apos;ll be redirected to Razorpay to complete payment via
+                  UPI or your preferred wallet.
                 </p>
               )}
 
@@ -518,7 +608,8 @@ function CheckoutContent() {
                           alt={item.productName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
+                            (e.target as HTMLImageElement).style.display =
+                              "none";
                           }}
                         />
                       ) : (
@@ -526,8 +617,12 @@ function CheckoutContent() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.productName}</p>
-                      <p className="text-xs text-gray-400">Qty: {item.quantity}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {item.productName}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
                     <span className="text-sm font-semibold text-gray-900">
                       ₹{item.subtotal.toFixed(2)}
@@ -541,9 +636,13 @@ function CheckoutContent() {
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between bg-green-50 text-green-700 text-sm px-3 py-2.5 rounded-lg">
                     <span className="font-medium">
-                      ✓ {appliedCoupon.code} (-₹{appliedCoupon.discountAmount.toFixed(2)})
+                      ✓ {appliedCoupon.code} (-₹
+                      {appliedCoupon.discountAmount.toFixed(2)})
                     </span>
-                    <button onClick={handleRemoveCoupon} className="text-green-800 hover:underline text-xs">
+                    <button
+                      onClick={handleRemoveCoupon}
+                      className="text-green-800 hover:underline text-xs"
+                    >
                       Remove
                     </button>
                   </div>
@@ -553,7 +652,9 @@ function CheckoutContent() {
                       <input
                         type="text"
                         value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          setPromoCode(e.target.value.toUpperCase())
+                        }
                         placeholder="Enter coupon code"
                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
@@ -565,15 +666,70 @@ function CheckoutContent() {
                         {applyingCoupon ? "..." : "Apply"}
                       </button>
                     </div>
-                    {couponError && <p className="text-red-600 text-xs mt-1.5">{couponError}</p>}
+                    {couponError && (
+                      <p className="text-red-600 text-xs mt-1.5">
+                        {couponError}
+                      </p>
+                    )}
                   </>
                 )}
               </div>
 
+              {!appliedCoupon && myCoupons.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-xs text-gray-400 mb-1">
+                    Available coupons for you:
+                  </p>
+                  {myCoupons.map((c) => {
+                    const isEligible = subtotal >= c.minOrderValue;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => isEligible && handleCouponClick(c.code)}
+                        disabled={!isEligible || applyingCoupon}
+                        className={`w-full flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs text-left transition ${
+                          isEligible
+                            ? "bg-orange-50 border border-orange-100 hover:bg-orange-100 cursor-pointer"
+                            : "bg-gray-50 border border-gray-100 opacity-50 cursor-not-allowed"
+                        }`}
+                      >
+                        <Tag
+                          size={13}
+                          className={`flex-shrink-0 mt-0.5 ${isEligible ? "text-orange-600" : "text-gray-400"}`}
+                        />
+                        <div>
+                          <span
+                            className={`font-mono font-bold ${isEligible ? "text-orange-700" : "text-gray-500"}`}
+                          >
+                            {c.code}
+                          </span>
+                          <span
+                            className={
+                              isEligible ? "text-orange-600" : "text-gray-400"
+                            }
+                          >
+                            {" "}
+                            — {c.description}
+                          </span>
+                          {!isEligible && (
+                            <p className="text-gray-400 mt-0.5">
+                              Add ₹{(c.minOrderValue - subtotal).toFixed(2)}{" "}
+                              more to unlock this coupon
+                            </p>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="space-y-2.5 text-sm">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span className="text-gray-900 font-medium">₹{subtotal.toFixed(2)}</span>
+                  <span className="text-gray-900 font-medium">
+                    ₹{subtotal.toFixed(2)}
+                  </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
@@ -587,17 +743,25 @@ function CheckoutContent() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Tax</span>
-                  <span className="text-gray-900 font-medium">₹{tax.toFixed(2)}</span>
+                  <span className="text-gray-900 font-medium">
+                    ₹{tax.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between items-center">
-                <span className="font-semibold text-gray-900">Total amount</span>
-                <span className="text-xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">
+                  Total amount
+                </span>
+                <span className="text-xl font-bold text-gray-900">
+                  ₹{total.toFixed(2)}
+                </span>
               </div>
 
               {error && (
-                <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mt-4">{error}</div>
+                <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mt-4">
+                  {error}
+                </div>
               )}
 
               <button
