@@ -8,7 +8,7 @@ import CheckoutStepper from "@/components/user/CheckoutStepper";
 import { getCart } from "@/lib/cartApi";
 import { checkout } from "@/lib/orderApi";
 import { createRazorpayOrder } from "@/lib/paymentApi";
-import { applyCoupon } from "@/lib/couponApi";
+
 import { getMyAddresses } from "@/lib/addressApi";
 import { useAuth } from "@/context/AuthContext";
 import { CartResponse, Address } from "@/types";
