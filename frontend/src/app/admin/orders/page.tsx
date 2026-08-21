@@ -6,9 +6,10 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import OrderStatusBadge from "@/components/user/OrderStatusBadge";
 import AssignDeliveryModal from "@/components/admin/AssignDeliveryModal";
-import { getAllOrders, updateOrderStatus, resolveReturn } from "@/lib/orderApi";
+import { getAllOrders, updateOrderStatus, resolveReturn, exportOrdersCsv } from "@/lib/orderApi";
 import { OrderResponse, OrderStatus } from "@/types";
-import { ArrowLeft, Package, Truck } from "lucide-react";
+import { ArrowLeft, Package, Truck , Download  } from "lucide-react";
+
 
 const STATUS_OPTIONS: OrderStatus[] = [
   "PENDING",
@@ -67,6 +68,14 @@ const handleResolveReturn = async (orderId: number, approve: boolean) => {
   }
 };
 
+const handleExport = async () => {
+  try {
+    await exportOrdersCsv();
+  } catch (err) {
+    console.error("Failed to export orders", err);
+  }
+};
+
   const filteredOrders =
     filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
 
@@ -82,21 +91,29 @@ const handleResolveReturn = async (orderId: number, approve: boolean) => {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as OrderStatus | "ALL")}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="ALL">All Statuses</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
-        </div>
+       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>
+  <div className="flex gap-2">
+    <button
+      onClick={handleExport}
+      className="flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium"
+    >
+      <Download size={15} /> Export CSV
+    </button>
+    <select
+      value={filter}
+      onChange={(e) => setFilter(e.target.value as OrderStatus | "ALL")}
+      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option value="ALL">All Statuses</option>
+      {STATUS_OPTIONS.map((s) => (
+        <option key={s} value={s}>
+          {s.replace(/_/g, " ")}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
 
         {loading ? (
           <div className="space-y-3">

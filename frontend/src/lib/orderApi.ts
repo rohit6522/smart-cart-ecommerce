@@ -57,3 +57,14 @@ export const resolveReturn = async (orderId: number, approve: boolean) => {
   );
   return res.data.data;
 };
+
+export const exportOrdersCsv = async () => {
+  const res = await api.get("/api/admin/orders/export", { responseType: "blob" });
+  const blob = new Blob([res.data], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "orders-export.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+};
