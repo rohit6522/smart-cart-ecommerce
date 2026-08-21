@@ -81,4 +81,16 @@ public class OrderController {
                 .data(data)
                 .build());
     }
+
+
+    @GetMapping("/api/admin/orders/export")
+    public ResponseEntity<byte[]> exportOrders() {
+        String csv = orderService.exportOrdersAsCsv();
+        byte[] csvBytes = csv.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=orders-export.csv")
+                .header("Content-Type", "text/csv")
+                .body(csvBytes);
+    }
 }

@@ -353,5 +353,35 @@ public class    OrderService {
     }
 
 
+    public String exportOrdersAsCsv() {
+        List<Order> orders = orderRepository.findAll();
+        StringBuilder csv = new StringBuilder();
+        csv.append("Order ID,Customer Name,Customer Email,Status,Payment Status,Total Amount,Coupon Code,Discount,Delivery Address,Order Date\n");
+
+        for (Order order : orders) {
+            csv.append(order.getId()).append(",");
+            csv.append(escapeCsv(order.getUser().getName())).append(",");
+            csv.append(escapeCsv(order.getUser().getEmail())).append(",");
+            csv.append(order.getStatus().name()).append(",");
+            csv.append(order.getPaymentStatus() != null ? order.getPaymentStatus().name() : "").append(",");
+            csv.append(order.getTotalAmount()).append(",");
+            csv.append(order.getCouponCode() != null ? order.getCouponCode() : "").append(",");
+            csv.append(order.getDiscountAmount() != null ? order.getDiscountAmount() : "0").append(",");
+            csv.append(escapeCsv(order.getDeliveryAddress())).append(",");
+            csv.append(order.getCreatedAt()).append("\n");
+        }
+
+        return csv.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
+
 
 }
