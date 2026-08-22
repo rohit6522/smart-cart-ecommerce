@@ -2,6 +2,8 @@ package com.smartcart.backend.service;
 
 import com.smartcart.backend.entity.Order;
 import com.smartcart.backend.entity.OrderItem;
+import com.smartcart.backend.entity.Product;
+import com.smartcart.backend.entity.SupportTicket;
 import com.smartcart.backend.entity.User;
 import com.smartcart.backend.repository.OrderItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import com.smartcart.backend.entity.Product;
-import com.smartcart.backend.entity.SupportTicket;
+
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +27,9 @@ public class ResendEmailService {
 
     @Value("${resend.sender.email}")
     private String senderEmail;
+
+    @Value("${admin.alert.email}")
+    private String adminAlertEmail;
 
     private final OrderItemRepository orderItemRepository;
 
@@ -98,9 +102,6 @@ public class ResendEmailService {
         sendEmail(user.getEmail(), "Order Confirmed - #ORD-" + order.getId(), body);
     }
 
-    @Value("${admin.alert.email}")
-    private String adminAlertEmail;
-
     @Async
     public void sendLowStockAlert(List<Product> products) {
         StringBuilder body = new StringBuilder("The following products are running low on stock:\n\n");
@@ -111,9 +112,6 @@ public class ResendEmailService {
 
         sendEmail(adminAlertEmail, "⚠️ Low Stock Alert - " + products.size() + " product(s)", body.toString());
     }
-
-    @Value("${admin.alert.email}")
-//    private String adminAlertEmail; // reuse from Step 65 if already added
 
     @Async
     public void sendSupportTicketAlert(SupportTicket ticket, User user) {
