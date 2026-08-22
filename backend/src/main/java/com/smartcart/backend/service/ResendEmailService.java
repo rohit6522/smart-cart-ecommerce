@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.smartcart.backend.entity.Product;
-
+import com.smartcart.backend.entity.SupportTicket;
 import java.util.List;
 import java.util.Map;
 
@@ -110,5 +110,17 @@ public class ResendEmailService {
         body.append("\nPlease restock soon to avoid running out.\n\nSmart Cart Admin Alerts");
 
         sendEmail(adminAlertEmail, "⚠️ Low Stock Alert - " + products.size() + " product(s)", body.toString());
+    }
+
+    @Value("${admin.alert.email}")
+//    private String adminAlertEmail; // reuse from Step 65 if already added
+
+    @Async
+    public void sendSupportTicketAlert(SupportTicket ticket, User user) {
+        String body = String.format(
+                "New support ticket submitted:\n\nFrom: %s (%s)\nSubject: %s\n\nMessage:\n%s\n\nSmart Cart Support",
+                user.getName(), user.getEmail(), ticket.getSubject(), ticket.getMessage()
+        );
+        sendEmail(adminAlertEmail, "New Support Ticket: " + ticket.getSubject(), body);
     }
 }
