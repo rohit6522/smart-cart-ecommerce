@@ -6,9 +6,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { submitTicket, getMyTickets } from "@/lib/supportApi";
 import { SupportTicket } from "@/types";
-import { MessageCircle, Send, CheckCircle2, Clock } from "lucide-react";
+import {
+  MessageCircle,
+  Send,
+  CheckCircle2,
+  Clock,
+  ArrowLeft,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 function SupportContent() {
+  const router = useRouter();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -55,7 +63,16 @@ function SupportContent() {
       <Navbar title="Smart Cart" />
 
       <div className="max-w-3xl mx-auto px-6 py-8 flex-1 w-full">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Contact Support</h1>
+        <button
+          onClick={() => router.push("/user")}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
+        >
+          <ArrowLeft size={16} /> Back to Shopping
+        </button>
+
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          Contact Support
+        </h1>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
@@ -81,7 +98,9 @@ function SupportContent() {
 
             {error && <p className="text-red-600 text-sm">{error}</p>}
             {success && (
-              <div className="bg-green-50 text-green-700 text-sm px-4 py-2.5 rounded-lg">{success}</div>
+              <div className="bg-green-50 text-green-700 text-sm px-4 py-2.5 rounded-lg">
+                {success}
+              </div>
             )}
 
             <button
@@ -96,7 +115,9 @@ function SupportContent() {
 
         {/* Past tickets */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h2 className="font-bold text-gray-900 mb-4">Your Previous Queries</h2>
+          <h2 className="font-bold text-gray-900 mb-4">
+            Your Previous Queries
+          </h2>
 
           {loading ? (
             <div className="space-y-2">
@@ -105,13 +126,20 @@ function SupportContent() {
               ))}
             </div>
           ) : tickets.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">No queries submitted yet.</p>
+            <p className="text-sm text-gray-400 text-center py-6">
+              No queries submitted yet.
+            </p>
           ) : (
             <div className="space-y-3">
               {tickets.map((ticket) => (
-                <div key={ticket.id} className="border border-gray-100 rounded-lg p-4">
+                <div
+                  key={ticket.id}
+                  className="border border-gray-100 rounded-lg p-4"
+                >
                   <div className="flex items-center justify-between mb-1.5">
-                    <h4 className="font-medium text-gray-900 text-sm">{ticket.subject}</h4>
+                    <h4 className="font-medium text-gray-900 text-sm">
+                      {ticket.subject}
+                    </h4>
                     <span
                       className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                         ticket.status === "RESOLVED"
@@ -119,7 +147,11 @@ function SupportContent() {
                           : "bg-yellow-50 text-yellow-700"
                       }`}
                     >
-                      {ticket.status === "RESOLVED" ? <CheckCircle2 size={11} /> : <Clock size={11} />}
+                      {ticket.status === "RESOLVED" ? (
+                        <CheckCircle2 size={11} />
+                      ) : (
+                        <Clock size={11} />
+                      )}
                       {ticket.status}
                     </span>
                   </div>
