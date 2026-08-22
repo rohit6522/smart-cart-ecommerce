@@ -307,3 +307,13 @@ export interface VariantPayload {
   variantValue: string;
   stockQuantity: number;
 }
+
+export interface SupportTicket {
+  id: number;
+  subject: string;
+  message: string;
+  status: "OPEN" | "RESOLVED";
+  userName: string;
+  userEmail: string;
+  createdAt: string;
+}

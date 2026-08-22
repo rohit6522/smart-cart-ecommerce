@@ -13,8 +13,8 @@ export default function Footer() {
             <span className="font-bold text-lg">Smart Cart</span>
           </div>
           <p className="text-sm text-blue-100 leading-relaxed">
-            Your one-stop shopping destination. Shop smart, track your budget, and save more
-            every day!
+            Your one-stop shopping destination. Shop smart, track your budget,
+            and save more every day!
           </p>
         </div>
 
@@ -38,8 +38,20 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href="/user/profile" className="hover:text-white transition">
+              <Link
+                href="/user/profile"
+                className="hover:text-white transition"
+              >
                 My Profile
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href="/user/support"
+                className="hover:text-white transition"
+              >
+                Contact Support
               </Link>
             </li>
           </ul>
@@ -59,29 +71,27 @@ export default function Footer() {
               <Mail size={15} /> support@smartcart.in
             </li>
           </ul>
-          
+
           <div className="flex items-center gap-3 mt-4">
-  <a
-    href="#"
-    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
-  >
-    f
-  </a>
-  <a
-    href="#"
-    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
-  >
-    ig
-  </a>
-  <a
-    href="https://x.com/home"
-    className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
-  >
-    x
-  </a>
-</div>
-
-
+            <a
+              href="#"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+            >
+              f
+            </a>
+            <a
+              href="#"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+            >
+              ig
+            </a>
+            <a
+              href="https://x.com/home"
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 transition text-xs font-bold"
+            >
+              x
+            </a>
+          </div>
         </div>
       </div>
 
