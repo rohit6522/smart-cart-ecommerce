@@ -9,7 +9,7 @@ import { getAllOrders } from "@/lib/orderApi";
 import { Product, OrderResponse } from "@/types";
 import { Package, ShoppingBag, IndianRupee, Clock } from "lucide-react";
 import Link from "next/link";
-import { BarChart3, MessageCircle } from "lucide-react";
+import { BarChart3, MessageCircle, Tag } from "lucide-react";
 
 function AdminDashboardContent() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -81,59 +81,82 @@ function AdminDashboardContent() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-  <Link
-    href="/admin/products"
-    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
-  >
-    <div className="bg-blue-50 p-3 rounded-xl">
-      <Package className="text-blue-600" size={24} />
-    </div>
-    <div>
-      <h3 className="font-semibold text-gray-900">Manage Products</h3>
-      <p className="text-sm text-gray-500">Add, edit, or remove products</p>
-    </div>
-  </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          <Link
+            href="/admin/products"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-blue-50 p-3 rounded-xl">
+              <Package className="text-blue-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Manage Products</h3>
+              <p className="text-sm text-gray-500">
+                Add, edit, or remove products
+              </p>
+            </div>
+          </Link>
 
-  <Link
-    href="/admin/orders"
-    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
-  >
-    <div className="bg-purple-50 p-3 rounded-xl">
-      <ShoppingBag className="text-purple-600" size={24} />
-    </div>
-    <div>
-      <h3 className="font-semibold text-gray-900">Manage Orders</h3>
-      <p className="text-sm text-gray-500">View orders and assign delivery</p>
-    </div>
-  </Link>
+          <Link
+            href="/admin/orders"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-purple-50 p-3 rounded-xl">
+              <ShoppingBag className="text-purple-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Manage Orders</h3>
+              <p className="text-sm text-gray-500">
+                View orders and assign delivery
+              </p>
+            </div>
+          </Link>
 
-  <Link
-    href="/admin/analytics"
-    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
-  >
-    <div className="bg-green-50 p-3 rounded-xl">
-      <BarChart3 className="text-green-600" size={24} />
-    </div>
-    <div>
-      <h3 className="font-semibold text-gray-900">Sales Analytics</h3>
-      <p className="text-sm text-gray-500">Revenue trends and insights</p>
-    </div>
-  </Link>
+          <Link
+            href="/admin/analytics"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-green-50 p-3 rounded-xl">
+              <BarChart3 className="text-green-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Sales Analytics</h3>
+              <p className="text-sm text-gray-500">
+                Revenue trends and insights
+              </p>
+            </div>
+          </Link>
 
-  <Link
-    href="/admin/support"
-    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
-  >
-    <div className="bg-orange-50 p-3 rounded-xl">
-      <MessageCircle className="text-orange-600" size={24} />
-    </div>
-    <div>
-      <h3 className="font-semibold text-gray-900">Support Tickets</h3>
-      <p className="text-sm text-gray-500">View and resolve customer queries</p>
-    </div>
-  </Link>
-</div>
+          <Link
+            href="/admin/support"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-orange-50 p-3 rounded-xl">
+              <MessageCircle className="text-orange-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Support Tickets</h3>
+              <p className="text-sm text-gray-500">
+                View and resolve customer queries
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/coupons"
+            className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition flex flex-col items-start gap-3"
+          >
+            <div className="bg-pink-50 p-3 rounded-xl">
+              <Tag className="text-pink-600" size={24} />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">Manage Coupons</h3>
+              <p className="text-sm text-gray-500">
+                Create and manage discount codes
+              </p>
+            </div>
+          </Link>
+        </div>
 
         {/* Recent Orders preview */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">

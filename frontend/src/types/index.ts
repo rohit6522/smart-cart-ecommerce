@@ -317,3 +317,28 @@ export interface SupportTicket {
   userEmail: string;
   createdAt: string;
 }
+
+export type DiscountType = "PERCENTAGE" | "FLAT";
+
+export interface Coupon {
+  id: number;
+  code: string;
+  description: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minOrderValue: number;
+  firstOrderOnly: boolean;
+  active: boolean;
+  expiresAt: string | null;
+}
+
+export interface CouponFormPayload {
+  code: string;
+  description: string;
+  discountType: DiscountType;
+  discountValue: number;
+  minOrderValue: number;
+  firstOrderOnly: boolean;
+  active: boolean;
+  expiresAt: string | null;
+}
