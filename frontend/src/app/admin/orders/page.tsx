@@ -14,7 +14,7 @@ import {
 } from "@/lib/orderApi";
 import { OrderResponse, OrderStatus } from "@/types";
 import { ArrowLeft, Package, Truck, Download } from "lucide-react";
-
+import BackButton from "@/components/ui/BackButton";
 const STATUS_OPTIONS: OrderStatus[] = [
   "PENDING",
   "CONFIRMED",
@@ -94,6 +94,7 @@ function AdminOrdersContent() {
         >
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
+        <BackButton href="/admin" label="Back to Dashboard" />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>

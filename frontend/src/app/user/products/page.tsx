@@ -11,6 +11,7 @@ import { Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import BackButton from "@/components/ui/BackButton"; 
 function ProductsContent() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,7 @@ const [category, setCategory] = useState(initialCategory);  const [toast, setToa
       <Navbar title="Smart Cart" />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
+        <BackButton href="/user" label="Back to Home" />
         <button
           onClick={() => router.push("/user")}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
