@@ -15,6 +15,7 @@ import {
 } from "@/lib/addressApi";
 import { Address, AddressPayload } from "@/types";
 import { MapPin, Plus, Pencil, Trash2, Star, Phone } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
 
 function AddressesContent() {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -78,8 +79,11 @@ function AddressesContent() {
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row gap-6">
         <ProfileSidebar />
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-xl font-bold text-gray-900">Saved Addresses</h1>
+          <BackButton href="/user/profile" label="Back to Profile" />
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h1 className="text-xl font-bold text-gray-900 mb-6">
+              Saved Addresses
+            </h1>
             <button
               onClick={openAddModal}
               className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm"
@@ -91,7 +95,10 @@ function AddressesContent() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="h-32 bg-white border border-gray-200 rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-32 bg-white border border-gray-200 rounded-xl animate-pulse"
+                />
               ))}
             </div>
           ) : addresses.length === 0 ? (
@@ -118,7 +125,9 @@ function AddressesContent() {
                   <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium mb-2">
                     {addr.label}
                   </span>
-                  <p className="font-semibold text-gray-900 text-sm">{addr.fullName}</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    {addr.fullName}
+                  </p>
                   <p className="text-sm text-gray-500 mt-1">
                     {addr.street}, {addr.city}, {addr.state} {addr.zip}
                   </p>
