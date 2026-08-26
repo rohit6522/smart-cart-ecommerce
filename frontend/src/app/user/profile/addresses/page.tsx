@@ -109,57 +109,69 @@ function AddressesContent() {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {addresses.map((addr) => (
-                <div
-                  key={addr.id}
-                  className={`bg-white border rounded-xl p-4 relative ${
-                    addr.isDefault ? "border-blue-500" : "border-gray-200"
-                  }`}
-                >
-                  {addr.isDefault && (
-                    <span className="absolute top-3 right-3 flex items-center gap-1 text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                      <Star size={11} className="fill-blue-700" /> Default
-                    </span>
-                  )}
-                  <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium mb-2">
-                    {addr.label}
-                  </span>
-                  <p className="font-semibold text-gray-900 text-sm">
-                    {addr.fullName}
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    {addr.street}, {addr.city}, {addr.state} {addr.zip}
-                  </p>
-                  <p className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-                    <Phone size={12} /> {addr.phone}
-                  </p>
 
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-                    {!addr.isDefault && (
-                      <button
-                        onClick={() => handleSetDefault(addr.id)}
-                        className="text-xs text-blue-600 hover:underline font-medium"
-                      >
-                        Set as Default
-                      </button>
-                    )}
-                    <button
-                      onClick={() => openEditModal(addr)}
-                      className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 ml-auto"
-                    >
-                      <Pencil size={12} /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(addr.id)}
-                      className="flex items-center gap-1 text-xs text-red-500 hover:text-red-600"
-                    >
-                      <Trash2 size={12} /> Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+  {addresses.map((addr) => (
+    <div
+      key={addr.id}
+      className={`bg-white border-2 rounded-xl p-5 transition ${
+        addr.isDefault ? "border-blue-500 bg-blue-50/30" : "border-gray-200"
+      }`}
+    >
+      {/* Radio-style default selector at the top */}
+      <button
+        onClick={() => !addr.isDefault && handleSetDefault(addr.id)}
+        disabled={addr.isDefault}
+        className="flex items-center gap-2 mb-3 w-full text-left"
+      >
+        <span
+          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+            addr.isDefault ? "border-blue-600" : "border-gray-300"
+          }`}
+        >
+          {addr.isDefault && <span className="w-2 h-2 rounded-full bg-blue-600" />}
+        </span>
+        <span className={`text-xs font-medium ${addr.isDefault ? "text-blue-700" : "text-gray-500"}`}>
+          {addr.isDefault ? "Default delivery address" : "Set as default"}
+        </span>
+      </button>
+
+      <div className="pl-6 space-y-2.5">
+        <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full font-medium">
+          {addr.label}
+        </span>
+
+        <p className="font-semibold text-gray-900 text-sm">{addr.fullName}</p>
+
+        <p className="text-sm text-gray-500 leading-relaxed">
+          {addr.street}
+          <br />
+          {addr.city}, {addr.state} {addr.zip}
+        </p>
+
+        <p className="flex items-center gap-1.5 text-sm text-gray-500">
+          <Phone size={13} /> {addr.phone}
+        </p>
+      </div>
+
+      <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100 pl-6">
+        <button
+          onClick={() => openEditModal(addr)}
+          className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 hover:bg-gray-50 px-3 py-1.5 rounded-lg font-medium"
+        >
+          <Pencil size={12} /> Edit
+        </button>
+        <button
+          onClick={() => handleDelete(addr.id)}
+          className="flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 border border-red-100 hover:bg-red-50 px-3 py-1.5 rounded-lg font-medium ml-auto"
+        >
+          <Trash2 size={12} /> Delete
+        </button>
+      </div>
+    </div>
+  ))}
+</div>
+
           )}
         </div>
       </div>
