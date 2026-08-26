@@ -20,10 +20,9 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import { ArrowLeft } from "lucide-react";
+import BackButton from "@/components/ui/BackButton";
 
 type TabKey = "ALL" | "PROCESSING" | "SHIPPED" | "DELIVERED";
-
-
 
 const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
   PENDING: "PROCESSING",
@@ -35,8 +34,6 @@ const STATUS_TO_TAB: Record<OrderStatus, TabKey> = {
   RETURNED: "DELIVERED",
   RETURN_REJECTED: "DELIVERED",
 };
-
-
 
 const STATUS_BADGE_STYLES: Record<OrderStatus, string> = {
   PENDING: "bg-yellow-50 text-yellow-700",
@@ -141,20 +138,14 @@ function OrderHistoryContent() {
   };
 
   return (
-  <div className="min-h-screen bg-gray-50 flex flex-col">
-    <Navbar title="Smart Cart" />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Navbar title="Smart Cart" />
 
-    <div className="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
+      <div className="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
 
-     
-  <button
-    onClick={() => router.push("/user")}
-    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
-  >
-    <ArrowLeft size={16} /> Back to Home
-  </button>
+        <BackButton href="/user/profile" label="Back to Profile" />
 
-  <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
 
         <OrderStatusTabs
           active={activeTab}
@@ -173,12 +164,12 @@ function OrderHistoryContent() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <EmptyState
-  icon={Package}
-  title="No orders here yet"
-  description="Orders in this category will show up here once you place them."
-  actionLabel="Start Shopping"
-  actionHref="/user"
-/>
+            icon={Package}
+            title="No orders here yet"
+            description="Orders in this category will show up here once you place them."
+            actionLabel="Start Shopping"
+            actionHref="/user"
+          />
         ) : (
           <div className="space-y-5">
             {filteredOrders.map((order) => {
@@ -372,15 +363,15 @@ function OrderHistoryContent() {
         )}
       </div>
 
-       <Footer />
+      <Footer />
 
-       <CancelReturnModal
-      isOpen={modalOrder !== null}
-      onClose={() => setModalOrder(null)}
-      mode={modalMode}
-      onSubmit={modalMode === "cancel" ? handleCancel : handleReturn}
-      deliveryAddress={modalOrder?.deliveryAddress}
-    />
+      <CancelReturnModal
+        isOpen={modalOrder !== null}
+        onClose={() => setModalOrder(null)}
+        mode={modalMode}
+        onSubmit={modalMode === "cancel" ? handleCancel : handleReturn}
+        deliveryAddress={modalOrder?.deliveryAddress}
+      />
     </div>
   );
 }

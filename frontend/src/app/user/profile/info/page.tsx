@@ -6,6 +6,7 @@ import ProfileSidebar from "@/components/user/ProfileSidebar";
 import ProfilePhotoUpload from "@/components/user/ProfilePhotoUpload";
 import { useAuth } from "@/context/AuthContext";
 import BackButton from "@/components/ui/BackButton";
+
 function ProfileInfoContent() {
   const { user } = useAuth();
 
@@ -15,7 +16,9 @@ function ProfileInfoContent() {
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row gap-6">
         <ProfileSidebar />
         <div className="flex-1">
+
           <BackButton href="/user/profile" label="Back to Profile" />
+
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
             <h1 className="text-xl font-bold text-gray-900 mb-6">
               Profile Info
