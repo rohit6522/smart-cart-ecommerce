@@ -9,7 +9,8 @@ import { getMyNotifications, markAllAsRead } from "@/lib/notificationApi";
 import { Notification } from "@/types";
 
 export default function NotificationBell() {
-  const { unreadCount, refreshUnreadCount, setUnreadCount } = useNotifications();
+  const { unreadCount, refreshUnreadCount, setUnreadCount } =
+    useNotifications();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,10 @@ export default function NotificationBell() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -44,6 +48,16 @@ export default function NotificationBell() {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch (err) {
+      console.error("Failed to mark all as read", err);
     }
   };
 
@@ -96,16 +110,34 @@ export default function NotificationBell() {
             className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-lg z-30 max-h-96 overflow-y-auto"
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-0 bg-white">
-              <h3 className="font-semibold text-gray-900 text-sm">Notifications</h3>
-              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-700">
-                <X size={16} />
-              </button>
+              <h3 className="font-semibold text-gray-900 text-sm">
+                Notifications
+              </h3>
+              <div className="flex items-center gap-3">
+                {notifications.some((n) => !n.isRead) && (
+                  <button
+                    onClick={handleMarkAllRead}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    Mark all read
+                  </button>
+                )}
+                <button
+                  onClick={() => setOpen(false)}
+                  className="text-gray-400 hover:text-gray-700"
+                >
+                  <X size={16} />
+                </button>
+              </div>
             </div>
 
             {loading ? (
               <div className="p-4 space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+                  <div
+                    key={i}
+                    className="h-14 bg-gray-100 rounded-lg animate-pulse"
+                  />
                 ))}
               </div>
             ) : notifications.length === 0 ? (
@@ -128,9 +160,15 @@ export default function NotificationBell() {
                         <Package size={13} className="text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900">{n.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
-                        <p className="text-[11px] text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {n.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {n.message}
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-1">
+                          {timeAgo(n.createdAt)}
+                        </p>
                       </div>
                     </div>
                   </button>
