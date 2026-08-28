@@ -257,6 +257,15 @@ public class ProductService {
         Double avgRating = reviewRepository.getAverageRating(product.getId());
         Long reviewCount = reviewRepository.getReviewCount(product.getId());
 
+        List<VariantResponse> variants = variantRepository.findByProductId(product.getId()).stream()
+                .map(v -> VariantResponse.builder()
+                        .id(v.getId())
+                        .variantType(v.getVariantType())
+                        .variantValue(v.getVariantValue())
+                        .stockQuantity(v.getStockQuantity())
+                        .build())
+                .toList();
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -268,9 +277,9 @@ public class ProductService {
                 .category(product.getCategory())
                 .imageUrl(product.getImageUrl())
                 .createdAt(product.getCreatedAt())
-            .averageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0)
+                .averageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0)
                 .totalReviews(reviewCount != null ? reviewCount : 0L)
+                .variants(variants)
                 .build();
-
     }
 }
