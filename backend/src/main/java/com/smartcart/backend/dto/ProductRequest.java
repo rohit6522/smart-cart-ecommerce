@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 public class ProductRequest {
@@ -27,4 +28,5 @@ public class ProductRequest {
 
     private String category;
     private String imageUrl;
+    private List<VariantRequest> variants; // in ProductRequest
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,4 +27,5 @@ public class ProductResponse {
     private BigDecimal discountedPrice; // computed field, sent pre-calculated to frontend
     private Double averageRating;
     private Long totalReviews;
+    private List<VariantResponse> variants; // in ProductResponse
 }

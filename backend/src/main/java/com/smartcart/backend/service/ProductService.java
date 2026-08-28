@@ -1,7 +1,5 @@
 package com.smartcart.backend.service;
-
-import com.smartcart.backend.dto.ProductRequest;
-import com.smartcart.backend.dto.ProductResponse;
+import com.smartcart.backend.dto.*;
 import com.smartcart.backend.entity.Product;
 import com.smartcart.backend.exception.ApiException;
 import com.smartcart.backend.repository.ProductRepository;
@@ -10,8 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import com.smartcart.backend.dto.BulkUploadResponse;
 
+import java.math.RoundingMode;
+import java.util.Map;
+import java.util.stream.Collectors;
+import com.smartcart.backend.entity.Review;
+import com.smartcart.backend.entity.ProductVariant;
+
+import com.smartcart.backend.repository.ProductVariantRepository;
 import java.util.List;
 
 @Service
@@ -20,6 +24,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final ProductVariantRepository variantRepository;
 
     public ProductResponse createProduct(ProductRequest request) {
         Product product = Product.builder()
@@ -33,6 +38,19 @@ public class ProductService {
                 .build();
 
         product = productRepository.save(product);
+
+        if (request.getVariants() != null) {
+            for (VariantRequest v : request.getVariants()) {
+                ProductVariant variant = ProductVariant.builder()
+                        .product(product)
+                        .variantType(v.getVariantType())
+                        .variantValue(v.getVariantValue())
+                        .stockQuantity(v.getStockQuantity())
+                        .build();
+                variantRepository.save(variant);
+            }
+        }
+
         return mapToResponse(product);
     }
 
@@ -43,11 +61,26 @@ public class ProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
+        product.setDiscountPercentage(request.getDiscountPercentage());
         product.setStockQuantity(request.getStockQuantity());
         product.setCategory(request.getCategory());
         product.setImageUrl(request.getImageUrl());
-        product.setDiscountPercentage(request.getDiscountPercentage());
+
         product = productRepository.save(product);
+
+        variantRepository.deleteByProductId(product.getId());
+        if (request.getVariants() != null) {
+            for (VariantRequest v : request.getVariants()) {
+                ProductVariant variant = ProductVariant.builder()
+                        .product(product)
+                        .variantType(v.getVariantType())
+                        .variantValue(v.getVariantValue())
+                        .stockQuantity(v.getStockQuantity())
+                        .build();
+                variantRepository.save(variant);
+            }
+        }
+
         return mapToResponse(product);
     }
 
@@ -65,10 +98,64 @@ public class ProductService {
     }
 
     public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
+        List<Product> products = productRepository.findAll();
+
+        // Batch-fetch all reviews and variants ONCE instead of per-product (avoids N+1 queries)
+        List<Review> allReviews = reviewRepository.findAll();
+        List<ProductVariant> allVariants = variantRepository.findAll();
+
+        Map<Long, List<Review>> reviewsByProduct = allReviews.stream()
+                .collect(Collectors.groupingBy(r -> r.getProduct().getId()));
+
+        Map<Long, List<ProductVariant>> variantsByProduct = allVariants.stream()
+                .collect(Collectors.groupingBy(v -> v.getProduct().getId()));
+
+        return products.stream()
+                .map(p -> mapToResponseBatched(p, reviewsByProduct.getOrDefault(p.getId(), List.of()),
+                        variantsByProduct.getOrDefault(p.getId(), List.of())))
                 .toList();
+    }
+
+    private ProductResponse mapToResponseBatched(Product product, List<Review> reviews, List<ProductVariant> variants) {
+        BigDecimal discountPct = product.getDiscountPercentage() != null
+                ? product.getDiscountPercentage()
+                : BigDecimal.ZERO;
+
+        BigDecimal discountedPrice = product.getPrice();
+        if (discountPct.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal discountAmount = product.getPrice()
+                    .multiply(discountPct)
+                    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            discountedPrice = product.getPrice().subtract(discountAmount);
+        }
+
+        double avgRating = reviews.isEmpty() ? 0.0
+                : reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+
+        List<VariantResponse> variantResponses = variants.stream()
+                .map(v -> VariantResponse.builder()
+                        .id(v.getId())
+                        .variantType(v.getVariantType())
+                        .variantValue(v.getVariantValue())
+                        .stockQuantity(v.getStockQuantity())
+                        .build())
+                .toList();
+
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .discountPercentage(discountPct)
+                .discountedPrice(discountedPrice)
+                .stockQuantity(product.getStockQuantity())
+                .category(product.getCategory())
+                .imageUrl(product.getImageUrl())
+                .createdAt(product.getCreatedAt())
+                .averageRating(Math.round(avgRating * 10.0) / 10.0)
+                .totalReviews((long) reviews.size())
+                .variants(variantResponses)
+                .build();
     }
 
     public BulkUploadResponse bulkUploadFromCsv(org.springframework.web.multipart.MultipartFile file) {
