@@ -141,7 +141,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
               className="flex-1 flex justify-center relative"
               ref={searchContainerRef}
             >
-              <div className="relative w-full max-w-md">
+              <div className="relative w-full max-w-md hidden sm:block">
                 <Search
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                   size={16}
@@ -174,6 +174,15 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
           {user && user.role !== "USER" && <div className="flex-1" />}
 
           <div className="flex items-center gap-3 flex-shrink-0">
+            <button
+              onClick={() => {
+                setShowSuggestions(true);
+                searchInputRef.current?.focus();
+              }}
+              className="sm:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+            >
+              <Search size={20} />
+            </button>
             {!user && (
               <>
                 <Link
