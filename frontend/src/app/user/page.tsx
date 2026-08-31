@@ -90,7 +90,7 @@ function UserHomeContent() {
 
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
-      <div className="max-w-6xl mx-auto px-6 py-6 flex-1 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full">
         <HeroCarousel onShopNow={scrollToProducts} />
 
         {!loading && categories.length > 0 && !isSearching && (
@@ -156,7 +156,7 @@ function UserHomeContent() {
                 No products in this category.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {categoryProducts.map((product) => (
                   <ProductCard
                     key={product.id}

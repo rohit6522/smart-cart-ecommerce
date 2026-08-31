@@ -10,7 +10,11 @@ interface CategoryScrollProps {
   onSelect: (category: string | null) => void;
 }
 
-export default function CategoryScroll({ categories, activeCategory, onSelect }: CategoryScrollProps) {
+export default function CategoryScroll({
+  categories,
+  activeCategory,
+  onSelect,
+}: CategoryScrollProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(false);
 
@@ -51,11 +55,10 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
           <ChevronLeft size={16} />
         </button>
 
-        <div
-          ref={scrollRef}
-          className="flex overflow-x-auto no-scrollbar py-1"
-        >
-          <div className={`flex gap-5 flex-shrink-0 ${paused ? "" : "animate-category-scroll"}`}>
+        <div ref={scrollRef} className="flex overflow-x-auto no-scrollbar py-1">
+          <div
+            className={`flex gap-5 flex-shrink-0 ${paused ? "" : "animate-category-scroll"}`}
+          >
             {loopedCategories.map((category, idx) => {
               const { icon: Icon, bg } = getCategoryStyle(category);
               const isActive = activeCategory === category;
@@ -63,12 +66,14 @@ export default function CategoryScroll({ categories, activeCategory, onSelect }:
                 <button
                   key={`${category}-${idx}`}
                   onClick={() => handleClick(category)}
-                  className={`flex-shrink-0 w-28 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition ${bg} ${
-                    isActive ? "border-blue-500" : "border-transparent hover:border-gray-200"
+                  className={`flex-shrink-0 w-20 sm:w-28 flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-4 rounded-2xl border-2 transition ${bg} ${
+                    isActive
+                      ? "border-blue-500"
+                      : "border-transparent hover:border-gray-200"
                   }`}
                 >
-                  <Icon className="text-gray-700" size={26} />
-                  <span className="text-xs font-medium text-gray-800 text-center leading-tight">
+                  <Icon className="text-gray-700" size={20} />
+                  <span className="text-[10px] sm:text-xs font-medium text-gray-800 text-center leading-tight">
                     {category}
                   </span>
                 </button>

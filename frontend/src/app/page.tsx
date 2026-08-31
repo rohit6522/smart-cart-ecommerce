@@ -69,7 +69,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
-      <div className="max-w-6xl mx-auto px-6 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full">
         {!user && (
           <div className="bg-blue-50 border border-blue-100 text-blue-700 text-sm px-4 py-3 rounded-xl mb-6">
             👋 Browsing as guest — you can explore all products freely. To add items to your
