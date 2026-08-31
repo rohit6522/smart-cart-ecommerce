@@ -333,15 +333,15 @@ function CheckoutContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" />
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <CheckoutStepper currentStep={2} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Address + Payment forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <div className="flex items-center justify-between mb-5">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
                 <div className="flex items-center gap-2">
                   <MapPin size={18} className="text-blue-600" />
                   <h2 className="font-bold text-gray-900">Shipping Address</h2>
@@ -350,9 +350,9 @@ function CheckoutContent() {
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={locationLoading}
-                  className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 self-start sm:self-auto"
                 >
-                  <LocateFixed size={15} />
+                  <LocateFixed size={14} />
                   {locationLoading ? "Locating..." : "Use My Current Location"}
                 </button>
               </div>
@@ -396,7 +396,7 @@ function CheckoutContent() {
                   : "Enter your delivery address:"}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1.5">
                     FIRST NAME
@@ -594,7 +594,7 @@ function CheckoutContent() {
 
           {/* Right: Order Summary */}
           <div className="space-y-5">
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 sticky top-20">
+           <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 sm:sticky sm:top-20">
               <h3 className="font-bold text-gray-900 mb-4">Summary</h3>
 
               <div className="space-y-3 mb-4 max-h-52 overflow-y-auto">
