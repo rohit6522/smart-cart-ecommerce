@@ -75,8 +75,8 @@ function AdminCouponsContent() {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Coupons</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Manage Coupons</h1>
           <button
             onClick={openAddModal}
             className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm"

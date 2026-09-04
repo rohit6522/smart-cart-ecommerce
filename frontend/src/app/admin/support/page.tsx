@@ -36,7 +36,7 @@ function AdminSupportContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Admin Panel" />
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <button
           onClick={() => router.push("/admin")}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
@@ -44,7 +44,7 @@ function AdminSupportContent() {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Support Tickets</h1>
+       <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Support Tickets</h1>
 
         {loading ? (
           <div className="space-y-3">

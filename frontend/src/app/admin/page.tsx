@@ -36,7 +36,7 @@ function AdminDashboardContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Admin Panel" />
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
           Admin Dashboard
         </h1>
@@ -183,15 +183,19 @@ function AdminDashboardContent() {
                 .map((order) => (
                   <div
                     key={order.orderId}
-                    className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 text-sm"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 py-2.5 border-b border-gray-50 last:border-0 text-sm"
                   >
                     <span className="text-gray-900 font-medium">
                       Order #{order.orderId}
                     </span>
-                    <span className="text-gray-500">{order.status}</span>
-                    <span className="font-semibold text-gray-900">
-                      ₹{order.totalAmount.toFixed(2)}
-                    </span>
+                    <div className="flex items-center justify-between sm:contents">
+                      <span className="text-gray-500 text-xs sm:text-sm">
+                        {order.status}
+                      </span>
+                      <span className="font-semibold text-gray-900">
+                        ₹{order.totalAmount.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                 ))}
             </div>

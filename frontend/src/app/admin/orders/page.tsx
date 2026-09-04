@@ -97,7 +97,7 @@ function AdminOrdersContent() {
         <BackButton href="/admin" label="Back to Dashboard" />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Manage Orders</h1>
+         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Manage Orders</h1>
           <div className="flex gap-2">
             <button
               onClick={handleExport}
@@ -205,7 +205,8 @@ function AdminOrdersContent() {
                           )
                         }
                         disabled={updatingId === order.orderId}
-                        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 w-full sm:w-auto"
+
                       >
                         {[
                           "PENDING",
