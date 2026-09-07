@@ -17,13 +17,13 @@ export const metadata: Metadata = {
     siteName: "Smart Cart",
     type: "website",
     images: [
-      {
-        url: "https://smartcart-frontend-g472.onrender.com/preview.png",
-        width: 1200,
-        height: 630,
-        alt: "Smart Cart - E-Commerce Web Application",
-      },
-    ],
+  {
+    url: "https://smartcart-frontend-g472.onrender.com/SmartCart.png",
+    width: 1200,
+    height: 630,
+    alt: "Smart Cart - E-Commerce Web Application",
+  },
+],
   },
 };
 
