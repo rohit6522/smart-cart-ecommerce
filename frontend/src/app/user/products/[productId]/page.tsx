@@ -129,7 +129,7 @@ useEffect(() => {
           <ArrowLeft size={16} /> Back
         </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 bg-white border border-gray-200 rounded-2xl p-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 mb-8">
           <div className="h-72 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
             {product.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
