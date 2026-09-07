@@ -59,26 +59,23 @@ function ProductDetailContent() {
       .slice(0, 8);
   }, [allProducts, product]);
 
-useEffect(() => {
-  if (product && product.variants.length > 0 && !selectedVariant) {
-    setSelectedVariant(product.variants[0]);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [product]);
-
- 
+  useEffect(() => {
+    if (product && product.variants.length > 0 && !selectedVariant) {
+      setSelectedVariant(product.variants[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product]);
 
   const handleAddToCart = async () => {
-  try {
-    await addToCart(productId, quantity, selectedVariant?.id);
-    setToast("Item added to cart!");
-    setTimeout(() => setToast(""), 2000);
-  } catch (err: any) {
-    setToast(err?.response?.data?.message || "Failed to add item");
-    setTimeout(() => setToast(""), 2500);
-  }
-};
-
+    try {
+      await addToCart(productId, quantity, selectedVariant?.id);
+      setToast("Item added to cart!");
+      setTimeout(() => setToast(""), 2000);
+    } catch (err: any) {
+      setToast(err?.response?.data?.message || "Failed to add item");
+      setTimeout(() => setToast(""), 2500);
+    }
+  };
 
   const handleSubmitReview = async () => {
     setReviewError("");
@@ -101,7 +98,6 @@ useEffect(() => {
       setSubmitting(false);
     }
   };
-  
 
   if (loading || !product) {
     return (
@@ -113,7 +109,6 @@ useEffect(() => {
       </div>
     );
   }
-  
 
   const outOfStock = product.stockQuantity <= 0;
 
@@ -130,7 +125,7 @@ useEffect(() => {
         </button>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 mb-8">
-          <div className="h-72 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+          <div className="h-56 sm:h-72 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
             {product.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -163,13 +158,13 @@ useEffect(() => {
 
             <p className="text-gray-500 mb-4">{product.description}</p>
 
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex flex-wrap items-center gap-2 mb-4">
               {product.discountPercentage > 0 ? (
                 <>
-                  <span className="text-2xl font-bold text-gray-900">
+                  <span className="text-xl sm:text-2xl font-bold text-gray-900">
                     ₹{product.discountedPrice.toFixed(2)}
                   </span>
-                  <span className="text-gray-400 line-through">
+                  <span className="text-gray-400 line-through text-sm sm:text-base">
                     ₹{product.price.toFixed(2)}
                   </span>
                   <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -183,36 +178,40 @@ useEffect(() => {
               )}
             </div>
             {product.variants.length > 0 && (
-  <div className="mb-4">
-    {/* Group variants by type (Size, Color) for cleaner display */}
-    {Array.from(new Set(product.variants.map((v) => v.variantType))).map((type) => (
-      <div key={type} className="mb-3">
-        <p className="text-xs font-medium text-gray-500 mb-1.5">{type}</p>
-        <div className="flex flex-wrap gap-2">
-          {product.variants
-            .filter((v) => v.variantType === type)
-            .map((variant) => (
-              <button
-                key={variant.id}
-                onClick={() => setSelectedVariant(variant)}
-                disabled={variant.stockQuantity === 0}
-                className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition ${
-                  selectedVariant?.id === variant.id
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : variant.stockQuantity === 0
-                    ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                    : "border-gray-200 text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                {variant.variantValue}
-                {variant.stockQuantity === 0 && " (Out of stock)"}
-              </button>
-            ))}
-        </div>
-      </div>
-    ))}
-  </div>
-)}
+              <div className="mb-4">
+                {/* Group variants by type (Size, Color) for cleaner display */}
+                {Array.from(
+                  new Set(product.variants.map((v) => v.variantType)),
+                ).map((type) => (
+                  <div key={type} className="mb-3">
+                    <p className="text-xs font-medium text-gray-500 mb-1.5">
+                      {type}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {product.variants
+                        .filter((v) => v.variantType === type)
+                        .map((variant) => (
+                          <button
+                            key={variant.id}
+                            onClick={() => setSelectedVariant(variant)}
+                            disabled={variant.stockQuantity === 0}
+                            className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition ${
+                              selectedVariant?.id === variant.id
+                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                : variant.stockQuantity === 0
+                                  ? "border-gray-100 text-gray-300 cursor-not-allowed"
+                                  : "border-gray-200 text-gray-700 hover:border-gray-300"
+                            }`}
+                          >
+                            {variant.variantValue}
+                            {variant.stockQuantity === 0 && " (Out of stock)"}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <p
               className={`text-sm mb-4 font-medium ${
@@ -229,7 +228,6 @@ useEffect(() => {
                   ? `⚡ Hurry! Only ${product.stockQuantity} left in stock`
                   : `${product.stockQuantity} in stock`}
             </p>
-
 
             {!outOfStock && (
               <>
@@ -265,7 +263,7 @@ useEffect(() => {
         </div>
 
         {/* Reviews Section */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6">
           <h2 className="text-lg font-bold text-gray-900 mb-4">
             Customer Reviews
           </h2>
@@ -284,7 +282,7 @@ useEffect(() => {
                     fill={star <= myRating ? "#facc15" : "none"}
                     stroke={star <= myRating ? "#facc15" : "#d1d5db"}
                     strokeWidth={1.5}
-                    className="w-6 h-6"
+                    className="w-7 h-7 sm:w-6 sm:h-6"
                   >
                     <path
                       strokeLinecap="round"

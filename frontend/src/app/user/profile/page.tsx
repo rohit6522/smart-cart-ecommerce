@@ -49,7 +49,7 @@ function ProfileDashboardContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" />
 
-      <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row gap-6">
+     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8 flex flex-col sm:flex-row gap-4 sm:gap-6">
         <ProfileSidebar />
 
         <div className="flex-1">

@@ -142,7 +142,6 @@ function OrderHistoryContent() {
       <Navbar title="Smart Cart" />
 
       <div className="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
-
         <BackButton href="/user/profile" label="Back to Profile" />
 
         <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
@@ -184,8 +183,8 @@ function OrderHistoryContent() {
                   className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
                 >
                   {/* Header row */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 bg-gray-50 border-b border-gray-100">
-                    <div className="flex flex-wrap gap-6 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-b border-gray-100">
+                    <div className="flex flex-wrap gap-3 sm:gap-6 text-sm">
                       <div>
                         <p className="text-gray-400 text-xs">Order Placed</p>
                         <p className="font-semibold text-gray-900">
@@ -274,7 +273,7 @@ function OrderHistoryContent() {
                   </div>
 
                   {/* Item thumbnails */}
-                  <div className="px-6 pb-5 flex items-center gap-3">
+                  <div className="px-6 pb-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
                     <div className="flex -space-x-3">
                       {visibleItems.map((item, idx) => (
                         <div

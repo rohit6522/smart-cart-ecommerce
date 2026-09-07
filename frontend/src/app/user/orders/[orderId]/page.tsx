@@ -51,7 +51,7 @@ function OrderDetailContent() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar title="Smart Cart" />
-        <div className="max-w-2xl mx-auto px-6 py-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           <div className="h-64 bg-white border border-gray-200 rounded-xl animate-pulse" />
         </div>
       </div>
@@ -85,8 +85,8 @@ function OrderDetailContent() {
         </button>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-5">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="text-xl font-bold text-gray-900">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
               Order #{order.orderId}
             </h1>
             <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ function OrderDetailContent() {
             </div>
           )}
           {(order.canCancel || order.canReturn) && (
-            <div className="flex gap-3 mt-5 pt-5 border-t border-gray-100">
+           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-5 pt-5 border-t border-gray-100">
               {order.canCancel && (
                 <button
                   onClick={() => setModalMode("cancel")}
