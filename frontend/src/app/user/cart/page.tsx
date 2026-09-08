@@ -114,10 +114,10 @@ function CartContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" />
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <ShoppingCart className="text-blue-600" size={26} />
-          <h1 className="text-2xl font-bold text-gray-900">Your Cart</h1>
+     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+       <div className="flex items-center gap-2 sm:gap-3 mb-6">
+  <ShoppingCart className="text-blue-600" size={22} />
+  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Cart</h1>
           {!isEmpty && (
             <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
               {cart.items.length} {cart.items.length === 1 ? "Item" : "Items"}
@@ -134,9 +134,9 @@ function CartContent() {
             actionHref="/user"
           />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
             {/* Left: Items list */}
-            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl px-6">
+            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl px-4 sm:px-6">
               <AnimatePresence mode="popLayout">
                 {cart.items.map((item) => (
                   <CartItemRow

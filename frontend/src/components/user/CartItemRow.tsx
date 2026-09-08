@@ -51,7 +51,7 @@ export default function CartItemRow({
       transition={{ duration: 0.25 }}
       className="flex items-start gap-4 py-5 border-b border-gray-100 last:border-0"
     >
-      <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
@@ -66,23 +66,27 @@ export default function CartItemRow({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-  <h4 className="font-semibold text-gray-900">{item.productName}</h4>
-  {item.variantLabel && (
-    <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full mt-1">
-      {item.variantLabel}
-    </span>
-  )}
-  <p className="text-sm text-gray-400 mt-0.5">₹{item.priceAtAdd.toFixed(2)} each</p>
-</div>
-          <span className="font-bold text-gray-900 whitespace-nowrap">
+        <div className="flex items-start justify-between gap-2 sm:gap-3">
+          <div className="min-w-0">
+            <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+              {item.productName}
+            </h4>
+            {item.variantLabel && (
+              <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full mt-1">
+                {item.variantLabel}
+              </span>
+            )}
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+              ₹{item.priceAtAdd.toFixed(2)} each
+            </p>
+          </div>
+          <span className="font-bold text-gray-900 whitespace-nowrap text-sm sm:text-base flex-shrink-0">
             ₹{item.subtotal.toFixed(2)}
           </span>
         </div>
 
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-1 py-1">
+        <div className="flex items-center justify-between mt-2 sm:mt-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 border border-gray-200 rounded-lg px-1 py-1">
             <button
               onClick={() => handleQuantityChange(item.quantity - 1)}
               disabled={updating || removing}
