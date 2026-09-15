@@ -11,7 +11,7 @@ import { getProductReviews, submitReview } from "@/lib/reviewApi";
 import { addToCart } from "@/lib/cartApi";
 import { Product, Review } from "@/types";
 import { ArrowLeft, ShoppingCart, Plus, Minus } from "lucide-react";
-
+import ZoomableImage from "@/components/user/ZoomableImage";
 import { useMemo } from "react";
 import { getAllProducts } from "@/lib/productApi";
 import ProductCard from "@/components/user/ProductCard";
@@ -125,18 +125,7 @@ function ProductDetailContent() {
         </button>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 mb-8">
-          <div className="h-56 sm:h-72 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
-            {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={product.imageUrl}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <ShoppingCart className="text-gray-300" size={48} />
-            )}
-          </div>
+          <ZoomableImage src={product.imageUrl} alt={product.name} />
 
           <div>
             <span className="text-xs text-blue-600 font-medium">
