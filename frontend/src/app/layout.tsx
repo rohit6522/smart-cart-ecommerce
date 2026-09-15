@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationProvider } from "@/context/NotificationContext";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   title: "Smart Cart - Shop Smarter",
@@ -35,17 +36,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="beforeInteractive"
+        <NextTopLoader
+          color="#2563eb"
+          height={3}
+          showSpinner={false}
+          easing="ease"
+          speed={300}
         />
-
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <NotificationProvider>
-                {children}
-              </NotificationProvider>
+              <NotificationProvider>{children}</NotificationProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
