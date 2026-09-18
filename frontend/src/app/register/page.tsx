@@ -154,6 +154,26 @@ export default function RegisterPage() {
           </button>
         </form>
 
+        <p className="text-xs text-gray-400 text-center">
+          By signing up, you agree to our{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            className="text-blue-600 hover:underline"
+          >
+            Terms
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            className="text-blue-600 hover:underline"
+          >
+            Privacy Policy
+          </a>
+          .
+        </p>
+
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
           <Link

@@ -54,6 +54,16 @@ export default function Footer() {
                 Contact Support
               </Link>
             </li>
+            <li>
+              <Link href="/terms" className="hover:text-white transition">
+                Terms & Conditions
+              </Link>
+            </li>
+            <li>
+              <Link href="/privacy" className="hover:text-white transition">
+                Privacy Policy
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -96,7 +106,16 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-blue-600 py-4 text-center text-sm text-blue-100">
-        © 2026 Smart Cart. All rights reserved.
+        <p>© 2026 Smart Cart. All rights reserved.</p>
+        <div className="flex items-center justify-center gap-3 mt-1.5">
+          <Link href="/terms" className="hover:text-white transition">
+            Terms
+          </Link>
+          <span>•</span>
+          <Link href="/privacy" className="hover:text-white transition">
+            Privacy
+          </Link>
+        </div>
       </div>
     </footer>
   );
