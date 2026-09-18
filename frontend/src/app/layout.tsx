@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import NextTopLoader from "nextjs-toploader";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
   title: "Smart Cart - Shop Smarter",
@@ -36,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+         <ScrollToTop />
         <NextTopLoader
           color="#2563eb"
           height={3}
