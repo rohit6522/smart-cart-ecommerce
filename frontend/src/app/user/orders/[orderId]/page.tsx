@@ -7,12 +7,22 @@ import Navbar from "@/components/Navbar";
 import OrderStatusBadge from "@/components/user/OrderStatusBadge";
 import { getOrderById } from "@/lib/orderApi";
 import { OrderResponse } from "@/types";
-import { ArrowLeft, MapPin, Truck, Phone, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import CancelReturnModal from "@/components/user/CancelReturnModal";
 import { cancelOrder, requestReturn } from "@/lib/orderApi";
 import { XCircle, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Truck,
+  Phone,
+  CheckCircle2,
+  Copy,
+  Check,
+} from "lucide-react";
+
 const STATUS_STEPS = ["PENDING", "CONFIRMED", "OUT_FOR_DELIVERY", "DELIVERED"];
+
 
 function OrderDetailContent() {
   const params = useParams();
@@ -21,6 +31,13 @@ function OrderDetailContent() {
   const [modalMode, setModalMode] = useState<"cancel" | "return" | null>(null);
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyOrderId = () => {
+    navigator.clipboard.writeText(`ORD-${order!.orderId}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   const fetchOrder = async () => {
     try {
@@ -89,6 +106,12 @@ function OrderDetailContent() {
             <h1 className="text-lg sm:text-xl font-bold text-gray-900">
               Order #{order.orderId}
             </h1>
+            <button
+              onClick={handleCopyOrderId}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
             <div className="flex items-center gap-2">
               <span
                 className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -188,7 +211,7 @@ function OrderDetailContent() {
             </div>
           )}
           {(order.canCancel || order.canReturn) && (
-           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-5 pt-5 border-t border-gray-100">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-5 pt-5 border-t border-gray-100">
               {order.canCancel && (
                 <button
                   onClick={() => setModalMode("cancel")}
