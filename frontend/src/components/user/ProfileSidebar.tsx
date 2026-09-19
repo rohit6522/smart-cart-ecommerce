@@ -33,15 +33,18 @@ export default function ProfileSidebar() {
         Back to Shopping
       </Link>
       <div className="flex items-center gap-3 px-2 py-3 mb-2 border-b border-gray-100">
-
-       <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold overflow-hidden">
-  {user?.profilePhoto ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={user.profilePhoto} alt={user.name} className="w-full h-full object-cover" />
-  ) : (
-    user?.name?.charAt(0).toUpperCase()
-  )}
-</div>
+        <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold overflow-hidden">
+          {user?.profilePhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.profilePhoto}
+              alt={user.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            user?.name?.charAt(0).toUpperCase()
+          )}
+        </div>
 
         <div>
           <p className="font-semibold text-gray-900 text-sm">{user?.name}</p>
@@ -66,7 +69,11 @@ export default function ProfileSidebar() {
         ))}
 
         <button
-          onClick={logout}
+          onClick={() => {
+            if (confirm("Are you sure you want to logout?")) {
+              logout();
+            }
+          }}
           className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
         >
           <LogOut size={17} />
