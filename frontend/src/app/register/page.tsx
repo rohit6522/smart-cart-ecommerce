@@ -30,7 +30,11 @@ export default function RegisterPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: name === "email" ? value.trim().toLowerCase() : value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

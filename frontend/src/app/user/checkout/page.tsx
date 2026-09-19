@@ -26,6 +26,7 @@ import { lookupPincode, getCurrentLocationAddress } from "@/lib/locationUtils";
 import { getMyCoupons, applyCoupon } from "@/lib/couponApi";
 import { CouponInfo } from "@/types";
 import { Tag } from "lucide-react";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 function CheckoutContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -336,7 +337,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <CheckoutStepper currentStep={2} />
 
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           {/* Left: Address + Payment forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
@@ -594,7 +595,7 @@ function CheckoutContent() {
 
           {/* Right: Order Summary */}
           <div className="space-y-5">
-           <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 sm:sticky sm:top-20">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 sm:sticky sm:top-20">
               <h3 className="font-bold text-gray-900 mb-4">Summary</h3>
 
               <div className="space-y-3 mb-4 max-h-52 overflow-y-auto">
@@ -728,13 +729,15 @@ function CheckoutContent() {
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
                   <span className="text-gray-900 font-medium">
-                    ₹{subtotal.toFixed(2)}
+                    {formatCurrency(subtotal)}
                   </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Coupon Discount</span>
-                    <span className="font-medium">-₹{discount.toFixed(2)}</span>
+                    <span className="font-medium">
+                      -{formatCurrency(discount)}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">
@@ -744,7 +747,7 @@ function CheckoutContent() {
                 <div className="flex justify-between text-gray-600">
                   <span>Tax</span>
                   <span className="text-gray-900 font-medium">
-                    ₹{tax.toFixed(2)}
+                    {formatCurrency(tax)}
                   </span>
                 </div>
               </div>
@@ -754,7 +757,7 @@ function CheckoutContent() {
                   Total amount
                 </span>
                 <span className="text-xl font-bold text-gray-900">
-                  ₹{total.toFixed(2)}
+                  {formatCurrency(total)}
                 </span>
               </div>
 
@@ -769,7 +772,7 @@ function CheckoutContent() {
                 disabled={placingOrder}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg mt-5 transition disabled:opacity-50"
               >
-                {placingOrder ? "Processing..." : `Pay ₹${total.toFixed(2)}`}
+              {placingOrder ? "Processing..." : `Pay ${formatCurrency(total)}`}
                 {!placingOrder && <ChevronRight size={17} />}
               </button>
 
