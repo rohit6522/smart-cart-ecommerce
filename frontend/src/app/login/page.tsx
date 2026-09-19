@@ -26,8 +26,9 @@ function LoginForm() {
   const [otpEmail, setOtpEmail] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const { name, value } = e.target;
+  setForm({ ...form, [name]: name === "email" ? value.trim().toLowerCase() : value });
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
