@@ -1,11 +1,9 @@
 "use client";
-
-import { useState } from "react";
 import { CartItem } from "@/types";
 import { Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-
+import { useState, useRef } from "react";
 interface CartItemRowProps {
   item: CartItem;
   onUpdateQuantity: (cartItemId: number, quantity: number) => Promise<void>;
@@ -20,16 +18,28 @@ export default function CartItemRow({
   const [updating, setUpdating] = useState(false);
   const [removing, setRemoving] = useState(false);
 
-  const handleQuantityChange = async (newQty: number) => {
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const [localQuantity, setLocalQuantity] = useState(item.quantity);
+
+  const handleQuantityChange = (newQty: number) => {
     if (newQty < 1) return;
-    setUpdating(true);
-    try {
-      await onUpdateQuantity(item.id, newQty);
-    } catch (err) {
-      console.error("Failed to update quantity", err);
-    } finally {
-      setUpdating(false);
-    }
+
+    // Update the displayed number instantly for responsive feel
+    setLocalQuantity(newQty);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
+      setUpdating(true);
+      try {
+        await onUpdateQuantity(item.id, newQty);
+      } catch (err) {
+        console.error("Failed to update quantity", err);
+        setLocalQuantity(item.quantity); // revert display on failure
+      } finally {
+        setUpdating(false);
+      }
+    }, 400);
   };
 
   const handleRemove = async () => {
@@ -88,18 +98,18 @@ export default function CartItemRow({
         <div className="flex items-center justify-between mt-2 sm:mt-3">
           <div className="flex items-center gap-1.5 sm:gap-2 border border-gray-200 rounded-lg px-1 py-1">
             <button
-              onClick={() => handleQuantityChange(item.quantity - 1)}
-              disabled={updating || removing}
+              onClick={() => handleQuantityChange(localQuantity - 1)}
+              disabled={removing}
               className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
             >
               <Minus size={13} />
             </button>
             <span className="w-6 text-center text-sm font-medium">
-              {item.quantity}
+              {localQuantity}
             </span>
             <button
-              onClick={() => handleQuantityChange(item.quantity + 1)}
-              disabled={updating || removing}
+              onClick={() => handleQuantityChange(localQuantity + 1)}
+              disabled={removing}
               className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
             >
               <Plus size={13} />
