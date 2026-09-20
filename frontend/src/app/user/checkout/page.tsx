@@ -305,6 +305,7 @@ function CheckoutContent() {
   };
 
   const handlePay = () => {
+    if (placingOrder) return; // guard against rapid double-click submissions
     if (!validateForm()) return;
 
     if (paymentMethod === "COD") {
@@ -772,7 +773,9 @@ function CheckoutContent() {
                 disabled={placingOrder}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg mt-5 transition disabled:opacity-50"
               >
-              {placingOrder ? "Processing..." : `Pay ${formatCurrency(total)}`}
+                {placingOrder
+                  ? "Processing..."
+                  : `Pay ${formatCurrency(total)}`}
                 {!placingOrder && <ChevronRight size={17} />}
               </button>
 

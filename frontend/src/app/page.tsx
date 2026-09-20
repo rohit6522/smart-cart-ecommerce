@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import Toast from "@/components/ui/Toast";
 
+
 export default function HomePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

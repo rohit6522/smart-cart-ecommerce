@@ -56,6 +56,7 @@ function CartContent() {
   }, []);
 
   const handleApplyPromo = async () => {
+    if (applyingCoupon) return; // prevent double-submit
     if (!promoCode.trim()) return;
     setApplyingCoupon(true);
     setCouponError("");
