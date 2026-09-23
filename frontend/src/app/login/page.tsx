@@ -186,14 +186,17 @@ function LoginForm() {
         )}
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/register"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Register
-          </Link>
-        </p>
+  Don&apos;t have an account?{" "}
+  <Link href="/register" className="text-blue-600 font-medium hover:underline">
+    Register
+  </Link>
+</p>
+<p className="text-center text-xs text-gray-400 mt-3">
+  Just browsing?{" "}
+  <Link href="/" className="text-blue-600 hover:underline">
+    Explore products without logging in
+  </Link>
+</p>
         <p className="text-center text-xs text-gray-400 mt-3">
           Just browsing?{" "}
           <Link href="/" className="text-blue-600 hover:underline">
