@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { forgotPassword, resetPassword } from "@/lib/authApi";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
@@ -17,6 +17,13 @@ function ForgotPasswordForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const otpInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (step === "reset") {
+      otpInputRef.current?.focus();
+    }
+  }, [step]);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +33,9 @@ function ForgotPasswordForm() {
       await forgotPassword(email);
       setStep("reset");
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to send OTP. Check your email.");
+      setError(
+        err?.response?.data?.message || "Failed to send OTP. Check your email.",
+      );
     } finally {
       setLoading(false);
     }
@@ -73,7 +82,9 @@ function ForgotPasswordForm() {
         </p>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">{error}</div>
+          <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">
+            {error}
+          </div>
         )}
         {success && (
           <div className="bg-green-50 text-green-700 text-sm px-4 py-2 rounded-lg mb-4">
@@ -102,10 +113,13 @@ function ForgotPasswordForm() {
         ) : (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <input
+              ref={otpInputRef}
               type="text"
               placeholder="Enter 6-digit OTP"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               maxLength={6}
               required
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -154,7 +168,10 @@ function ForgotPasswordForm() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Remember your password?{" "}
-          <Link href="/login" className="text-blue-600 font-medium hover:underline">
+          <Link
+            href="/login"
+            className="text-blue-600 font-medium hover:underline"
+          >
             Login
           </Link>
         </p>
@@ -165,7 +182,13 @@ function ForgotPasswordForm() {
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-400">
+          Loading...
+        </div>
+      }
+    >
       <ForgotPasswordForm />
     </Suspense>
   );
