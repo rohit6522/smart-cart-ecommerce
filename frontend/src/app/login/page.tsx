@@ -7,7 +7,7 @@ import { loginUser, verifyOtp } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
 import { Role } from "@/types";
-
+import { useRef, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 function LoginForm() {
@@ -24,7 +24,7 @@ function LoginForm() {
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
   const [otp, setOtp] = useState("");
   const [otpEmail, setOtpEmail] = useState("");
-
+  const otpInputRef = useRef<HTMLInputElement>(null);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -60,6 +60,12 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (step === "otp") {
+      otpInputRef.current?.focus();
+    }
+  }, [step]);
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,11 +136,14 @@ function LoginForm() {
               </button>
             </div>
 
-          <div className="text-right">
-  <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-    Forgot Password?
-  </Link>
-</div>
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
 
             <button
               type="submit"
@@ -144,8 +153,6 @@ function LoginForm() {
               {loading ? "Sending OTP..." : "Continue"}
             </button>
           </form>
-
-
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-lg">
@@ -153,6 +160,7 @@ function LoginForm() {
               Enter it below to continue.
             </div>
             <input
+              ref={otpInputRef}
               type="text"
               placeholder="Enter 6-digit OTP"
               value={otp}
