@@ -19,6 +19,7 @@ import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { getMyCoupons, applyCoupon } from "@/lib/couponApi";
 import EmptyState from "@/components/ui/EmptyState";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 function CartContent() {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -55,6 +56,7 @@ function CartContent() {
   }, []);
 
   const handleApplyPromo = async () => {
+    if (applyingCoupon) return; // prevent double-submit
     if (!promoCode.trim()) return;
     setApplyingCoupon(true);
     setCouponError("");
@@ -114,10 +116,12 @@ function CartContent() {
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Smart Cart" />
 
-     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-       <div className="flex items-center gap-2 sm:gap-3 mb-6">
-  <ShoppingCart className="text-blue-600" size={22} />
-  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Your Cart</h1>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-6">
+          <ShoppingCart className="text-blue-600" size={22} />
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            Your Cart
+          </h1>
           {!isEmpty && (
             <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
               {cart.items.length} {cart.items.length === 1 ? "Item" : "Items"}
@@ -240,14 +244,14 @@ function CartContent() {
                   <div className="flex justify-between text-gray-600">
                     <span>Subtotal</span>
                     <span className="text-gray-900 font-medium">
-                      ₹{subtotal.toFixed(2)}
+                      {formatCurrency(subtotal)}
                     </span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Coupon Discount</span>
                       <span className="font-medium">
-                        -₹{discount.toFixed(2)}
+                        -{formatCurrency(discount)}
                       </span>
                     </div>
                   )}
@@ -256,9 +260,9 @@ function CartContent() {
                     <span className="text-green-600 font-medium">Free</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Estimated Tax</span>
+                    <span>Tax</span>
                     <span className="text-gray-900 font-medium">
-                      ₹{tax.toFixed(2)}
+                      {formatCurrency(tax)}
                     </span>
                   </div>
                 </div>
@@ -268,7 +272,7 @@ function CartContent() {
                     Total amount
                   </span>
                   <span className="text-xl font-bold text-gray-900">
-                    ₹{total.toFixed(2)}
+                    {formatCurrency(total)}
                   </span>
                 </div>
 

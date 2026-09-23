@@ -26,7 +26,11 @@ function LoginForm() {
   const [otpEmail, setOtpEmail] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: name === "email" ? value.trim().toLowerCase() : value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,11 +134,14 @@ function LoginForm() {
               </button>
             </div>
 
-          <div className="text-right">
-  <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-    Forgot Password?
-  </Link>
-</div>
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
 
             <button
               type="submit"
@@ -144,8 +151,6 @@ function LoginForm() {
               {loading ? "Sending OTP..." : "Continue"}
             </button>
           </form>
-
-
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-lg">
@@ -181,12 +186,21 @@ function LoginForm() {
         )}
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link
-            href="/register"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Register
+  Don&apos;t have an account?{" "}
+  <Link href="/register" className="text-blue-600 font-medium hover:underline">
+    Register
+  </Link>
+</p>
+<p className="text-center text-xs text-gray-400 mt-3">
+  Just browsing?{" "}
+  <Link href="/" className="text-blue-600 hover:underline">
+    Explore products without logging in
+  </Link>
+</p>
+        <p className="text-center text-xs text-gray-400 mt-3">
+          Just browsing?{" "}
+          <Link href="/" className="text-blue-600 hover:underline">
+            Explore products without logging in
           </Link>
         </p>
       </div>

@@ -119,15 +119,22 @@ function UserHomeContent() {
             ))}
           </div>
         ) : isSearching ? (
-          <>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Search results for &quot;{search}&quot;
-            </h2>
-            {searchedProducts.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">
-                No products found.
-              </p>
-            ) : (
+  <>
+    <h2 className="text-lg font-bold text-gray-900 mb-4">
+      Search results for &quot;{search}&quot;
+    </h2>
+    {searchedProducts.length === 0 ? (
+      <div className="text-center py-16">
+        <p className="text-gray-500 mb-3">No products found for &quot;{search}&quot;</p>
+        <button
+          onClick={() => setSearch("")}
+          className="text-blue-600 hover:underline text-sm font-medium"
+        >
+          Clear Search
+        </button>
+      </div>
+    ) : (
+
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {searchedProducts.map((product) => (
                   <ProductCard
