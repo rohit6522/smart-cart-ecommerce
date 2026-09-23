@@ -67,6 +67,7 @@ function CheckoutContent() {
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
+  
   useEffect(() => {
     getCart()
       .then((data) => {
@@ -166,6 +167,7 @@ function CheckoutContent() {
   };
 
   const handleApplyPromo = async () => {
+    if (applyingCoupon) return;
     if (!promoCode.trim()) return;
     setApplyingCoupon(true);
     setCouponError("");
@@ -303,15 +305,16 @@ function CheckoutContent() {
     }
   };
 
-  const handlePay = () => {
-    if (!validateForm()) return;
+ const handlePay = () => {
+  if (placingOrder) return; // guard against rapid double-click submissions
+  if (!validateForm()) return;
 
-    if (paymentMethod === "COD") {
-      handleCodOrder();
-    } else {
-      handleOnlineOrder();
-    }
-  };
+  if (paymentMethod === "COD") {
+    handleCodOrder();
+  } else {
+    handleOnlineOrder();
+  }
+};
 
   if (loading || !cart) {
     return (
@@ -336,7 +339,7 @@ function CheckoutContent() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
         <CheckoutStepper currentStep={2} />
 
-<div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           {/* Left: Address + Payment forms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Shipping Address */}
@@ -594,7 +597,7 @@ function CheckoutContent() {
 
           {/* Right: Order Summary */}
           <div className="space-y-5">
-           <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 sm:sticky sm:top-20">
+            <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-5 sm:sticky sm:top-20">
               <h3 className="font-bold text-gray-900 mb-4">Summary</h3>
 
               <div className="space-y-3 mb-4 max-h-52 overflow-y-auto">
