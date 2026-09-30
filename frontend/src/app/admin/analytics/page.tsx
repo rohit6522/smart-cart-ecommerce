@@ -15,7 +15,7 @@ import {
   Package,
 } from "lucide-react";
 import { SkeletonCard } from "@/components/ui/Skeleton";
-
+import { formatCurrency } from "@/lib/formatCurrency";
 import {
   LineChart,
   Line,
@@ -103,7 +103,7 @@ function AnalyticsContent() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <StatCard
             label="Total Revenue"
-            value={`₹${data.totalRevenue.toFixed(2)}`}
+            value={formatCurrency(data.totalRevenue)}
             icon={IndianRupee}
             color="green"
           />

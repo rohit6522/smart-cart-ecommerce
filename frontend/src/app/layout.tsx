@@ -7,7 +7,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import NextTopLoader from "nextjs-toploader";
 import ScrollToTop from "@/components/ScrollToTop";
-
+import OfflineBanner from "@/components/OfflineBanner";
 export const metadata: Metadata = {
   title: "Smart Cart - Shop Smarter",
   description: "Smart Shopping Cart with Real-Time Budget Tracking",
@@ -38,6 +38,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
          <ScrollToTop />
+           <OfflineBanner />
         <NextTopLoader
           color="#2563eb"
           height={3}

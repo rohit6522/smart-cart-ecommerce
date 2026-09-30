@@ -160,7 +160,7 @@ export default function ProductCard({
 
             <motion.button
               onClick={handleAdd}
-              disabled={adding}
+              disabled={adding || quantity > product.stockQuantity}
               whileTap={{ scale: 0.95 }}
               animate={added ? { scale: [1, 1.05, 1] } : {}}
               transition={{ duration: 0.3 }}
@@ -170,7 +170,13 @@ export default function ProductCard({
                   : "bg-blue-600 hover:bg-blue-700 text-white"
               } disabled:opacity-50`}
             >
-              {added ? "Added ✓" : adding ? "Adding..." : "Add to Cart"}
+              {added
+                ? "Added ✓"
+                : adding
+                  ? "Adding..."
+                  : quantity > product.stockQuantity
+                    ? "Exceeds Stock"
+                    : "Add to Cart"}
             </motion.button>
           </>
         )}

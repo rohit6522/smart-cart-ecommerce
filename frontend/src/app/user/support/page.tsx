@@ -88,13 +88,19 @@ function SupportContent() {
               onChange={(e) => setSubject(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <textarea
-              placeholder="Describe your issue or question..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={5}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <div>
+              <textarea
+                placeholder="Describe your issue or question..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value.slice(0, 1000))}
+                rows={5}
+                maxLength={1000}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-400 mt-1 text-right">
+                {message.length}/1000
+              </p>
+            </div>
 
             {error && <p className="text-red-600 text-sm">{error}</p>}
             {success && (

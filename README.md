@@ -12,6 +12,7 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 ## ✨ Features
 
 ### 🛍️ Shopping Experience
+
 - Public product catalog — browse freely as a guest, login required only to add to cart or checkout
 - Real-time **budget tracker** with live progress bar and over-budget alerts (tracks lifetime spend across orders + current cart)
 - Category-based browsing with auto-scrolling category pills and an animated hero carousel
@@ -21,6 +22,7 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 - Product discounts with strike-through pricing and low-stock urgency indicators
 
 ### 🛒 Cart & Checkout
+
 - Persistent cart with live quantity updates and budget sync
 - Multi-address book with default address, PIN-code auto-fill, and "Use My Current Location"
 - Coupon/promo code system — including first-order-only welcome coupons and referral bonuses
@@ -28,27 +30,32 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 - Order confirmation emails and downloadable/printable invoices
 
 ### 📦 Order Lifecycle
+
 - Full order tracking: Pending → Confirmed → Out for Delivery → Delivered
 - Order cancellation (before shipping) and returns (within a 7-day window, with admin approval and cash-refund-on-pickup)
 - In-app notification bell with real-time order status updates
 - Order history with status-based filtering and a printable invoice
 
 ### 👨‍💼 Admin Dashboard
+
 - Product CRUD with category filtering, discount management, and low-stock visibility
 - Order management with delivery partner assignment and return approval/rejection
 - Coupon management (create, edit, deactivate)
 - **Sales analytics dashboard** — 30-day revenue trend, category-wise sales breakdown, and top-selling products (via Recharts)
 
 ### 🚚 Delivery Partner Panel
+
 - Assigned deliveries with customer contact and address details
 - Status updates (Assigned → Picked Up → Delivered)
 - Earnings dashboard — today's, this month's, and total earnings based on completed deliveries
 
 ### 🎁 Growth Features
+
 - Referral program — unique codes per user, bonus coupons for both referrer and referee
 - Low-stock urgency badges ("Only 3 left!")
 
 ### 🎨 Polish
+
 - Smooth animations throughout (Framer Motion) — modals, toasts, cart transitions, status trackers, micro-interactions
 - Fully responsive, mobile-friendly UI
 - Performance optimized — image lazy-loading via `next/image`, in-memory API response caching, gzip compression
@@ -58,6 +65,7 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 ## 🧱 Tech Stack
 
 **Frontend**
+
 - [Next.js 15](https://nextjs.org/) (App Router) + TypeScript
 - Tailwind CSS
 - Framer Motion (animations)
@@ -65,6 +73,7 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 - Axios
 
 **Backend**
+
 - Java Spring Boot 3
 - Spring Security with JWT authentication
 - Spring Data JPA / Hibernate
@@ -72,9 +81,11 @@ A full-stack eCommerce platform that solves checkout anxiety by tracking a shopp
 - Spring Mail (SMTP)
 
 **Database**
+
 - MySQL (hosted on Railway)
 
 **Deployment**
+
 - Frontend & Backend: [Render](https://render.com/) (Docker-based Web Services)
 - Database: [Railway](https://railway.app/)
 
@@ -110,7 +121,8 @@ smart-cart-ecommerce/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 21+ and Maven
+
+- Java 25+ and Maven
 - Node.js 18+
 - MySQL instance (local or hosted)
 
@@ -136,9 +148,11 @@ spring.mail.password=your_gmail_app_password
 ```
 
 Run the server:
+
 ```bash
 ./mvnw spring-boot:run
 ```
+
 Runs on `http://localhost:8080`
 
 ### Frontend Setup
@@ -149,26 +163,29 @@ npm install
 ```
 
 Create `.env.local`:
+
 ```
 NEXT_PUBLIC_API_URL=http://localhost:8080
 ```
 
 Run the dev server:
+
 ```bash
 npm run dev
 ```
+
 Runs on `http://localhost:3000`
 
 ---
 
 ## 👥 Roles & Access
 
-| Role | Access |
-|---|---|
-| **Guest** | Browse the product catalog freely |
-| **Shopper (USER)** | Full shopping experience — cart, checkout, orders, reviews, wishlist, referrals |
-| **Admin** | Product/order/coupon management, delivery assignment, sales analytics |
-| **Delivery Partner** | View assigned deliveries, update delivery status, track earnings |
+| Role                 | Access                                                                          |
+| -------------------- | ------------------------------------------------------------------------------- |
+| **Guest**            | Browse the product catalog freely                                               |
+| **Shopper (USER)**   | Full shopping experience — cart, checkout, orders, reviews, wishlist, referrals |
+| **Admin**            | Product/order/coupon management, delivery assignment, sales analytics           |
+| **Delivery Partner** | View assigned deliveries, update delivery status, track earnings                |
 
 > Admin accounts are not self-registrable through the public sign-up form for security reasons — they must be created directly in the database.
 
@@ -177,16 +194,18 @@ Runs on `http://localhost:3000`
 ## 🔐 Environment Variables
 
 ### Backend
-| Variable | Description |
-|---|---|
-| `SPRING_DATASOURCE_URL` | MySQL connection string |
-| `SPRING_DATASOURCE_USERNAME` / `PASSWORD` | Database credentials |
-| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay API credentials |
-| `SPRING_MAIL_USERNAME` / `PASSWORD` | Gmail SMTP credentials (App Password) |
+
+| Variable                                  | Description                           |
+| ----------------------------------------- | ------------------------------------- |
+| `SPRING_DATASOURCE_URL`                   | MySQL connection string               |
+| `SPRING_DATASOURCE_USERNAME` / `PASSWORD` | Database credentials                  |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay API credentials              |
+| `SPRING_MAIL_USERNAME` / `PASSWORD`       | Gmail SMTP credentials (App Password) |
 
 ### Frontend
-| Variable | Description |
-|---|---|
+
+| Variable              | Description                 |
+| --------------------- | --------------------------- |
 | `NEXT_PUBLIC_API_URL` | Base URL of the backend API |
 
 ---
@@ -206,4 +225,4 @@ MIT
 
 ---
 
-*Built as a hands-on learning project to explore full-stack development, from database design to production deployment.*
+_Built as a hands-on learning project to explore full-stack development, from database design to production deployment._
