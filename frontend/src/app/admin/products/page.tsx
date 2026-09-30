@@ -124,15 +124,18 @@ function AdminProductsContent() {
             onSelect={setActiveCategory}
           />
         )}
-
         {activeCategory && (
           <div className="flex items-center gap-2 mb-5">
             <h2 className="text-sm font-medium text-gray-500">
               Showing:{" "}
               <span className="text-gray-900 font-semibold">
                 {activeCategory}
+              </span>{" "}
+              <span className="text-gray-400">
+                ({visibleProducts.length} products)
               </span>
             </h2>
+
             <button
               onClick={() => setActiveCategory(null)}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full"

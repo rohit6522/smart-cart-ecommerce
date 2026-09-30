@@ -7,7 +7,7 @@ import { loginUser, verifyOtp } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
 import { Role } from "@/types";
-
+import { useRef, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 function LoginForm() {
@@ -24,7 +24,7 @@ function LoginForm() {
   const [step, setStep] = useState<"credentials" | "otp">("credentials");
   const [otp, setOtp] = useState("");
   const [otpEmail, setOtpEmail] = useState("");
-
+  const otpInputRef = useRef<HTMLInputElement>(null);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm({
@@ -64,6 +64,12 @@ function LoginForm() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (step === "otp") {
+      otpInputRef.current?.focus();
+    }
+  }, [step]);
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +164,7 @@ function LoginForm() {
               Enter it below to continue.
             </div>
             <input
+              ref={otpInputRef}
               type="text"
               placeholder="Enter 6-digit OTP"
               value={otp}

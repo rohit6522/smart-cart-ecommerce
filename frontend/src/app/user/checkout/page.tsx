@@ -68,6 +68,7 @@ function CheckoutContent() {
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
 
+  
   useEffect(() => {
     getCart()
       .then((data) => {
@@ -167,6 +168,7 @@ function CheckoutContent() {
   };
 
   const handleApplyPromo = async () => {
+    if (applyingCoupon) return;
     if (!promoCode.trim()) return;
     setApplyingCoupon(true);
     setCouponError("");
@@ -305,15 +307,14 @@ function CheckoutContent() {
   };
 
   const handlePay = () => {
-    if (placingOrder) return; // guard against rapid double-click submissions
     if (!validateForm()) return;
 
-    if (paymentMethod === "COD") {
-      handleCodOrder();
-    } else {
-      handleOnlineOrder();
-    }
-  };
+  if (paymentMethod === "COD") {
+    handleCodOrder();
+  } else {
+    handleOnlineOrder();
+  }
+};
 
   if (loading || !cart) {
     return (
