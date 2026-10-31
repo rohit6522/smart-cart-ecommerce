@@ -51,6 +51,11 @@ public class User {
     @Column(columnDefinition = "LONGTEXT")
     private String profilePhoto; // stored as base64 data URL
 
+
+    @Builder.Default
+    @Column(name = "email_verified")
+    private Boolean emailVerified = false;
+
     public enum Role {
         USER, ADMIN, DELIVERY_BOY
     }

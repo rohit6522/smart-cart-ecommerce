@@ -1,278 +1,166 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import ProtectedRoute from "@/components/ProtectedRoute";
-import Navbar from "@/components/Navbar";
-import OrderStatusBadge from "@/components/user/OrderStatusBadge";
-import AssignDeliveryModal from "@/components/admin/AssignDeliveryModal";
-import {
-  getAllOrders,
-  updateOrderStatus,
-  resolveReturn,
-  exportOrdersCsv,
-} from "@/lib/orderApi";
-import { OrderResponse, OrderStatus } from "@/types";
-import { ArrowLeft, Package, Truck, Download } from "lucide-react";
-import BackButton from "@/components/ui/BackButton";
-const STATUS_OPTIONS: OrderStatus[] = [
-  "PENDING",
-  "CONFIRMED",
-  "OUT_FOR_DELIVERY",
-  "DELIVERED",
-  "CANCELLED",
-  "RETURN_REQUESTED",
-  "RETURNED",
-  "RETURN_REJECTED",
-];
+import Link from "next/link";
+import { ShoppingBag, Eye, Truck, Check, AlertCircle } from "lucide-react";
 
-function AdminOrdersContent() {
-  const [orders, setOrders] = useState<OrderResponse[]>([]);
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState<number | null>(null);
-  const [assignModalOrderId, setAssignModalOrderId] = useState<number | null>(
-    null,
-  );
-  const [filter, setFilter] = useState<OrderStatus | "ALL">("ALL");
-  const router = useRouter();
+  const [filterStatus, setFilterStatus] = useState("ALL");
 
-  const fetchOrders = async () => {
+  const loadOrders = async () => {
+    setLoading(true);
     try {
-      const data = await getAllOrders();
-      setOrders(data.slice().reverse());
-    } catch (err) {
-      console.error("Failed to load orders", err);
+      const url =
+        filterStatus === "ALL"
+          ? "/api/admin/orders"
+          : `/api/admin/orders?status=${filterStatus}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setOrders(data.orders || []);
+      }
+    } catch {
+      // Ignore
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    loadOrders();
+  }, [filterStatus]);
 
-  const handleStatusChange = async (orderId: number, status: OrderStatus) => {
-    setUpdatingId(orderId);
-    try {
-      await updateOrderStatus(orderId, status);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to update status", err);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
-  const handleResolveReturn = async (orderId: number, approve: boolean) => {
-    try {
-      await resolveReturn(orderId, approve);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to resolve return", err);
-    }
-  };
-
-  const handleExport = async () => {
-    try {
-      await exportOrdersCsv();
-    } catch (err) {
-      console.error("Failed to export orders", err);
-    }
-  };
-
-  const filteredOrders =
-    filter === "ALL" ? orders : orders.filter((o) => o.status === filter);
+  const tabs = [
+    { key: "ALL", label: "All Orders" },
+    { key: "PLACED", label: "Placed" },
+    { key: "PROCESSING", label: "Processing" },
+    { key: "SHIPPED", label: "Shipped" },
+    { key: "DELIVERED", label: "Delivered" },
+    { key: "CANCELLED", label: "Cancelled" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar title="Admin Panel" />
-
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <button
-          onClick={() => router.push("/admin")}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
-        >
-          <ArrowLeft size={16} /> Back to Dashboard
-        </button>
-        <BackButton href="/admin" label="Back to Dashboard" />
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Manage Orders</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-1.5 border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg text-sm font-medium"
-            >
-              <Download size={15} /> Export CSV
-            </button>
-            <select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as OrderStatus | "ALL")}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="ALL">All Statuses</option>
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-24 bg-white border border-gray-200 rounded-xl animate-pulse"
-              />
-            ))}
-          </div>
-        ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <Package className="mx-auto text-gray-300 mb-3" size={40} />
-            <p className="text-gray-500">No orders found.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredOrders.map((order) => (
-              <div
-                key={order.orderId}
-                className="bg-white border border-gray-200 rounded-xl p-5"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-gray-900">
-                        Order #{order.orderId}
-                      </span>
-                      <OrderStatusBadge status={order.status} />
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      {order.items.length} item
-                      {order.items.length !== 1 ? "s" : ""} · ₹
-                      {order.totalAmount.toFixed(2)} ·{" "}
-                      {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {order.deliveryAddress}
-                    </p>
-                    {order.deliveryBoyName && (
-                      <p className="text-xs text-purple-600 mt-1 flex items-center gap-1">
-                        <Truck size={12} /> Assigned to {order.deliveryBoyName}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {order.status === "RETURN_REQUESTED" ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            handleResolveReturn(order.orderId, true)
-                          }
-                          className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-3 py-2 rounded-lg"
-                        >
-                          Approve Return
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleResolveReturn(order.orderId, false)
-                          }
-                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-3 py-2 rounded-lg"
-                        >
-                          Reject Return
-                        </button>
-                      </div>
-                    ) : order.status === "RETURNED" ||
-                      order.status === "RETURN_REJECTED" ? (
-                      <span className="text-sm text-gray-500 italic px-3 py-2">
-                        {order.status === "RETURNED"
-                          ? "Return completed"
-                          : "Return was rejected"}
-                      </span>
-                    ) : (
-                      <select
-                        value={order.status}
-                        onChange={(e) =>
-                          handleStatusChange(
-                            order.orderId,
-                            e.target.value as OrderStatus,
-                          )
-                        }
-                        disabled={updatingId === order.orderId}
-                          className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 w-full sm:w-auto"
-
-                      >
-                        {[
-                          "PENDING",
-                          "CONFIRMED",
-                          "OUT_FOR_DELIVERY",
-                          "DELIVERED",
-                          "CANCELLED",
-                        ].map((s) => (
-                          <option key={s} value={s}>
-                            {s.replace(/_/g, " ")}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-
-                    {!order.deliveryBoyName &&
-                      order.status !== "CANCELLED" &&
-                      order.status !== "RETURN_REQUESTED" && (
-                        <button
-                          onClick={() => setAssignModalOrderId(order.orderId)}
-                          className="flex items-center gap-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 px-3 py-2 rounded-lg text-sm font-medium"
-                        >
-                          <Truck size={14} /> Assign
-                        </button>
-                      )}
-                  </div>
-
-                  {order.status === "RETURN_REQUESTED" && (
-                    <div className="flex gap-2 mt-2">
-                      <button
-                        onClick={() => handleResolveReturn(order.orderId, true)}
-                        className="bg-green-600 hover:bg-green-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg"
-                      >
-                        Approve Return
-                      </button>
-                      <button
-                        onClick={() =>
-                          handleResolveReturn(order.orderId, false)
-                        }
-                        className="bg-red-600 hover:bg-red-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg"
-                      >
-                        Reject Return
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Order Fulfilment</h1>
+        <p className="text-xs sm:text-sm text-slate-600">
+          Track customer shipments, update order states, and assign delivery partners
+        </p>
       </div>
 
-      <AssignDeliveryModal
-        isOpen={assignModalOrderId !== null}
-        onClose={() => setAssignModalOrderId(null)}
-        orderId={assignModalOrderId}
-        onAssigned={fetchOrders}
-      />
-    </div>
-  );
-}
+      {/* Status Filter Tabs */}
+      <div className="flex border-b border-slate-200 gap-2 sm:gap-4 overflow-x-auto pb-1 text-xs">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setFilterStatus(tab.key)}
+            className={`px-3 py-2 rounded-xl font-bold whitespace-nowrap transition-colors ${
+              filterStatus === tab.key
+                ? "bg-slate-950 text-white"
+                : "text-slate-600 hover:bg-slate-200/60"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-export default function AdminOrdersPage() {
-  return (
-    <ProtectedRoute allowedRoles={["ADMIN"]}>
-      <AdminOrdersContent />
-    </ProtectedRoute>
+      {/* Orders Table */}
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100 text-slate-600 uppercase font-extrabold tracking-wider text-[10px]">
+                <th className="py-3.5 px-6">Order Ref</th>
+                <th className="py-3.5 px-4">Customer</th>
+                <th className="py-3.5 px-4">Items</th>
+                <th className="py-3.5 px-4">Total</th>
+                <th className="py-3.5 px-4">Payment</th>
+                <th className="py-3.5 px-4">Fulfilment Status</th>
+                <th className="py-3.5 px-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                    Loading orders...
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                    No orders found in this status category.
+                  </td>
+                </tr>
+              ) : (
+                orders.map((ord) => (
+                  <tr key={ord._id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3.5 px-6 font-mono font-bold text-slate-900">
+                      {ord.orderNumber}
+                      <span className="text-[10px] text-slate-600 block font-sans font-normal">
+                        {new Date(ord.createdAt).toLocaleDateString()}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <p className="font-bold text-slate-900">
+                        {ord.user?.name || ord.shippingAddress?.fullName}
+                      </p>
+                      <p className="text-[11px] text-slate-600">
+                        {ord.shippingAddress?.city}, {ord.shippingAddress?.state}
+                      </p>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      {ord.orderItems?.length || 0} items
+                    </td>
+
+                    <td className="py-3.5 px-4 font-bold text-slate-900">
+                      ₹{ord.totalPrice?.toLocaleString("en-IN")}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          ord.isPaid
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {ord.isPaid ? "PAID" : "PENDING"} ({ord.paymentMethod})
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <span className="font-extrabold text-[11px] text-slate-900 bg-slate-100 px-2.5 py-1 rounded-full uppercase">
+                        {ord.orderStatus.replace(/_/g, " ")}
+                      </span>
+                      {ord.refundStatus && ord.refundStatus !== "NONE" && (
+                        <span className="text-[10px] text-red-600 font-bold block mt-0.5">
+                          Return: {ord.refundStatus}
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-6 text-right">
+                      <Link
+                        href={`/admin/orders/${ord._id}`}
+                        className="px-3 py-1.5 bg-slate-900 hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-colors inline-flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> Manage
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

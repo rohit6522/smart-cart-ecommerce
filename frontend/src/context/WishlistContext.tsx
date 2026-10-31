@@ -1,57 +1,103 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { getMyWishlist, addToWishlist, removeFromWishlist } from "@/lib/wishlistApi";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
+import { useAuth } from "./AuthContext";
 
 interface WishlistContextType {
-  wishlistedIds: Set<number>;
-  toggleWishlist: (productId: number) => Promise<void>;
+  wishlist: any[];
+  wishlistedIds: Set<string>;
+  toggleWishlist: (productId: string | number) => Promise<void>;
+  isInWishlist: (productId: string | number) => boolean;
   refreshWishlist: () => Promise<void>;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [wishlistedIds, setWishlistedIds] = useState<Set<number>>(new Set());
+  const { user } = useAuth();
+  const [wishlist, setWishlist] = useState<any[]>([]);
+  const [wishlistedIds, setWishlistedIds] = useState<Set<string>>(new Set());
 
   const refreshWishlist = useCallback(async () => {
-    try {
-      const items = await getMyWishlist();
-      setWishlistedIds(new Set(items.map((i) => i.product.id)));
-    } catch {
+    if (!user) {
+      setWishlist([]);
       setWishlistedIds(new Set());
+      return;
     }
-  }, []);
-
-  const toggleWishlist = useCallback(async (productId: number) => {
-    const isWishlisted = wishlistedIds.has(productId);
-    // Optimistic update
-    setWishlistedIds((prev) => {
-      const next = new Set(prev);
-      if (isWishlisted) next.delete(productId);
-      else next.add(productId);
-      return next;
-    });
 
     try {
-      if (isWishlisted) {
-        await removeFromWishlist(productId);
-      } else {
-        await addToWishlist(productId);
+      const res = await fetch("/api/wishlist");
+      if (res.ok) {
+        const data = await res.json();
+        const items = data.wishlist || [];
+        setWishlist(items);
+        const ids = new Set<string>(
+          items.map((item: any) => (item._id || item.id || item).toString())
+        );
+        setWishlistedIds(ids);
       }
     } catch {
-      // Revert on failure
+      // Fallback
+    }
+  }, [user]);
+
+  useEffect(() => {
+    refreshWishlist();
+  }, [refreshWishlist]);
+
+  const toggleWishlist = useCallback(
+    async (productId: string | number) => {
+      const idStr = productId.toString();
+      const isWishlisted = wishlistedIds.has(idStr);
+
+      // Optimistic update
       setWishlistedIds((prev) => {
         const next = new Set(prev);
-        if (isWishlisted) next.add(productId);
-        else next.delete(productId);
+        if (isWishlisted) next.delete(idStr);
+        else next.add(idStr);
         return next;
       });
-    }
-  }, [wishlistedIds]);
+
+      try {
+        const res = await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: idStr }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.wishlist) {
+            setWishlist(data.wishlist);
+          }
+        }
+      } catch {
+        // Revert on failure
+        setWishlistedIds((prev) => {
+          const next = new Set(prev);
+          if (isWishlisted) next.add(idStr);
+          else next.delete(idStr);
+          return next;
+        });
+      }
+    },
+    [wishlistedIds]
+  );
+
+  const isInWishlist = (productId: string | number) => {
+    return wishlistedIds.has(productId.toString());
+  };
 
   return (
-    <WishlistContext.Provider value={{ wishlistedIds, toggleWishlist, refreshWishlist }}>
+    <WishlistContext.Provider
+      value={{
+        wishlist,
+        wishlistedIds,
+        toggleWishlist,
+        isInWishlist,
+        refreshWishlist,
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );

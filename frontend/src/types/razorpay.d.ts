@@ -4,6 +4,7 @@ export interface RazorpayOptions {
   currency: string;
   name: string;
   description?: string;
+  image?: string;
   order_id: string;
   handler: (response: RazorpaySuccessResponse) => void;
   prefill?: {

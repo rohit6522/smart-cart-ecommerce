@@ -6,17 +6,19 @@ import com.smartcart.backend.exception.ApiException;
 import com.smartcart.backend.repository.BudgetRepository;
 import com.smartcart.backend.repository.CartRepository;
 import com.smartcart.backend.repository.CouponRepository;
+import com.smartcart.backend.repository.LoginOtpRepository;
 import com.smartcart.backend.repository.UserRepository;
 import com.smartcart.backend.security.JwtUtil;
 import com.smartcart.backend.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.smartcart.backend.repository.LoginOtpRepository;
+
+import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -33,7 +35,14 @@ public class AuthService {
     private final LoginOtpRepository loginOtpRepository;
     private final ResendEmailService emailService;
 
-    public AuthResponse register(RegisterRequest request) {
+    // false = users are verified automatically at signup and logged in directly.
+    // Set EMAIL_VERIFICATION_ENABLED=true only after your sending domain is verified in Resend.
+    @Value("${app.email-verification.enabled:false}")
+    private boolean emailVerificationEnabled;
+
+    // ================= REGISTER =================
+
+    public LoginOtpResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ApiException("Email already registered", HttpStatus.CONFLICT);
@@ -65,6 +74,7 @@ public class AuthService {
                 .role(role)
                 .referralCode(generateReferralCode())
                 .referredByCode(referredByCode)
+                .emailVerified(!emailVerificationEnabled)
                 .build();
 
         user = userRepository.save(user);
@@ -81,10 +91,64 @@ public class AuthService {
             budgetRepository.save(budget);
         }
 
-        // If they signed up with a valid referral code, immediately grant them a welcome coupon
+        // If they signed up with a valid referral code, grant welcome coupons to both users
         if (referredByCode != null) {
             grantReferralCoupon(user, "Welcome bonus for joining via referral");
         }
+
+        // Verification switched off: log the user in immediately
+        if (!emailVerificationEnabled) {
+            String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+            return LoginOtpResponse.builder()
+                    .message("Registration successful")
+                    .email(user.getEmail())
+                    .requiresOtp(false)
+                    .token(token)
+                    .userId(user.getId())
+                    .name(user.getName())
+                    .role(user.getRole().name())
+                    .build();
+        }
+
+        // Verification switched on: send an OTP and wait for the user to confirm
+        String otp = generateOtp();
+        LoginOtp verificationOtp = LoginOtp.builder()
+                .email(user.getEmail())
+                .otpCode(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .build();
+        loginOtpRepository.save(verificationOtp);
+        emailService.sendOtpEmail(user, otp);
+
+        return LoginOtpResponse.builder()
+                .message("Registration successful. Please verify your email.")
+                .email(user.getEmail())
+                .requiresOtp(true)
+                .build();
+    }
+
+    // Only used when email verification is enabled
+    public AuthResponse verifyEmailAndLogin(VerifyEmailRequest request) {
+        LoginOtp loginOtp = loginOtpRepository
+                .findTopByEmailAndUsedFalseOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new ApiException("No verification request found. Please register again.", HttpStatus.BAD_REQUEST));
+
+        if (loginOtp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ApiException("Verification code has expired. Please register again.", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!loginOtp.getOtpCode().equals(request.getOtp().trim())) {
+            throw new ApiException("Invalid verification code", HttpStatus.BAD_REQUEST);
+        }
+
+        loginOtp.setUsed(true);
+        loginOtpRepository.save(loginOtp);
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
@@ -94,8 +158,11 @@ public class AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .profilePhoto(user.getProfilePhoto())
                 .build();
     }
+
+    // ================= REFERRALS =================
 
     private String generateReferralCode() {
         String candidate;
@@ -162,6 +229,9 @@ public class AuthService {
                 .build();
     }
 
+    // ================= LOGIN =================
+
+    // Step 1: check credentials. Admin gets an OTP, everyone else is logged in directly.
     public LoginOtpResponse loginStepOne(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED));
@@ -170,7 +240,11 @@ public class AuthService {
             throw new ApiException("Invalid email or password", HttpStatus.UNAUTHORIZED);
         }
 
-        // Only Admin accounts require OTP verification; everyone else logs in directly
+        // Block only explicitly unverified accounts, and only when verification is switched on
+        if (emailVerificationEnabled && Boolean.FALSE.equals(user.getEmailVerified())) {
+            throw new ApiException("Please verify your email before logging in", HttpStatus.FORBIDDEN);
+        }
+
         if (user.getRole() != User.Role.ADMIN) {
             String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
             return LoginOtpResponse.builder()
@@ -202,7 +276,7 @@ public class AuthService {
                 .build();
     }
 
-    // ---------- Step 2: Verify OTP, then issue JWT ----------
+    // Step 2 (admin only): verify OTP, then issue JWT
     public AuthResponse verifyOtpAndLogin(VerifyOtpRequest request) {
         LoginOtp loginOtp = loginOtpRepository
                 .findTopByEmailAndUsedFalseOrderByCreatedAtDesc(request.getEmail())
@@ -230,6 +304,7 @@ public class AuthService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .profilePhoto(user.getProfilePhoto())
                 .build();
     }
 
@@ -238,13 +313,14 @@ public class AuthService {
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    // ================= PROFILE PHOTO =================
 
     public String updateProfilePhoto(String base64Photo) {
         String email = securityUtil.getCurrentUserEmail();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
-        // Basic size guard - base64 string shouldn't be excessively large (~2MB raw image limit)
+        // Basic size guard - the base64 string should stay small after client-side compression
         if (base64Photo.length() > 3_000_000) {
             throw new ApiException("Image is too large. Please use an image under 2MB.", HttpStatus.BAD_REQUEST);
         }
@@ -261,7 +337,9 @@ public class AuthService {
         return user.getProfilePhoto();
     }
 
-    // ---------- Step 1: Send OTP for password reset ----------
+    // ================= FORGOT / RESET PASSWORD =================
+
+    // Step 1: send OTP for password reset
     public LoginOtpResponse forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException("No account found with this email", HttpStatus.NOT_FOUND));
@@ -284,7 +362,7 @@ public class AuthService {
                 .build();
     }
 
-    // ---------- Step 2: Verify OTP and set new password ----------
+    // Step 2: verify OTP and set the new password
     public void resetPassword(ResetPasswordRequest request) {
         LoginOtp loginOtp = loginOtpRepository
                 .findTopByEmailAndUsedFalseOrderByCreatedAtDesc(request.getEmail())
@@ -311,5 +389,4 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
-
 }

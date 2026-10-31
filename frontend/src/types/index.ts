@@ -1,5 +1,5 @@
 // ---------- Auth ----------
-export type Role = "USER" | "ADMIN" | "DELIVERY_BOY";
+export type Role = "USER" | "ADMIN" | "DELIVERY_BOY" | "customer" | "admin" | "delivery";
 
 export interface AuthResponse {
   token: string;
