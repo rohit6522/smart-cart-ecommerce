@@ -1,4 +1,6 @@
 # Backend
+backend/node_modules/
+backend/.env
 backend/target/
 backend/.mvn/
 backend/*.iml
@@ -12,6 +14,7 @@ frontend/out/
 frontend/.env.local
 
 # General
+node_modules/
 .DS_Store
 *.log
 .env

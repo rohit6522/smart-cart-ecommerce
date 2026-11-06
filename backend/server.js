@@ -25,6 +25,13 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Routes
+app.use("/api/products", require("./src/routes/productRoutes"));
+app.use("/api/admin/products", require("./src/routes/productRoutes"));
+app.use("/api/categories", require("./src/routes/categoryRoutes"));
+app.use("/api/coupons", require("./src/routes/couponRoutes"));
+app.use("/api/auth", require("./src/routes/authRoutes"));
+
 // App Info
 app.get("/api", (req, res) => {
   res.json({
