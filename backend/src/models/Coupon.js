@@ -16,3 +16,4 @@ const CouponSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.models.Coupon || mongoose.model("Coupon", CouponSchema);
+

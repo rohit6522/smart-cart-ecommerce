@@ -1,20 +1,74 @@
-# Backend
-backend/node_modules/
-backend/.env
-backend/target/
-backend/.mvn/
-backend/*.iml
-backend/.idea/
-backend/HELP.md
+# =======================================================
+# Environment Variables & Secret Files (CRITICAL: NEVER COMMIT)
+# =======================================================
+.env
+.env.*
+!.env.example
 
-# Frontend
+*.env
+*.env.*
+!*.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Private Keys, Certificates & Authentication Tokens
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.keystore
+id_rsa*
+id_ed25519*
+secrets.json
+credentials.json
+service-account*.json
+firebase-adminsdk*.json
+
+# Dependencies
+node_modules/
+backend/node_modules/
 frontend/node_modules/
+
+# Next.js & Frontend Build Artifacts
 frontend/.next/
 frontend/out/
-frontend/.env.local
+.next/
+out/
+build/
+dist/
 
-# General
-node_modules/
-.DS_Store
+# Database Files & Dumps
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+
+# Logs & Debugging
 *.log
-.env
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System & IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Legacy Java Artifacts (if any)
+backend/target/
+backend/.mvn/
+backend/HELP.md
