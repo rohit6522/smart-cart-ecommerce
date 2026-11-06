@@ -1,267 +1,175 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Tag, Plus, Check, Clock, Percent } from "lucide-react";
+import { useRouter } from "next/navigation";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Navbar from "@/components/Navbar";
+import Modal from "@/components/ui/Modal";
+import CouponForm from "@/components/admin/CouponForm";
+import {
+  getAllCoupons,
+  createCoupon,
+  updateCoupon,
+  deleteCoupon,
+} from "@/lib/couponApi";
+import { Coupon, CouponFormPayload } from "@/types";
+import { ArrowLeft, Plus, Pencil, Trash2, Tag, Users } from "lucide-react";
 
-export default function AdminCouponsPage() {
-  const [coupons, setCoupons] = useState<any[]>([]);
+function AdminCouponsContent() {
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const router = useRouter();
 
-  const [form, setForm] = useState({
-    code: "",
-    description: "",
-    discountType: "percentage",
-    discountValue: "20",
-    minOrderAmount: "999",
-    maxDiscountAmount: "500",
-    firstOrderOnly: false,
-    isActive: true,
-  });
-
-  const loadCoupons = async () => {
-    try {
-      const res = await fetch("/api/admin/coupons");
-      if (res.ok) {
-        const data = await res.json();
-        setCoupons(data.coupons || []);
-      }
-    } catch {
-      // Ignore
-    } finally {
-      setLoading(false);
-    }
+  const fetchCoupons = () => {
+    getAllCoupons()
+      .then(setCoupons)
+      .catch((err) => console.error("Failed to load coupons", err))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadCoupons();
+    fetchCoupons();
   }, []);
 
-  const handleCreateCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
+  const openAddModal = () => {
+    setEditingCoupon(null);
+    setModalOpen(true);
+  };
 
+  const openEditModal = (coupon: Coupon) => {
+    setEditingCoupon(coupon);
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async (payload: CouponFormPayload) => {
+    if (editingCoupon) {
+      await updateCoupon(editingCoupon.id, payload);
+    } else {
+      await createCoupon(payload);
+    }
+    setModalOpen(false);
+    fetchCoupons();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this coupon?")) return;
     try {
-      const res = await fetch("/api/admin/coupons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (res.ok) {
-        setModalOpen(false);
-        loadCoupons();
-        setForm({
-          code: "",
-          description: "",
-          discountType: "percentage",
-          discountValue: "20",
-          minOrderAmount: "999",
-          maxDiscountAmount: "500",
-          firstOrderOnly: false,
-          isActive: true,
-        });
-      }
-    } catch {
-      // Ignore
-    } finally {
-      setCreating(false);
+      await deleteCoupon(id);
+      fetchCoupons();
+    } catch (err) {
+      console.error("Failed to delete coupon", err);
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Coupons &amp; Deals</h1>
-          <p className="text-xs sm:text-sm text-slate-600">
-            Create promotional codes and discount quotas for checkout
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar title="Admin Panel" />
+
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <button
+          onClick={() => router.push("/admin")}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Manage Coupons</h1>
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium text-sm"
+          >
+            <Plus size={16} /> Create Coupon
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="px-5 py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-600/20 flex items-center gap-2 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" /> Create Coupon
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-44 bg-white rounded-3xl animate-pulse border border-slate-100" />
-          ))
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-24 skeleton-shimmer rounded-xl" />
+            ))}
+          </div>
         ) : coupons.length === 0 ? (
-          <div className="col-span-full p-12 text-center bg-white rounded-3xl border border-slate-100">
-            No active coupons found.
+          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
+            <Tag className="mx-auto text-gray-300 mb-3" size={32} />
+            <p className="text-sm text-gray-500">No coupons created yet.</p>
           </div>
         ) : (
-          coupons.map((c) => (
-            <div
-              key={c._id}
-              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xs flex flex-col justify-between space-y-4"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="font-mono text-base font-black tracking-wider text-slate-900 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200 inline-block">
-                    {c.code}
-                  </span>
-                  <p className="text-xs text-slate-600 mt-2">{c.description}</p>
-                </div>
-                <span
-                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    c.isActive
-                      ? "bg-emerald-100 text-emerald-800"
-                      : "bg-slate-100 text-slate-600"
-                  }`}
-                >
-                  {c.isActive ? "ACTIVE" : "INACTIVE"}
-                </span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-50 text-xs text-slate-700 space-y-1">
-                <div className="flex justify-between">
-                  <span>Discount Value</span>
-                  <span className="font-bold">
-                    {c.discountType === "percentage"
-                      ? `${c.discountValue}% OFF`
-                      : `₹${c.discountValue} FLAT`}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {coupons.map((coupon) => (
+              <div
+                key={coupon.id}
+                className={`bg-white border rounded-xl p-4 ${
+                  coupon.active ? "border-gray-200" : "border-gray-100 opacity-60"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-mono font-bold text-blue-700 text-lg">{coupon.code}</span>
+                  <span
+                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      coupon.active ? "bg-green-50 text-green-700" : "bg-gray-100 text-gray-500"
+                    }`}
+                  >
+                    {coupon.active ? "Active" : "Inactive"}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Min Order Required</span>
-                  <span className="font-bold">₹{c.minOrderAmount}</span>
+                <p className="text-sm text-gray-600 mb-2">{coupon.description}</p>
+                <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                    {coupon.discountType === "PERCENTAGE"
+                      ? `${coupon.discountValue}% off`
+                      : `₹${coupon.discountValue} off`}
+                  </span>
+                  <span className="bg-gray-100 px-2 py-0.5 rounded-full">
+                    Min. ₹{coupon.minOrderValue}
+                  </span>
+                  {coupon.firstOrderOnly && (
+                    <span className="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Users size={11} /> First order only
+                    </span>
+                  )}
                 </div>
-                {c.firstOrderOnly && (
-                  <div className="text-[10px] font-bold text-orange-600 pt-1">
-                    ★ First-time shoppers only
-                  </div>
-                )}
+                <div className="flex gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    onClick={() => openEditModal(coupon)}
+                    className="flex-1 flex items-center justify-center gap-1.5 border border-gray-300 text-gray-700 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50"
+                  >
+                    <Pencil size={12} /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(coupon.id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 border border-red-200 text-red-600 py-1.5 rounded-lg text-xs font-medium hover:bg-red-50"
+                  >
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </div>
               </div>
-
-              <div className="text-[11px] text-slate-600 flex justify-between pt-2 border-t border-slate-100">
-                <span>Usage count: {c.usedCount || 0}</span>
-                <span>Limit: {c.usageLimit || 1000}</span>
-              </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900">Create Promotion Code</h3>
-
-            <form onSubmit={handleCreateCoupon} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Coupon Code *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. FESTIVE25"
-                  value={form.code}
-                  onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 uppercase font-mono tracking-wider focus:outline-none focus:border-orange-500"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Description *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="25% off on all autumn collections"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Discount Type</label>
-                  <select
-                    value={form.discountType}
-                    onChange={(e) => setForm({ ...form, discountType: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
-                  >
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (₹)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Discount Value *</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={form.discountValue}
-                    onChange={(e) => setForm({ ...form, discountValue: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Min Order (₹)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.minOrderAmount}
-                    onChange={(e) => setForm({ ...form, minOrderAmount: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Max Cap (₹)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.maxDiscountAmount}
-                    onChange={(e) => setForm({ ...form, maxDiscountAmount: e.target.value })}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:outline-none focus:border-orange-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer pt-1">
-                  <input
-                    type="checkbox"
-                    checked={form.firstOrderOnly}
-                    onChange={(e) => setForm({ ...form, firstOrderOnly: e.target.checked })}
-                    className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
-                  />
-                  <span className="font-bold text-slate-800">First-time orders only</span>
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl font-bold text-slate-600 hover:bg-slate-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="px-5 py-2 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-500"
-                >
-                  {creating ? "Creating..." : "Save Coupon"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editingCoupon ? "Edit Coupon" : "Create New Coupon"}
+      >
+        <CouponForm
+          initialData={editingCoupon ?? undefined}
+          onSubmit={handleSubmit}
+          onCancel={() => setModalOpen(false)}
+        />
+      </Modal>
     </div>
+  );
+}
+
+export default function AdminCouponsPage() {
+  return (
+    <ProtectedRoute allowedRoles={["ADMIN"]}>
+      <AdminCouponsContent />
+    </ProtectedRoute>
   );
 }

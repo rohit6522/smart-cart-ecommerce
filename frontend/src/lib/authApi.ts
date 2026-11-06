@@ -2,7 +2,7 @@ import api from "./axios";
 import { ApiResponse, AuthResponse, LoginOtpResponse, LoginPayload, RegisterPayload, ReferralInfo } from "@/types";
 
 export const registerUser = async (payload: RegisterPayload) => {
-  const res = await api.post<ApiResponse<LoginOtpResponse>>("/api/auth/register", payload);
+  const res = await api.post<ApiResponse<AuthResponse>>("/api/auth/register", payload);
   return res.data.data;
 };
 

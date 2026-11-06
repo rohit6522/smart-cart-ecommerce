@@ -1,298 +1,228 @@
-# 🛍️ CARTNOVA — Premium Multi-Category E-Commerce Platform
+# 🛒 Smart Cart — Budget-Aware Shopping Platform
 
-**CARTNOVA** (Brand: **TROSTO**) is a production-grade, full-stack multi-category online shopping platform built with **Next.js App Router**, **React 19**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, and **MongoDB Atlas** with **Mongoose ODM**.
+A full-stack eCommerce platform that solves checkout anxiety by tracking a shopper's budget in **real time** as they shop — with dedicated dashboards for Shoppers, Admins, and Delivery Partners, and a complete feature set that mirrors real-world platforms like Flipkart and Amazon.
 
-Designed with a warm, modern aesthetic featuring deep navy typography, warm orange accents (`#F97316` / `#EA580C`), subtle borders, soft shadows, and generous whitespace.
+**Live Demo:** [smartcart-frontend-g472.onrender.com](https://smartcart-frontend-g472.onrender.com/)
+**Repository:** [github.com/rohit6522/smart-cart-ecommerce](https://github.com/rohit6522/smart-cart-ecommerce)
 
----
-
-## 🌟 Key Features
-
-### 🛒 Customer-Facing Shopping Experience
-- **Dynamic Homepage (`/`)**:
-  - Promotional announcement bar with quick links.
-  - Large hero banner with typography, product photography, and call-to-action buttons.
-  - Value propositions strip: *Free Shipping*, *7-Day Easy Returns*, *100% Secure Payments*, *24/7 Dedicated Support*.
-  - Shop by Category showcase across 9 distinct departments.
-  - Curated carousels for *Featured Products*, *Trending Deals*, and *New Arrivals*.
-  - Newsletter subscription strip with validation.
-- **Faceted Product Catalog (`/products`)**:
-  - Responsive layout with desktop filter sidebar and mobile drawer.
-  - Real-time filtering by category, brand, price range slider, star rating, stock availability, and discount percentage.
-  - Multi-criteria sorting: *Relevance*, *Price: Low to High*, *Price: High to Low*, *Newest Arrivals*, and *Customer Rating*.
-  - Pagination, loading skeleton states, and empty result recovery.
-- **Category Portals (`/categories/[slug]`)**:
-  - Dedicated hero banners, category descriptions, and pre-filtered product collections for:
-    - ⚡ *Electronics*
-    - 👗 *Fashion*
-    - 👟 *Shoes*
-    - ⌚ *Watches*
-    - 🎒 *Bags*
-    - 🍳 *Home & Kitchen*
-    - 💄 *Beauty*
-    - 📚 *Books*
-    - 🕶️ *Accessories*
-- **Product Details (`/products/[slug]`)**:
-  - Multi-image gallery with thumbnail selection and zoom preview.
-  - Dynamic variant picker (color swatches and size buttons) with stock validation.
-  - Quantity selector bounded by real-time inventory levels.
-  - Instant *Add to Cart* and *Buy Now* direct checkout routing.
-  - Tabbed interface: Full Description, Technical Specifications, and Verified Customer Reviews.
-  - Star breakdown and review submission modal for verified purchasers.
-  - Related product recommendations.
-- **Debounced Instant Search (`/search`)**:
-  - Real-time search in header with live dropdown suggestions.
-  - Dedicated search results page with full facet filters and count summaries.
-- **Shopping Cart (`/cart`)**:
-  - Two-column layout with item thumbnails, size/color variant tags, and quantity steppers.
-  - Live coupon application (`WELCOME50`, `TROSTO20`, `FESTIVE10`) with discount calculation.
-  - Transparent cost breakdown: Subtotal, Shipping (Free above ₹999), 5% GST, and Applied Discounts.
-  - Cart persistence for authenticated customers and guest browser sessions.
-- **Wishlist (`/wishlist`)**:
-  - One-click wishlist toggling with optimistic UI updates.
-  - *Move to Cart* and *Move All to Cart* actions.
-- **Checkout Flow (`/checkout`)**:
-  - Delivery address book: select existing address or add a new one with PIN-code validation.
-  - Payment method selection:
-    - **Razorpay Online Gateway**: Cards, UPI (Google Pay, PhonePe, Paytm), NetBanking, and Wallets.
-    - **Cash on Delivery (COD)**.
-  - Server-side stock verification and price recalculation before order confirmation.
-  - Immediate stock decrement upon confirmed order placement.
-- **Payment Verification & Results**:
-  - Server-side HMAC-SHA256 signature verification (`/api/payments/razorpay/verify`).
-  - `/checkout/success` with order summary and direct tracking links.
-  - `/checkout/failed` with retry payment options.
-- **Customer Account Portal (`/account`)**:
-  - Profile management (`/account/profile`): update name, email, phone, and password.
-  - Saved Address Book (`/account/addresses`): add, edit, and set default shipping addresses.
-  - Order History & Tracking (`/account/orders` and `/account/orders/[id]`):
-    - Visual timeline: *Order Placed* ➔ *Processing* ➔ *Shipped* ➔ *Out for Delivery* ➔ *Delivered*.
-    - Shipping tracking numbers and courier partner info.
-    - Self-service order cancellation and 7-day return request actions.
-- **Authentication (`/login`, `/register`, `/forgot-password`)**:
-  - JWT token authentication stored in HTTP-only cookies.
-  - Secure bcryptjs password hashing (cost factor 10).
-  - One-click demo credential autofill for instant testing.
-- **Company & Policy Pages**:
-  - `/about`, `/contact`, `/faq`, `/shipping-policy`, `/return-policy`, `/privacy-policy`, `/terms`.
+> ⚠️ Hosted on free-tier infrastructure — the backend may take 30–60 seconds to wake up on the first request after a period of inactivity.
 
 ---
 
-### 🛡️ Admin Portal (`/admin`)
-- **Executive Analytics Dashboard (`/admin`)**:
-  - Real-time KPIs: *Total Revenue*, *Total Orders*, *Average Order Value (AOV)*, and *Customer Base*.
-  - Interactive 7-Day Revenue Trend Area Chart using Recharts.
-  - Low-Stock alerts table with direct replenishment links.
-  - Recent orders table with real-time status badges.
-- **Inventory Management (`/admin/products`)**:
-  - Full product table with search, category filtering, and status badges.
-  - Product creation wizard (`/admin/products/new`) with Cloudinary image upload.
-  - Product editor (`/admin/products/[id]/edit`) with inventory and price adjustments.
-- **Category Administration (`/admin/categories`)**:
-  - Create and reorder categories with banner images.
-- **Order Fulfillment (`/admin/orders` and `/admin/orders/[id]`)**:
-  - Status progression workflow: *Placed* ➔ *Processing* ➔ *Shipped* ➔ *Delivered* ➔ *Cancelled*.
-  - Assign tracking numbers and courier services.
-  - Approve or decline customer return requests.
-- **Customer Relationship Management (`/admin/customers`)**:
-  - View registered customer profiles, lifetime spending, order counts, and roles.
-- **Promotions & Coupons (`/admin/coupons`)**:
-  - Create percentage or flat discounts with minimum order thresholds and expiry dates.
-- **Store Configuration (`/admin/settings`)**:
-  - Manage store contact details, tax rates, free shipping thresholds, and currency formatting.
+## ✨ Features
+
+### 🛍️ Shopping Experience
+
+- Public product catalog — browse freely as a guest, login required only to add to cart or checkout
+- Real-time **budget tracker** with live progress bar and over-budget alerts (tracks lifetime spend across orders + current cart)
+- Category-based browsing with auto-scrolling category pills and an animated hero carousel
+- Live search with autocomplete suggestions
+- Product detail pages with **ratings & reviews** (verified-purchase only) and a "You May Also Like" section
+- Wishlist / Save for Later
+- Product discounts with strike-through pricing and low-stock urgency indicators
+
+### 🛒 Cart & Checkout
+
+- Persistent cart with live quantity updates and budget sync
+- Multi-address book with default address, PIN-code auto-fill, and "Use My Current Location"
+- Coupon/promo code system — including first-order-only welcome coupons and referral bonuses
+- **Razorpay** integration for online payments (Card / UPI / Wallet) plus Cash on Delivery
+- Order confirmation emails and downloadable/printable invoices
+
+### 📦 Order Lifecycle
+
+- Full order tracking: Pending → Confirmed → Out for Delivery → Delivered
+- Order cancellation (before shipping) and returns (within a 7-day window, with admin approval and cash-refund-on-pickup)
+- In-app notification bell with real-time order status updates
+- Order history with status-based filtering and a printable invoice
+
+### 👨‍💼 Admin Dashboard
+
+- Product CRUD with category filtering, discount management, and low-stock visibility
+- Order management with delivery partner assignment and return approval/rejection
+- Coupon management (create, edit, deactivate)
+- **Sales analytics dashboard** — 30-day revenue trend, category-wise sales breakdown, and top-selling products (via Recharts)
+
+### 🚚 Delivery Partner Panel
+
+- Assigned deliveries with customer contact and address details
+- Status updates (Assigned → Picked Up → Delivered)
+- Earnings dashboard — today's, this month's, and total earnings based on completed deliveries
+
+### 🎁 Growth Features
+
+- Referral program — unique codes per user, bonus coupons for both referrer and referee
+- Low-stock urgency badges ("Only 3 left!")
+
+### 🎨 Polish
+
+- Smooth animations throughout (Framer Motion) — modals, toasts, cart transitions, status trackers, micro-interactions
+- Fully responsive, mobile-friendly UI
+- Performance optimized — image lazy-loading via `next/image`, in-memory API response caching, gzip compression
 
 ---
 
-## 🛠️ Technology Stack
+## 🧱 Tech Stack
 
-| Layer | Technologies |
-|---|---|
-| **Frontend Framework** | [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [TypeScript 5](https://www.typescriptlang.org/) |
-| **Styling & Design** | [Tailwind CSS 4](https://tailwindcss.com/), [Lucide React](https://lucide.dev/) Icons |
-| **Animations** | [Framer Motion](https://www.framer.com/motion/) |
-| **Charts & Visualizations** | [Recharts](https://recharts.org/) |
-| **Database & ODM** | [MongoDB Atlas](https://www.mongodb.com/atlas), [Mongoose 8](https://mongoosejs.com/) |
-| **Authentication & Security** | JWT (`jsonwebtoken`), `bcryptjs`, HTTP-only secure cookies |
-| **Form Management & Validation** | [React Hook Form](https://react-hook-form.com/), [Zod 4](https://zod.dev/) |
-| **Payments** | [Razorpay SDK](https://razorpay.com/) (UPI, Cards, NetBanking, COD) |
-| **Media & Storage** | [Cloudinary](https://cloudinary.com/) (Upload & CDN Delivery) |
-| **Email Notifications** | [Resend](https://resend.com/) |
-| **Alternative Standalone Backend** | Node.js Express 4 in `backend/` with Mongoose |
+**Frontend**
+
+- [Next.js 15](https://nextjs.org/) (App Router) + TypeScript
+- Tailwind CSS
+- Framer Motion (animations)
+- Recharts (analytics charts)
+- Axios
+
+**Backend**
+
+- Java Spring Boot 3
+- Spring Security with JWT authentication
+- Spring Data JPA / Hibernate
+- Razorpay Java SDK
+- Spring Mail (SMTP)
+
+**Database**
+
+- MySQL (hosted on Railway)
+
+**Deployment**
+
+- Frontend & Backend: [Render](https://render.com/) (Docker-based Web Services)
+- Database: [Railway](https://railway.app/)
 
 ---
 
-## 📂 Project Architecture
+## 📁 Project Structure
 
 ```
 smart-cart-ecommerce/
-├── frontend/                     # Next.js App Router Full-Stack Application
-│   ├── src/
-│   │   ├── app/                  # Route handlers and UI Pages
-│   │   │   ├── (auth)/           # /login, /register, /forgot-password
-│   │   │   ├── account/          # Customer portal (/profile, /orders, /addresses)
-│   │   │   ├── admin/            # Admin portal (/products, /orders, /coupons, etc.)
-│   │   │   ├── api/              # 20 Next.js REST API Route Handlers
-│   │   │   │   ├── admin/        # Admin analytics, products, orders, coupons
-│   │   │   │   ├── auth/         # Login, register, me, logout
-│   │   │   │   ├── cart/         # Server-side cart operations
-│   │   │   │   ├── categories/   # Category listings
-│   │   │   │   ├── coupons/      # Promo code validation
-│   │   │   │   ├── orders/       # Order creation & tracking
-│   │   │   │   ├── payments/     # Razorpay order generation & HMAC verification
-│   │   │   │   ├── products/     # Catalog search, filtering, reviews
-│   │   │   │   ├── seed/         # Database seeder endpoint
-│   │   │   │   └── upload/       # Cloudinary image upload
-│   │   │   ├── cart/             # Shopping cart page
-│   │   │   ├── categories/[slug] # Category showcase pages
-│   │   │   ├── checkout/         # Multi-step checkout & payment results
-│   │   │   ├── products/         # Catalog & product detail pages
-│   │   │   ├── search/           # Search results page
-│   │   │   ├── wishlist/         # Wishlist page
-│   │   │   └── page.tsx          # Homepage
-│   │   ├── components/           # Reusable UI components
-│   │   │   ├── Header.tsx        # Brand navigation, live search, badges
-│   │   │   ├── Footer.tsx        # Newsletter, site map, policy links
-│   │   │   ├── ProductCard.tsx   # Product card with hover zoom & quick actions
-│   │   │   ├── FilterSidebar.tsx # Multi-facet filter sidebar & drawer
-│   │   │   └── BenefitStrip.tsx  # Brand value pillars
-│   │   ├── context/              # React Context Providers
-│   │   │   ├── AuthContext.tsx   # Auth session & role management
-│   │   │   ├── CartContext.tsx   # Live cart calculation & syncing
-│   │   │   └── WishlistContext.tsx # Wishlist persistence & toggling
-│   │   ├── lib/                  # Utilities & database connection
-│   │   │   ├── mongodb.ts        # Cached global Mongoose connection pool
-│   │   │   └── seedData.ts       # Database seeder dataset
-│   │   ├── models/               # 11 Mongoose Schemas & Models
-│   │   │   ├── User.ts
-│   │   │   ├── Product.ts
-│   │   │   ├── Category.ts
-│   │   │   ├── Cart.ts
-│   │   │   ├── Order.ts
-│   │   │   ├── Payment.ts
-│   │   │   ├── Address.ts
-│   │   │   ├── Review.ts
-│   │   │   ├── Coupon.ts
-│   │   │   ├── Wishlist.ts
-│   │   │   └── Notification.ts
-│   │   └── types/                # TypeScript type definitions
-│   ├── .env.example              # Frontend environment variables template
-│   └── package.json
-├── backend/                      # Optional standalone Node.js Express server
-│   ├── src/
-│   │   └── config/db.js          # MongoDB connection module
-│   ├── server.js                 # Express server with CORS & health check
-│   └── package.json
-└── README.md
+├── backend/     # Spring Boot REST API
+│   ├── src/main/java/com/smartcart/backend/
+│   │   ├── controller/   # REST endpoints
+│   │   ├── service/      # Business logic
+│   │   ├── repository/   # Spring Data JPA repositories
+│   │   ├── entity/       # JPA entities
+│   │   ├── dto/          # Request/response DTOs
+│   │   ├── security/     # JWT filter & utilities
+│   │   ├── config/       # Security & async config
+│   │   └── exception/    # Global exception handling
+│   └── Dockerfile
+└── frontend/    # Next.js application
+    ├── src/
+    │   ├── app/          # App Router pages (user, admin, delivery)
+    │   ├── components/   # Reusable UI components
+    │   ├── context/       # Auth, Cart, Wishlist, Notification contexts
+    │   ├── lib/           # API client functions
+    │   └── types/         # Shared TypeScript types
+    └── next.config.ts
 ```
 
 ---
 
-## ⚡ Quick Start Guide
+## 🚀 Getting Started
 
-### 1. Prerequisites
-- **Node.js** 18.18+ or 20+
-- **MongoDB Atlas** database URI (or local MongoDB running on `mongodb://localhost:27017/cartnova`)
-- (Optional) **Razorpay** test API key and secret
-- (Optional) **Cloudinary** credentials for image uploads
+### Prerequisites
 
-### 2. Clone and Install Dependencies
+- Java 25+ and Maven
+- Node.js 18+
+- MySQL instance (local or hosted)
+
+### Backend Setup
+
 ```bash
-git clone https://github.com/rohit6522/smart-cart-ecommerce.git
-cd smart-cart-ecommerce/frontend
-npm install
+cd backend
 ```
 
-### 3. Configure Environment Variables
-Copy `.env.example` to `.env.local` inside `frontend/`:
+Configure `src/main/resources/application.properties`:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/smart_cart_db
+spring.datasource.username=root
+spring.datasource.password=your_password
+spring.jpa.hibernate.ddl-auto=update
+
+razorpay.key.id=your_razorpay_key_id
+razorpay.key.secret=your_razorpay_key_secret
+
+spring.mail.username=your_email@gmail.com
+spring.mail.password=your_gmail_app_password
+```
+
+Run the server:
+
 ```bash
-cp .env.example .env.local
+./mvnw spring-boot:run
 ```
 
-Fill in your configuration details:
-```env
-# MongoDB Connection
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/cartnova?retryWrites=true&w=majority
+Runs on `http://localhost:8080`
 
-# JWT Authentication
-JWT_SECRET=cartnova-super-secret-jwt-key-2026-production
-
-# App URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Razorpay Test Credentials (Optional for online payments)
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_placeholder
-RAZORPAY_KEY_SECRET=rzp_test_secret_placeholder
-RAZORPAY_WEBHOOK_SECRET=rzp_webhook_secret_placeholder
-
-# Cloudinary (Optional for product image uploads)
-CLOUDINARY_CLOUD_NAME=demo_cloud
-CLOUDINARY_API_KEY=123456789
-CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
-
-# Email Service (Optional for transactional emails)
-RESEND_API_KEY=re_placeholder_12345678
-EMAIL_FROM=onboarding@resend.dev
-```
-
-### 4. Seed the Database
-Populate the database with demo accounts, 9 categories, 9 featured products, and active coupons:
-```bash
-# Start the development server
-npm run dev
-```
-Then trigger the seeder either by:
-- Visiting `http://localhost:3000/api/seed` in your browser, OR
-- Sending a POST request: `curl -X POST http://localhost:3000/api/seed`
-
----
-
-## 🔑 Demo Accounts & Test Credentials
-
-The database seeder provisions the following accounts:
-
-| Role | Email | Password | Access Privileges |
-|---|---|---|---|
-| **Admin** | `admin@cartnova.com` | `Admin@123456` | Full access to `/admin` dashboard, product CRUD, orders, and coupons |
-| **Customer** | `customer@cartnova.com` | `Customer@123456` | Full shopping, cart, wishlist, checkout, and `/account` portal |
-| **Delivery** | `delivery@cartnova.com` | `Delivery@123456` | Delivery order tracking and updates |
-
-*Tip: The `/login` page features 1-click **Quick Fill** buttons for both Admin and Customer accounts.*
-
-### 🎟️ Active Promotional Coupons
-- **`WELCOME50`**: 50% discount on first orders (up to ₹500 off, minimum cart ₹999).
-- **`TROSTO20`**: 20% flat discount on orders over ₹1,499.
-- **`FESTIVE10`**: 10% instant festival discount on any purchase over ₹499.
-
----
-
-## 🚀 Running the Production Build
-
-To verify and run the production build locally:
+### Frontend Setup
 
 ```bash
 cd frontend
-npm run build
-npm start
+npm install
 ```
-The application compiles all 45 static and dynamic routes cleanly and runs on `http://localhost:3000`.
+
+Create `.env.local`:
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+Run the dev server:
+
+```bash
+npm run dev
+```
+
+Runs on `http://localhost:3000`
 
 ---
 
-## 🌐 Deployment to Vercel & MongoDB Atlas
+## 👥 Roles & Access
 
-1. **MongoDB Atlas**:
-   - Create a free cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
-   - Under **Network Access**, add `0.0.0.0/0` (allow access from anywhere) so Vercel serverless functions can connect.
-   - Copy the connection string to `MONGODB_URI`.
-2. **Vercel**:
-   - Import the repository in [Vercel](https://vercel.com/).
-   - Set **Root Directory** to `frontend`.
-   - In **Environment Variables**, add the keys from `.env.example` (`MONGODB_URI`, `JWT_SECRET`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`).
-   - Click **Deploy**.
-3. **Database Seeding on Production**:
-   - Once deployed, visit `https://your-domain.vercel.app/api/seed` to seed the database with initial categories, products, and admin credentials.
+| Role                 | Access                                                                          |
+| -------------------- | ------------------------------------------------------------------------------- |
+| **Guest**            | Browse the product catalog freely                                               |
+| **Shopper (USER)**   | Full shopping experience — cart, checkout, orders, reviews, wishlist, referrals |
+| **Admin**            | Product/order/coupon management, delivery assignment, sales analytics           |
+| **Delivery Partner** | View assigned deliveries, update delivery status, track earnings                |
+
+> Admin accounts are not self-registrable through the public sign-up form for security reasons — they must be created directly in the database.
+
+---
+
+## 🔐 Environment Variables
+
+### Backend
+
+| Variable                                  | Description                           |
+| ----------------------------------------- | ------------------------------------- |
+| `SPRING_DATASOURCE_URL`                   | MySQL connection string               |
+| `SPRING_DATASOURCE_USERNAME` / `PASSWORD` | Database credentials                  |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay API credentials              |
+| `SPRING_MAIL_USERNAME` / `PASSWORD`       | Gmail SMTP credentials (App Password) |
+
+### Frontend
+
+| Variable              | Description                 |
+| --------------------- | --------------------------- |
+| `NEXT_PUBLIC_API_URL` | Base URL of the backend API |
+
+---
+
+## 📸 Key Highlights
+
+- **Real-time budget tracking** that persists across sessions and accounts for lifetime spend, not just the current cart
+- **Referral-linked coupon engine** — coupons can be public, first-order-only, or assigned to a specific user
+- **Full return/cancellation workflow** with admin approval, matching real e-commerce return policies
+- **Analytics dashboard** built entirely from live order data — no mock data
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+
+MIT
+
+---
+
+_Built as a hands-on learning project to explore full-stack development, from database design to production deployment._

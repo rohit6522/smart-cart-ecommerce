@@ -1,6 +1,215 @@
-import { redirect } from "next/navigation";
+"use client";
+import HeroCarousel from "@/components/user/HeroCarousel";
+import { useEffect, useState, useMemo, useRef } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import BudgetTracker from "@/components/user/BudgetTracker";
+import ProductCard from "@/components/user/ProductCard";
+import CategoryScroll from "@/components/user/CategoryScroll";
+import { getAllProducts } from "@/lib/productApi";
+import { getCart, setBudget, addToCart } from "@/lib/cartApi";
+import { Product, CartResponse } from "@/types";
+import { ArrowLeft } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import Toast from "@/components/ui/Toast";
+import PageTransition from "@/components/PageTransition";
+const PREVIEW_COUNT = 4;
 
-export default function UserRedirect() {
-  redirect("/account");
+function UserHomeContent() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [toast, setToast] = useState("");
+
+  const productsRef = useRef<HTMLDivElement>(null);
+  const { refreshCartCount } = useCart();
+
+  const scrollToProducts = () => {
+    productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  useEffect(() => {
+    Promise.all([getAllProducts(), getCart()])
+      .then(([productsData, cartData]) => {
+        setProducts(productsData);
+        setCart(cartData);
+      })
+      .catch((err) => console.error("Failed to load home data", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSetBudget = async (amount: number) => {
+    const updated = await setBudget(amount);
+    setCart(updated);
+  };
+
+  const handleAddToCart = async (productId: number, quantity: number) => {
+  try {
+    const updated = await addToCart(productId, quantity);
+    setCart(updated);
+    refreshCartCount();  // <-- add this line
+    setToast("Item added to cart!");
+
+      setTimeout(() => setToast(""), 2000);
+    } catch (err: any) {
+      setToast(err?.response?.data?.message || "Failed to add item");
+      setTimeout(() => setToast(""), 2500);
+    }
+  };
+
+  const categories = useMemo(() => {
+    return Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+  }, [products]);
+
+  const searchedProducts = useMemo(() => {
+    if (!search.trim()) return products;
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [products, search]);
+
+  // Default home view: ALL categories mixed together, capped to 4 products total
+  const mixedPreview = useMemo(() => {
+    return searchedProducts.slice(0, PREVIEW_COUNT);
+  }, [searchedProducts]);
+
+  // When a category is selected: show every product in just that category
+  const categoryProducts = useMemo(() => {
+    if (!activeCategory) return [];
+    return searchedProducts.filter((p) => p.category === activeCategory);
+  }, [searchedProducts, activeCategory]);
+
+  const isSearching = search.trim().length > 0;
+
+  return (
+    <PageTransition> 
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+
+      <Navbar title="Smart Cart" onSearch={setSearch} />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full">
+        <HeroCarousel onShopNow={scrollToProducts} />
+
+        {!loading && categories.length > 0 && !isSearching && (
+          <CategoryScroll
+            categories={categories}
+            activeCategory={activeCategory}
+            onSelect={setActiveCategory}
+          />
+        )}
+
+        <div ref={productsRef} className="mb-8">
+          {loading ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
+          ) : (
+            <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
+          )}
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+              />
+            ))}
+          </div>
+        ) : isSearching ? (
+  <>
+    <h2 className="text-lg font-bold text-gray-900 mb-4">
+      Search results for &quot;{search}&quot;
+    </h2>
+    {searchedProducts.length === 0 ? (
+      <div className="text-center py-16">
+        <p className="text-gray-500 mb-3">No products found for &quot;{search}&quot;</p>
+        <button
+          onClick={() => setSearch("")}
+          className="text-blue-600 hover:underline text-sm font-medium"
+        >
+          Clear Search
+        </button>
+      </div>
+    ) : (
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {searchedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : activeCategory ? (
+          <>
+            <button
+              onClick={() => setActiveCategory(null)}
+              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium mb-4"
+            >
+              <ArrowLeft size={16} /> Back to all products
+            </button>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              {activeCategory}
+            </h2>
+
+            {categoryProducts.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">
+                No products in this category.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {categoryProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              Featured Products
+            </h2>
+            {mixedPreview.length === 0 ? (
+              <p className="text-center text-gray-500 py-16">
+                No products found.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {mixedPreview.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <Toast message={toast} />
+
+      <Footer />
+    </div>
+    </PageTransition>
+  );
 }
 
+export default function UserHomePage() {
+  return (
+    <ProtectedRoute allowedRoles={["USER"]}>
+      <UserHomeContent />
+    </ProtectedRoute>
+  );
+}

@@ -3,22 +3,35 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Lock, Mail, ArrowRight, ShieldCheck, UserCheck } from "lucide-react";
+import { loginUser, verifyOtp } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { getDashboardPath } from "@/lib/roleRedirect";
+import { Role } from "@/types";
+import { useRef, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "";
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const notice = searchParams.get("notice");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [step, setStep] = useState<"credentials" | "otp">("credentials");
+  const [otp, setOtp] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
+  const otpInputRef = useRef<HTMLInputElement>(null);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: name === "email" ? value.trim().toLowerCase() : value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,173 +39,187 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      });
+      const data = await loginUser(form);
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Invalid credentials");
+      if (!data.requiresOtp && data.token) {
+        // Non-admin: logged in directly, no OTP needed
+        login(data.token, {
+          userId: data.userId!,
+          name: data.name!,
+          email: data.email,
+          role: data.role as Role,
+        });
+        router.push(getDashboardPath(data.role as Role));
+        return;
       }
 
-      login(data.token, {
-        id: data.user.id,
-        userId: data.user.id,
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role,
-        phone: data.user.phone,
-        avatar: data.user.avatar,
-      });
-
-      if (redirect) {
-        router.push(redirect);
-      } else if (data.user.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
+      // Admin: proceed to OTP verification step
+      setOtpEmail(data.email);
+      setStep("otp");
     } catch (err: any) {
-      setError(err.message || "Failed to sign in. Please verify your email and password.");
+      setError(
+        err?.response?.data?.message || "Login failed. Check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const setDemoCredentials = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
+  useEffect(() => {
+    if (step === "otp") {
+      otpInputRef.current?.focus();
+    }
+  }, [step]);
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError("");
+    setLoading(true);
+
+    try {
+      const data = await verifyOtp(otpEmail, otp);
+      login(data.token, {
+        userId: data.userId,
+        name: data.name,
+        email: data.email,
+        role: data.role,
+      });
+      router.push(getDashboardPath(data.role));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Invalid OTP. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-slate-100 p-8 sm:p-10">
-      <div className="text-center mb-6">
-        <Link href="/" className="inline-flex items-center gap-2 mb-3">
-          <div className="w-9 h-9 rounded-xl bg-orange-600 flex items-center justify-center text-white font-black text-lg">
-            C
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
+        <h1 className="text-2xl font-bold mb-1 text-gray-900">Welcome Back</h1>
+        <p className="text-gray-500 mb-6">Login to continue shopping smart</p>
+
+        {notice === "login-required" && (
+          <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2 rounded-lg mb-4">
+            Please login to add items to your cart or place an order.
           </div>
-          <span className="font-extrabold text-2xl tracking-tight text-slate-900">
-            CART<span className="text-orange-600">NOVA</span>
-          </span>
-        </Link>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">Welcome Back</h1>
-        <p className="text-xs sm:text-sm text-slate-600 mt-1">
-          Sign in to access your orders, saved cart, and wishlist
-        </p>
-      </div>
+        )}
 
-      {error && (
-        <div className="mb-5 p-3.5 bg-red-50 border border-red-200 text-red-600 text-xs font-semibold rounded-xl">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm px-4 py-2 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Email Address
-          </label>
-          <div className="relative">
-            <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        {step === "credentials" ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
               required
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-orange-500 focus:bg-white"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
-        </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
-        <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-xs font-bold text-slate-700">Password</label>
-            <Link
-              href="/forgot-password"
-              className="text-xs font-semibold text-orange-600 hover:underline"
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
             >
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              {loading ? "Sending OTP..." : "Continue"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="bg-blue-50 text-blue-700 text-sm px-4 py-2.5 rounded-lg">
+              We&apos;ve sent a 6-digit code to <strong>{otpEmail}</strong>.
+              Enter it below to continue.
+            </div>
             <input
-              type={showPassword ? "text" : "password"}
+              ref={otpInputRef}
+              type="text"
+              placeholder="Enter 6-digit OTP"
+              value={otp}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
+              maxLength={6}
               required
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-orange-500 focus:bg-white"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              type="submit"
+              disabled={loading || otp.length !== 6}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition disabled:opacity-50"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {loading ? "Verifying..." : "Verify & Login"}
             </button>
-          </div>
-        </div>
+            <button
+              type="button"
+              onClick={() => setStep("credentials")}
+              className="w-full text-sm text-gray-500 hover:text-gray-700"
+            >
+              ← Back to login
+            </button>
+          </form>
+        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3.5 px-4 bg-orange-600 hover:bg-orange-500 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shadow-orange-600/25 transition-all flex items-center justify-center gap-2 hover:scale-[1.01] disabled:opacity-50"
-        >
-          {loading ? "Authenticating..." : "Sign In to CartNova"}
-        </button>
-      </form>
-
-      {/* Demo Account Quick Buttons */}
-      <div className="mt-6 pt-5 border-t border-slate-100">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-600 text-center mb-2.5">
-          Quick Demo Credentials
+        <p className="text-center text-sm text-gray-500 mt-6">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="text-blue-600 font-medium hover:underline">
+            Register
+          </Link>
         </p>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("customer@cartnova.com", "Customer@123456")}
-            className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 text-slate-700 hover:text-orange-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <UserCheck className="w-3.5 h-3.5" /> Customer
-          </button>
-          <button
-            type="button"
-            onClick={() => setDemoCredentials("admin@cartnova.com", "Admin@123456")}
-            className="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-orange-50 hover:border-orange-200 text-slate-700 hover:text-orange-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-          >
-            <ShieldCheck className="w-3.5 h-3.5" /> Admin
-          </button>
-        </div>
-      </div>
 
-      <p className="text-center text-xs text-slate-600 mt-6">
-        Don&rsquo;t have an account yet?{" "}
-        <Link
-          href={`/register${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`}
-          className="font-bold text-orange-600 hover:underline"
-        >
-          Create an account
-        </Link>
-      </p>
-    </div>
+        <p className="text-center text-xs text-gray-400 mt-3">
+          Just browsing?{" "}
+          <Link href="/" className="text-blue-600 hover:underline">
+            Explore products without logging in
+          </Link>
+        </p>
+      </div>
+    </main>
   );
 }
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-slate-50/70 flex flex-col font-sans">
-      <Header />
-      <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <Suspense fallback={<div className="p-8 text-center text-sm">Loading login...</div>}>
-          <LoginForm />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-gray-400">
+          Loading...
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
