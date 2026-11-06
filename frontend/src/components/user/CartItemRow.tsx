@@ -59,58 +59,60 @@ export default function CartItemRow({
       animate={{ opacity: removing ? 0.4 : 1, height: "auto" }}
       exit={{ opacity: 0, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex items-start gap-4 py-5 border-b border-gray-100 last:border-0"
+      className="flex items-start gap-4 py-5 border-b border-slate-100 last:border-0 transition-colors"
     >
-      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-100 border border-slate-200/60 flex items-center justify-center flex-shrink-0 overflow-hidden relative shadow-2xs">
         {item.imageUrl ? (
           <Image
             src={item.imageUrl}
             alt={item.productName}
             fill
             sizes="80px"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 hover:scale-105"
           />
         ) : (
-          <ShoppingCart className="text-gray-300" size={26} />
+          <ShoppingCart className="text-slate-300" size={26} />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 sm:gap-3">
           <div className="min-w-0">
-            <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
+            <h4 className="font-semibold text-slate-900 text-sm sm:text-base truncate tracking-tight">
               {item.productName}
             </h4>
             {item.variantLabel && (
-              <span className="inline-block text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full mt-1">
+              <span className="inline-block text-xs font-medium bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full mt-1 border border-slate-200/50">
                 {item.variantLabel}
               </span>
             )}
-            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 font-medium">
               ₹{item.priceAtAdd.toFixed(2)} each
             </p>
           </div>
-          <span className="font-bold text-gray-900 whitespace-nowrap text-sm sm:text-base flex-shrink-0">
+          <span className="font-bold text-slate-900 whitespace-nowrap text-sm sm:text-base flex-shrink-0 tracking-tight">
             ₹{item.subtotal.toFixed(2)}
           </span>
         </div>
 
-        <div className="flex items-center justify-between mt-2 sm:mt-3">
-          <div className="flex items-center gap-1.5 sm:gap-2 border border-gray-200 rounded-lg px-1 py-1">
+        <div className="flex items-center justify-between mt-2.5 sm:mt-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50 border border-slate-200/80 rounded-xl p-1 shadow-2xs">
             <button
               onClick={() => handleQuantityChange(localQuantity - 1)}
-              disabled={removing}
-              className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
+              disabled={removing || updating}
+              aria-label="Decrease quantity"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white active:scale-90 transition-all disabled:opacity-40"
             >
               <Minus size={13} />
             </button>
-            <span className="w-6 text-center text-sm font-medium">
+            <span className="w-6 text-center text-sm font-semibold text-slate-800">
               {localQuantity}
             </span>
             <button
               onClick={() => handleQuantityChange(localQuantity + 1)}
-              disabled={removing}
-              className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 rounded-md disabled:opacity-50"
+              disabled={removing || updating}
+              aria-label="Increase quantity"
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white active:scale-90 transition-all disabled:opacity-40"
             >
               <Plus size={13} />
             </button>
@@ -119,7 +121,7 @@ export default function CartItemRow({
           <button
             onClick={handleRemove}
             disabled={removing}
-            className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 font-medium disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-rose-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 px-2.5 py-1.5 rounded-lg font-medium transition-all disabled:opacity-40"
           >
             <Trash2 size={14} /> Remove
           </button>

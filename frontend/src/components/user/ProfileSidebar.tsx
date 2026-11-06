@@ -24,16 +24,16 @@ export default function ProfileSidebar() {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="w-full sm:w-64 bg-white border border-gray-200 rounded-2xl p-4 h-fit">
+    <aside className="w-full sm:w-64 bg-white border border-slate-200/80 rounded-3xl p-4 sm:p-5 h-fit shadow-xs">
       <Link
         href="/user"
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 mb-3 px-2"
+        className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 mb-3 px-2 transition-colors group"
       >
-        <ArrowLeft size={16} />
+        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
         Back to Shopping
       </Link>
-      <div className="flex items-center gap-3 px-2 py-3 mb-2 border-b border-gray-100">
-        <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold overflow-hidden">
+      <div className="flex items-center gap-3 px-2 py-3 mb-2 border-b border-slate-100">
+        <div className="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-base overflow-hidden shadow-2xs">
           {user?.profilePhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -47,8 +47,8 @@ export default function ProfileSidebar() {
         </div>
 
         <div>
-          <p className="font-semibold text-gray-900 text-sm">{user?.name}</p>
-          <p className="text-xs text-gray-400">Shopper</p>
+          <p className="font-bold text-slate-900 text-sm tracking-tight">{user?.name}</p>
+          <p className="text-xs text-slate-400 font-medium">Shopper</p>
         </div>
       </div>
 
@@ -57,10 +57,10 @@ export default function ProfileSidebar() {
           <Link
             key={href}
             href={href}
-            className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition border-l-4 ${
+            className={`flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold transition-all border-l-4 ${
               pathname === href
-                ? "bg-blue-50 text-blue-600 border-blue-600"
-                : "text-gray-600 hover:bg-gray-50 border-transparent"
+                ? "bg-blue-50 text-blue-700 border-blue-600 rounded-r-xl"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 border-transparent rounded-xl"
             }`}
           >
             <Icon size={17} />
@@ -74,7 +74,7 @@ export default function ProfileSidebar() {
               logout();
             }
           }}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
         >
           <LogOut size={17} />
           Logout

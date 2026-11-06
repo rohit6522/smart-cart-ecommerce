@@ -101,10 +101,10 @@ function ProductDetailContent() {
 
   if (loading || !product) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Navbar title="Smart Cart" />
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <div className="h-96 bg-white border border-gray-200 rounded-xl animate-pulse" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
+          <div className="h-96 bg-white border border-slate-200/80 rounded-3xl animate-pulse shadow-xs" />
         </div>
       </div>
     );
@@ -113,25 +113,25 @@ function ProductDetailContent() {
   const outOfStock = product.stockQuantity <= 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar title="Smart Cart" />
 
-      <div className="max-w-4xl mx-auto px-6 py-8 flex-1 w-full">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-semibold mb-4 transition-colors group"
         >
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" /> Back
         </button>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-8 mb-8 shadow-xs">
           <ZoomableImage src={product.imageUrl} alt={product.name} />
 
           <div>
-            <span className="text-xs text-blue-600 font-medium">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full inline-block">
               {product.category}
             </span>
-            <h1 className="text-2xl font-bold text-gray-900 mt-1 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2 mb-2 tracking-tight">
               {product.name}
             </h1>
 
@@ -145,35 +145,36 @@ function ProductDetailContent() {
               </div>
             )}
 
-            <p className="text-gray-500 mb-4">{product.description}</p>
+            <p className="text-slate-600 mb-5 leading-relaxed text-sm sm:text-base">{product.description}</p>
 
-            <div className="flex flex-wrap items-center gap-2 mb-4">
+            <div className="flex flex-wrap items-baseline gap-2.5 mb-5">
               {product.discountPercentage > 0 ? (
                 <>
-                  <span className="text-xl sm:text-2xl font-bold text-gray-900">
+                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                     ₹{product.discountedPrice.toFixed(2)}
                   </span>
-                  <span className="text-gray-400 line-through text-sm sm:text-base">
+                  <span className="text-slate-400 line-through text-sm sm:text-base font-medium">
                     ₹{product.price.toFixed(2)}
                   </span>
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  <span className="bg-rose-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full shadow-2xs">
                     {product.discountPercentage}% OFF
                   </span>
                 </>
               ) : (
-                <span className="text-2xl font-bold text-gray-900">
+                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                   ₹{product.price.toFixed(2)}
                 </span>
               )}
             </div>
+
             {product.variants.length > 0 && (
-              <div className="mb-4">
+              <div className="mb-5">
                 {/* Group variants by type (Size, Color) for cleaner display */}
                 {Array.from(
                   new Set(product.variants.map((v) => v.variantType)),
                 ).map((type) => (
                   <div key={type} className="mb-3">
-                    <p className="text-xs font-medium text-gray-500 mb-1.5">
+                    <p className="text-xs font-semibold tracking-wider text-slate-500 mb-2 uppercase">
                       {type}
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -184,12 +185,12 @@ function ProductDetailContent() {
                             key={variant.id}
                             onClick={() => setSelectedVariant(variant)}
                             disabled={variant.stockQuantity === 0}
-                            className={`px-3.5 py-1.5 rounded-lg border text-sm font-medium transition ${
+                            className={`px-3.5 py-1.5 rounded-xl border text-sm font-semibold transition-all active:scale-95 ${
                               selectedVariant?.id === variant.id
-                                ? "border-blue-500 bg-blue-50 text-blue-700"
+                                ? "border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-500/20 shadow-2xs"
                                 : variant.stockQuantity === 0
-                                  ? "border-gray-100 text-gray-300 cursor-not-allowed"
-                                  : "border-gray-200 text-gray-700 hover:border-gray-300"
+                                  ? "border-slate-100 text-slate-300 cursor-not-allowed bg-slate-50"
+                                  : "border-slate-200 text-slate-700 hover:border-slate-300 bg-white"
                             }`}
                           >
                             {variant.variantValue}
@@ -203,12 +204,12 @@ function ProductDetailContent() {
             )}
 
             <p
-              className={`text-sm mb-4 font-medium ${
+              className={`text-sm mb-5 font-semibold ${
                 outOfStock
-                  ? "text-red-500"
+                  ? "text-rose-500"
                   : product.stockQuantity <= 5
-                    ? "text-orange-600 animate-pulse"
-                    : "text-gray-500"
+                    ? "text-amber-600 animate-pulse"
+                    : "text-slate-500"
               }`}
             >
               {outOfStock
@@ -219,22 +220,24 @@ function ProductDetailContent() {
             </p>
 
             {!outOfStock && (
-              <>
-                <div className="flex items-center gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <div className="inline-flex items-center justify-between sm:justify-start gap-2 bg-slate-50 border border-slate-200/80 rounded-xl p-1 shadow-2xs w-fit">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                    className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+                    aria-label="Decrease quantity"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white active:scale-90 transition-all"
                   >
                     <Minus size={15} />
                   </button>
-                  <span className="w-8 text-center font-medium">
+                  <span className="w-8 text-center font-bold text-slate-900 text-sm">
                     {quantity}
                   </span>
                   <button
                     onClick={() =>
                       setQuantity((q) => Math.min(product.stockQuantity, q + 1))
                     }
-                    className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+                    aria-label="Increase quantity"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white active:scale-90 transition-all"
                   >
                     <Plus size={15} />
                   </button>
@@ -242,34 +245,38 @@ function ProductDetailContent() {
 
                 <button
                   onClick={handleAddToCart}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-2.5 rounded-lg"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold px-8 py-3 rounded-xl shadow-sm hover:shadow-md transition-all text-sm sm:text-base flex items-center justify-center gap-2"
                 >
-                  Add to Cart
+                  <ShoppingCart size={18} /> Add to Cart
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
 
         {/* Reviews Section */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-5 sm:p-8 shadow-xs">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 tracking-tight">
             Customer Reviews
           </h2>
 
           {/* Write a review */}
-          <div className="border border-gray-100 rounded-xl p-4 mb-6 bg-gray-50">
-            <p className="text-sm font-medium text-gray-700 mb-2">
+          <div className="border border-slate-200/80 rounded-2xl p-5 mb-6 bg-slate-50/60">
+            <p className="text-sm font-semibold text-slate-800 mb-2">
               Purchased and received this product? Share your experience.
             </p>
-            <div className="flex items-center gap-1 mb-3">
+            <div className="flex items-center gap-1.5 mb-3">
               {[1, 2, 3, 4, 5].map((star) => (
-                <button key={star} onClick={() => setMyRating(star)}>
+                <button 
+                  key={star} 
+                  onClick={() => setMyRating(star)}
+                  className="transition-transform hover:scale-110 active:scale-95"
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill={star <= myRating ? "#facc15" : "none"}
-                    stroke={star <= myRating ? "#facc15" : "#d1d5db"}
+                    stroke={star <= myRating ? "#facc15" : "#cbd5e1"}
                     strokeWidth={1.5}
                     className="w-7 h-7 sm:w-6 sm:h-6"
                   >
@@ -287,15 +294,15 @@ function ProductDetailContent() {
               onChange={(e) => setMyComment(e.target.value)}
               placeholder="Write your review (optional)..."
               rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm mb-3 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900 transition-all placeholder:text-slate-400"
             />
             {reviewError && (
-              <p className="text-red-600 text-sm mb-2">{reviewError}</p>
+              <p className="text-rose-600 text-sm mb-2 font-medium">{reviewError}</p>
             )}
             <button
               onClick={handleSubmitReview}
               disabled={submitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg disabled:opacity-50"
+              className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all disabled:opacity-50 shadow-xs"
             >
               {submitting ? "Submitting..." : "Submit Review"}
             </button>
@@ -303,7 +310,7 @@ function ProductDetailContent() {
 
           {/* Review list */}
           {reviews.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
+            <p className="text-sm text-slate-400 text-center py-6">
               No reviews yet. Be the first!
             </p>
           ) : (
@@ -311,13 +318,13 @@ function ProductDetailContent() {
               {reviews.map((review) => (
                 <div
                   key={review.id}
-                  className="border-b border-gray-100 pb-4 last:border-0"
+                  className="border-b border-slate-100 pb-4 last:border-0"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-gray-900 text-sm">
+                    <span className="font-semibold text-slate-900 text-sm">
                       {review.userName}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-slate-400 font-medium">
                       {new Date(review.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",
                         month: "short",
@@ -327,7 +334,7 @@ function ProductDetailContent() {
                   </div>
                   <StarRating rating={review.rating} />
                   {review.comment && (
-                    <p className="text-sm text-gray-600 mt-1.5">
+                    <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
                       {review.comment}
                     </p>
                   )}
@@ -338,13 +345,13 @@ function ProductDetailContent() {
         </div>
 
         {similarProducts.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="mt-10">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-5 tracking-tight">
               You May Also Like
             </h2>
-            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar pb-3">
               {similarProducts.map((p) => (
-                <div key={p.id} className="flex-shrink-0 w-52">
+                <div key={p.id} className="flex-shrink-0 w-52 sm:w-60">
                   <ProductCard product={p} onAddToCart={handleAddToCart} />
                 </div>
               ))}
@@ -354,7 +361,7 @@ function ProductDetailContent() {
       </div>
 
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-sm px-5 py-2.5 rounded-full shadow-lg">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-5 py-2.5 rounded-full shadow-lg z-50">
           {toast}
         </div>
       )}

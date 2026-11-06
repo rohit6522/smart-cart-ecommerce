@@ -86,11 +86,11 @@ function UserHomeContent() {
 
   return (
     <PageTransition> 
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
 
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full space-y-6 sm:space-y-8">
         <HeroCarousel onShopNow={scrollToProducts} />
 
         {!loading && categories.length > 0 && !isSearching && (
@@ -101,41 +101,49 @@ function UserHomeContent() {
           />
         )}
 
-        <div ref={productsRef} className="mb-8">
+        <div ref={productsRef} className="mb-2">
           {loading ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 animate-pulse h-24" />
+            <div className="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 animate-pulse h-24" />
           ) : (
             <BudgetTracker cart={cart} onSetBudget={handleSetBudget} />
           )}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+                className="h-72 bg-white border border-slate-200/80 rounded-2xl animate-pulse shadow-xs"
               />
             ))}
           </div>
         ) : isSearching ? (
   <>
-    <h2 className="text-lg font-bold text-gray-900 mb-4">
-      Search results for &quot;{search}&quot;
-    </h2>
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
+        Search results for &quot;{search}&quot;
+      </h2>
+      <button
+        onClick={() => setSearch("")}
+        className="text-blue-600 hover:text-blue-700 text-sm font-semibold transition-colors"
+      >
+        Clear Search
+      </button>
+    </div>
     {searchedProducts.length === 0 ? (
-      <div className="text-center py-16">
-        <p className="text-gray-500 mb-3">No products found for &quot;{search}&quot;</p>
+      <div className="text-center py-16 bg-white border border-slate-200/80 rounded-2xl shadow-xs p-8">
+        <p className="text-slate-500 mb-3 text-base">No products found for &quot;{search}&quot;</p>
         <button
           onClick={() => setSearch("")}
-          className="text-blue-600 hover:underline text-sm font-medium"
+          className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-sm font-semibold transition-colors"
         >
           Clear Search
         </button>
       </div>
     ) : (
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                 {searchedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -150,20 +158,25 @@ function UserHomeContent() {
           <>
             <button
               onClick={() => setActiveCategory(null)}
-              className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium mb-4"
+              className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-semibold mb-4 transition-colors group"
             >
-              <ArrowLeft size={16} /> Back to all products
+              <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" /> Back to all products
             </button>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {activeCategory}
-            </h2>
+            <div className="flex items-center gap-3 mb-5">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                {activeCategory}
+              </h2>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full">
+                {categoryProducts.length} {categoryProducts.length === 1 ? "product" : "products"}
+              </span>
+            </div>
 
             {categoryProducts.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">
+              <p className="text-center text-slate-500 py-16 bg-white border border-slate-200/80 rounded-2xl">
                 No products in this category.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                 {categoryProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -176,15 +189,22 @@ function UserHomeContent() {
           </>
         ) : (
           <>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Featured Products
-            </h2>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  Featured Products
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                  Hand-picked selections for your smart shopping
+                </p>
+              </div>
+            </div>
             {mixedPreview.length === 0 ? (
-              <p className="text-center text-gray-500 py-16">
+              <p className="text-center text-slate-500 py-16 bg-white border border-slate-200/80 rounded-2xl">
                 No products found.
               </p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
                 {mixedPreview.map((product) => (
                   <ProductCard
                     key={product.id}

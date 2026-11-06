@@ -103,26 +103,28 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
   return (
     <div
-      className={`sticky top-0 z-20 transition-all duration-500 ease-in-out ${
-        scrolled ? "px-0 sm:px-4 pt-0 sm:pt-3" : "px-0 pt-0"
+      className={`sticky top-0 z-30 transition-all duration-500 ease-in-out ${
+        scrolled ? "px-2 sm:px-4 pt-1 sm:pt-3" : "px-0 pt-0"
       }`}
     >
       <nav
-        className={`bg-white border border-gray-200 mx-auto transform-gpu transition-all duration-500 ease-in-out will-change-[max-width,border-radius,box-shadow,margin] ${
+        className={`bg-white/95 backdrop-blur-md border border-slate-200/80 mx-auto transform-gpu transition-all duration-500 ease-in-out will-change-[max-width,border-radius,box-shadow,margin] ${
           scrolled
-            ? "max-w-5xl rounded-full shadow-lg mt-2"
-            : "max-w-none w-full rounded-none shadow-none mt-0"
+            ? "max-w-5xl rounded-full shadow-[0_10px_30px_-10px_rgba(0,0,0,0.08)] mt-1 sm:mt-2"
+            : "max-w-none w-full rounded-none shadow-[0_1px_2px_rgba(0,0,0,0.03)] mt-0 border-x-0 border-t-0"
         }`}
       >
         <div
           className={`mx-auto flex items-center gap-2 sm:gap-6 transition-all duration-500 ease-in-out ${
-            scrolled ? "px-3 sm:px-6 py-2" : "px-3 sm:px-6 py-2.5 sm:py-3"
+            scrolled ? "px-3 sm:px-6 py-2" : "px-3 sm:px-6 py-2.5 sm:py-3.5"
           }`}
         >
           {/* Logo - icon always visible, text hidden on very small screens */}
-          <Link href="/" className="flex items-center gap-1.5 flex-shrink-0">
-            <ShoppingCart className="text-blue-600" size={22} />
-            <span className="font-bold text-base sm:text-lg text-gray-900 hidden xs:inline whitespace-nowrap">
+          <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+              <ShoppingCart size={19} className="transition-transform duration-300 group-hover:scale-110" />
+            </div>
+            <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight hidden xs:inline whitespace-nowrap">
               {title}
             </span>
           </Link>
@@ -132,7 +134,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
             <div className="flex-1 min-w-0 relative" ref={searchContainerRef}>
               <div className="relative w-full">
                 <Search
-                  className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  className="absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                   size={15}
                 />
                 <input
@@ -141,8 +143,8 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                   value={searchValue}
                   onChange={handleSearchChange}
                   onFocus={handleSearchFocus}
-                  placeholder="Search..."
-                  className="w-full pl-8 sm:pl-9 pr-2 sm:pr-4 py-1.5 sm:py-2 bg-gray-50 border border-gray-200 rounded-full text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition"
+                  placeholder="Search products..."
+                  className="w-full pl-8 sm:pl-9 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-slate-100/70 hover:bg-slate-100 border border-slate-200/70 rounded-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-200"
                 />
               </div>
               <AnimatePresence>
@@ -159,18 +161,18 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
           {user && user.role !== "USER" && <div className="flex-1" />}
 
           {/* Right-side icons */}
-          <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {!user && (
               <>
                 <Link
                   href="/login"
-                  className="text-xs sm:text-sm font-medium text-gray-700 hover:text-blue-600 px-2 sm:px-3 py-1.5 rounded-lg whitespace-nowrap"
+                  className="text-xs sm:text-sm font-semibold text-slate-700 hover:text-blue-600 px-2.5 sm:px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full whitespace-nowrap"
+                  className="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4.5 py-1.5 sm:py-2 rounded-full whitespace-nowrap shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   Sign Up
                 </Link>
@@ -185,10 +187,11 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
                 <Link
                   href="/user/wishlist"
-                  className={`p-1.5 sm:p-2 rounded-lg transition ${
+                  title="Wishlist"
+                  className={`p-1.5 sm:p-2 rounded-xl transition-all duration-200 ${
                     pathname === "/user/wishlist"
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-500 hover:bg-gray-100"
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
                   }`}
                 >
                   <Heart size={19} />
@@ -196,10 +199,11 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
                 <Link
                   href="/user/cart"
-                  className={`relative p-1.5 sm:p-2 rounded-lg transition ${
+                  title="Shopping Cart"
+                  className={`relative p-1.5 sm:p-2 rounded-xl transition-all duration-200 ${
                     pathname === "/user/cart"
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-500 hover:bg-gray-100"
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
                   }`}
                 >
                   <ShoppingBag size={19} />
@@ -215,7 +219,7 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
                           stiffness: 500,
                           damping: 15,
                         }}
-                        className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] rounded-full flex items-center justify-center px-1"
+                        className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] sm:text-[10px] font-bold min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm"
                       >
                         {itemCount > 99 ? "99+" : itemCount}
                       </motion.span>
@@ -225,10 +229,11 @@ export default function Navbar({ title, onSearch }: NavbarProps) {
 
                 <Link
                   href="/user/profile"
-                  className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm flex-shrink-0 overflow-hidden transition ${
+                  title="Profile"
+                  className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 overflow-hidden transition-all duration-200 ${
                     pathname === "/user/profile"
-                      ? "ring-2 ring-blue-600"
-                      : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                      ? "ring-2 ring-blue-600 ring-offset-2 ring-offset-white shadow-sm"
+                      : "bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-slate-200/60"
                   }`}
                 >
                   {user.profilePhoto ? (

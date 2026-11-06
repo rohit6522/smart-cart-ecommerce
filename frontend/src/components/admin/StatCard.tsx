@@ -8,21 +8,21 @@ interface StatCardProps {
 }
 
 const colorStyles = {
-  blue: "bg-blue-50 text-blue-600",
-  green: "bg-green-50 text-green-600",
-  purple: "bg-purple-50 text-purple-600",
-  yellow: "bg-yellow-50 text-yellow-600",
+  blue: "bg-blue-50 text-blue-600 border border-blue-100",
+  green: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+  purple: "bg-indigo-50 text-indigo-600 border border-indigo-100",
+  yellow: "bg-amber-50 text-amber-600 border border-amber-100",
 };
 
 export default function StatCard({ label, value, icon: Icon, color }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center gap-4">
-      <div className={`p-3 rounded-xl ${colorStyles[color]}`}>
+    <div className="bg-white rounded-3xl shadow-xs hover:shadow-md border border-slate-200/80 p-5 sm:p-6 flex items-center gap-4 transition-all duration-200">
+      <div className={`p-3.5 rounded-2xl ${colorStyles[color]} shadow-2xs`}>
         <Icon size={22} />
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 tracking-tight mt-0.5">{value}</p>
       </div>
     </div>
   );

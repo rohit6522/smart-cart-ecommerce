@@ -41,25 +41,25 @@ function WishlistContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar title="Smart Cart" />
 
-     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-8 flex-1 w-full">
+     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
         <button
           onClick={() => router.push("/user")}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 mb-4"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 font-semibold mb-4 transition-colors group"
         >
-          <ArrowLeft size={16} /> Back to Shopping
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5" /> Back to Shopping
         </button>
 
-       <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">My Wishlist</h1>
+       <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-6">My Wishlist</h1>
 
         {loading ? (
-         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse"
+                className="h-72 bg-white border border-slate-200/80 rounded-3xl animate-pulse shadow-xs"
               />
             ))}
           </div>
@@ -72,7 +72,7 @@ function WishlistContent() {
             actionHref="/user"
           />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {items.map((item) => (
               <ProductCard
                 key={item.wishlistId}

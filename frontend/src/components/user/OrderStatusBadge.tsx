@@ -5,14 +5,14 @@ interface OrderStatusBadgeProps {
 }
 
 const statusStyles: Record<OrderStatus, string> = {
-  PENDING: "bg-yellow-50 text-yellow-700",
-  CONFIRMED: "bg-blue-50 text-blue-700",
-  OUT_FOR_DELIVERY: "bg-purple-50 text-purple-700",
-  DELIVERED: "bg-green-50 text-green-700",
-  CANCELLED: "bg-red-50 text-red-700",
-  RETURN_REQUESTED: "bg-orange-50 text-orange-700",
-  RETURNED: "bg-gray-100 text-gray-700",
-  RETURN_REJECTED: "bg-red-50 text-red-700",
+  PENDING: "bg-amber-50 text-amber-700 border border-amber-200/60",
+  CONFIRMED: "bg-blue-50 text-blue-700 border border-blue-200/60",
+  OUT_FOR_DELIVERY: "bg-indigo-50 text-indigo-700 border border-indigo-200/60",
+  DELIVERED: "bg-emerald-50 text-emerald-700 border border-emerald-200/60",
+  CANCELLED: "bg-rose-50 text-rose-700 border border-rose-200/60",
+  RETURN_REQUESTED: "bg-orange-50 text-orange-700 border border-orange-200/60",
+  RETURNED: "bg-slate-100 text-slate-700 border border-slate-200/60",
+  RETURN_REJECTED: "bg-rose-50 text-rose-700 border border-rose-200/60",
 };
 
 const statusLabels: Record<OrderStatus, string> = {
@@ -28,7 +28,7 @@ const statusLabels: Record<OrderStatus, string> = {
 
 export default function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
   return (
-    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${statusStyles[status]}`}>
+    <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusStyles[status]}`}>
       {statusLabels[status]}
     </span>
   );

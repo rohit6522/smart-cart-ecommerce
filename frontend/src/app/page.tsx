@@ -67,22 +67,22 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar title="Smart Cart" onSearch={setSearch} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex-1 w-full">
         {!user && (
-          <div className="bg-blue-50 border border-blue-100 text-blue-700 text-sm px-4 py-3 rounded-xl mb-6">
-            👋 Browsing as guest — you can explore all products freely. To add items to your
-            cart or place an order, you&apos;ll need to{" "}
-            <a href="/login" className="font-semibold underline">
-              login
-            </a>{" "}
-            or{" "}
-            <a href="/register" className="font-semibold underline">
-              create an account
-            </a>
-            .
+          <div className="bg-gradient-to-r from-blue-50 via-indigo-50/50 to-blue-50 border border-blue-200/60 text-slate-700 text-xs sm:text-sm px-4 py-3.5 rounded-2xl mb-6 shadow-xs flex items-center justify-between flex-wrap gap-2">
+            <span>
+              👋 <strong>Browsing as guest</strong> — explore products freely. To add items to your cart or place an order, please{" "}
+              <a href="/login" className="font-bold text-blue-600 hover:underline">
+                login
+              </a>{" "}
+              or{" "}
+              <a href="/register" className="font-bold text-blue-600 hover:underline">
+                create an account
+              </a>.
+            </span>
           </div>
         )}
 
@@ -95,30 +95,30 @@ export default function HomePage() {
         )}
 
         {activeCategory && (
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="text-lg font-bold text-gray-900">{activeCategory}</h2>
+          <div className="flex items-center gap-2.5 mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">{activeCategory}</h2>
             <button
               onClick={() => setActiveCategory(null)}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-full"
+              className="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full transition-all"
             >
               <X size={12} /> Clear filter
             </button>
           </div>
         )}
         {!activeCategory && !loading && (
-          <h2 className="text-lg font-bold text-gray-900 mb-4">All Products</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight mb-4">All Products</h2>
         )}
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-64 bg-white border border-gray-200 rounded-2xl animate-pulse" />
+              <div key={i} className="h-64 bg-white border border-slate-200/80 rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : visibleProducts.length === 0 ? (
-          <p className="text-center text-gray-500 py-16">No products found.</p>
+          <p className="text-center text-slate-500 py-16">No products found.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {visibleProducts.map((product) => (
               <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
             ))}

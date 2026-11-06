@@ -66,7 +66,7 @@ export default function HeroCarousel({ onShopNow }: HeroCarouselProps) {
   }, []);
 
   return (
-    <div className="relative w-full h-72 sm:h-96 md:h-[26rem] rounded-2xl overflow-hidden mb-8 shadow-sm">
+    <div className="relative w-full h-72 sm:h-96 md:h-[26rem] rounded-3xl overflow-hidden mb-8 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.1)] border border-slate-200/40">
       {slides.map((slide, index) => (
         <div
           key={index}
@@ -76,47 +76,48 @@ export default function HeroCarousel({ onShopNow }: HeroCarouselProps) {
         >
           {/* Background image */}
           <div
-            className="absolute inset-0 bg-cover bg-center scale-105"
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 scale-105"
             style={{ backgroundImage: `url(${slide.imageUrl})` }}
           />
           {/* Gradient overlay for text readability */}
           <div
             className={`absolute inset-0 bg-gradient-to-r ${slide.gradient}`}
           />
-          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute inset-0 bg-slate-950/20" />
 
           {/* Content */}
-          <div className="relative z-10 h-full flex flex-col items-start justify-center px-5 sm:px-14 text-white">
-            <span className="text-2xl sm:text-4xl mb-1.5 sm:mb-2">
+          <div className="relative z-10 h-full flex flex-col items-start justify-center px-6 sm:px-14 text-white">
+            <span className="text-3xl sm:text-5xl mb-2 sm:mb-3 drop-shadow">
               {slide.emoji}
             </span>
-            <h1 className="text-xl sm:text-4xl font-bold mb-1.5 sm:mb-2 drop-shadow-md leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black mb-2 sm:mb-3 drop-shadow-lg leading-tight tracking-tight">
               {slide.title}
             </h1>
-            <p className="text-xs sm:text-base text-white/90 mb-4 sm:mb-5 max-w-[85%] sm:max-w-md drop-shadow">
+            <p className="text-xs sm:text-base text-white/95 font-medium mb-5 sm:mb-6 max-w-[90%] sm:max-w-md drop-shadow">
               {slide.subtitle}
             </p>
 
             <button
               onClick={onShopNow}
-              className="flex items-center gap-1.5 sm:gap-2 bg-white text-gray-900 font-semibold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-gray-100 transition shadow-md text-xs sm:text-sm"
+              className="flex items-center gap-2 bg-white text-slate-900 font-bold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full hover:bg-blue-50 hover:text-blue-600 active:scale-95 transition-all shadow-lg text-xs sm:text-sm"
             >
-              <ShoppingBasket size={15} /> Shop Now
+              <ShoppingBasket size={17} /> Shop Now
             </button>
           </div>
         </div>
       ))}
 
       {/* Dot indicators */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+      <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goTo(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
+            aria-label={`Go to slide ${index + 1}`}
+            className={`h-2 sm:h-2.5 rounded-full transition-all duration-300 ${
               index === current
-                ? "w-6 bg-white"
-                : "w-2 bg-white/50 hover:bg-white/70"
+                ? "w-7 sm:w-8 bg-white shadow-sm"
+                : "w-2 sm:w-2.5 bg-white/50 hover:bg-white/80"
             }`}
           />
         ))}

@@ -46,26 +46,27 @@ export default function ProductCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+      className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-6px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col overflow-hidden"
     >
-      <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden relative">
+      <div className="h-44 bg-slate-100 flex items-center justify-center overflow-hidden relative">
         <button
           onClick={(e) => {
             e.preventDefault();
             toggleWishlist(product.id);
           }}
-          className="absolute top-2 right-2 z-10 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-sm hover:scale-110 transition"
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm hover:scale-110 active:scale-95 transition-all duration-200"
         >
           <Heart
             size={16}
             className={
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-400"
+              isWishlisted ? "fill-rose-500 text-rose-500" : "text-slate-400 hover:text-slate-600"
             }
           />
         </button>
 
         {product.discountPercentage > 0 && (
-          <span className="absolute top-2 left-2 z-10 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+          <span className="absolute top-2.5 left-2.5 z-10 bg-rose-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm tracking-wide">
             {product.discountPercentage}% OFF
           </span>
         )}
@@ -75,20 +76,20 @@ export default function ProductCard({
             alt={product.name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             loading="lazy"
           />
         ) : (
-          <ShoppingCart className="text-gray-300" size={36} />
+          <ShoppingCart className="text-slate-300" size={36} />
         )}
       </div>
 
       <div className="p-4 flex flex-col flex-1">
-        <span className="text-xs text-blue-600 font-medium mb-1">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 mb-1">
           {product.category}
         </span>
         <Link href={`/user/products/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-1 hover:text-blue-600">
+          <h3 className="font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
@@ -100,34 +101,34 @@ export default function ProductCard({
             />
           </div>
         )}
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2 flex-1">
+        <p className="text-xs sm:text-sm text-slate-500 mb-3 line-clamp-2 flex-1 leading-relaxed">
           {product.description}
         </p>
 
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between mb-3.5">
+          <div className="flex items-baseline gap-2">
             {product.discountPercentage > 0 ? (
               <>
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-base sm:text-lg font-extrabold text-slate-900">
                   ₹{product.discountedPrice.toFixed(2)}
                 </span>
-                <span className="text-xs text-gray-400 line-through">
+                <span className="text-xs text-slate-400 line-through">
                   ₹{product.price.toFixed(2)}
                 </span>
               </>
             ) : (
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-base sm:text-lg font-extrabold text-slate-900">
                 ₹{product.price.toFixed(2)}
               </span>
             )}
           </div>
           <span
-            className={`text-xs font-medium ${
+            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
               outOfStock
-                ? "text-red-500"
+                ? "bg-rose-50 text-rose-600"
                 : product.stockQuantity <= 5
-                  ? "text-orange-600 animate-pulse"
-                  : "text-gray-400"
+                  ? "bg-amber-50 text-amber-700 animate-pulse"
+                  : "bg-emerald-50 text-emerald-700"
             }`}
           >
             {outOfStock
@@ -140,38 +141,40 @@ export default function ProductCard({
 
         {!outOfStock && (
           <>
-            <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="flex items-center justify-center gap-2 mb-3 bg-slate-100/70 border border-slate-200/60 rounded-xl p-1">
               <button
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+                aria-label="Decrease quantity"
+                className="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-xs hover:bg-slate-50 active:scale-95 text-slate-700 transition"
               >
-                <Minus size={14} />
+                <Minus size={13} />
               </button>
-              <span className="w-8 text-center font-medium">{quantity}</span>
+              <span className="w-8 text-center text-xs font-bold text-slate-800">{quantity}</span>
               <button
                 onClick={() =>
                   setQuantity((q) => Math.min(product.stockQuantity, q + 1))
                 }
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg hover:bg-gray-200"
+                aria-label="Increase quantity"
+                className="w-7 h-7 flex items-center justify-center bg-white rounded-lg shadow-xs hover:bg-slate-50 active:scale-95 text-slate-700 transition"
               >
-                <Plus size={14} />
+                <Plus size={13} />
               </button>
             </div>
 
             <motion.button
               onClick={handleAdd}
               disabled={adding || quantity > product.stockQuantity}
-              whileTap={{ scale: 0.95 }}
-              animate={added ? { scale: [1, 1.05, 1] } : {}}
-              transition={{ duration: 0.3 }}
-              className={`w-full py-2 rounded-lg font-medium text-sm transition-colors ${
+              whileTap={{ scale: 0.97 }}
+              animate={added ? { scale: [1, 1.03, 1] } : {}}
+              transition={{ duration: 0.25 }}
+              className={`w-full py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all duration-200 ${
                 added
-                  ? "bg-green-100 text-green-700"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
+                  ? "bg-emerald-600 text-white shadow-emerald-500/20"
+                  : "bg-blue-600 hover:bg-blue-700 hover:shadow-md text-white shadow-blue-500/20"
               } disabled:opacity-50`}
             >
               {added
-                ? "Added ✓"
+                ? "Added to Cart ✓"
                 : adding
                   ? "Adding..."
                   : quantity > product.stockQuantity

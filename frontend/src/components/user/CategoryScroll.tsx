@@ -38,9 +38,11 @@ export default function CategoryScroll({
 
   return (
     <div className="mb-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Grid3x3 className="text-blue-600" size={20} />
-        <h2 className="text-lg font-bold text-gray-900">Shop by Category</h2>
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-xs">
+          <Grid3x3 size={16} />
+        </div>
+        <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Shop by Category</h2>
       </div>
 
       <div
@@ -50,14 +52,15 @@ export default function CategoryScroll({
       >
         <button
           onClick={() => scroll("left")}
-          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-sm items-center justify-center hover:bg-gray-50 mr-2 z-10"
+          aria-label="Scroll categories left"
+          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white/95 backdrop-blur-sm border border-slate-200/80 rounded-full shadow-sm items-center justify-center hover:bg-slate-50 hover:scale-105 active:scale-95 text-slate-700 mr-2 z-10 transition-all"
         >
           <ChevronLeft size={16} />
         </button>
 
-        <div ref={scrollRef} className="flex overflow-x-auto no-scrollbar py-1">
+        <div ref={scrollRef} className="flex overflow-x-auto no-scrollbar py-2">
           <div
-            className={`flex gap-5 flex-shrink-0 ${paused ? "" : "animate-category-scroll"}`}
+            className={`flex gap-4 sm:gap-5 flex-shrink-0 ${paused ? "" : "animate-category-scroll"}`}
           >
             {loopedCategories.map((category, idx) => {
               const { icon: Icon, bg } = getCategoryStyle(category);
@@ -66,14 +69,16 @@ export default function CategoryScroll({
                 <button
                   key={`${category}-${idx}`}
                   onClick={() => handleClick(category)}
-                  className={`flex-shrink-0 w-20 sm:w-28 flex flex-col items-center gap-1.5 sm:gap-2 p-2.5 sm:p-4 rounded-2xl border-2 transition ${bg} ${
+                  className={`flex-shrink-0 w-20 sm:w-28 flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-2xl border-2 transition-all duration-200 active:scale-95 shadow-[0_1px_3px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5 ${bg} ${
                     isActive
-                      ? "border-blue-500"
-                      : "border-transparent hover:border-gray-200"
+                      ? "border-blue-600 ring-2 ring-blue-500/20 shadow-md scale-105"
+                      : "border-transparent hover:border-slate-200/80"
                   }`}
                 >
-                  <Icon className="text-gray-700" size={20} />
-                  <span className="text-[10px] sm:text-xs font-medium text-gray-800 text-center leading-tight">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/80 shadow-xs flex items-center justify-center">
+                    <Icon className="text-slate-800" size={18} />
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold text-slate-800 text-center leading-tight">
                     {category}
                   </span>
                 </button>
@@ -84,7 +89,8 @@ export default function CategoryScroll({
 
         <button
           onClick={() => scroll("right")}
-          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white border border-gray-200 rounded-full shadow-sm items-center justify-center hover:bg-gray-50 ml-2 z-10"
+          aria-label="Scroll categories right"
+          className="hidden sm:flex flex-shrink-0 w-9 h-9 bg-white/95 backdrop-blur-sm border border-slate-200/80 rounded-full shadow-sm items-center justify-center hover:bg-slate-50 hover:scale-105 active:scale-95 text-slate-700 ml-2 z-10 transition-all"
         >
           <ChevronRight size={16} />
         </button>
