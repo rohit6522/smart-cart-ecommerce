@@ -529,7 +529,7 @@ const demoUsers = [
   {
     userId: 1,
     name: "Rohit Raj",
-    email: "rohitraj6522@gmail.com",
+    email: "rohitrajyadav6522@gmail.com",
     rawPassword: "Password@123",
     role: "USER",
     phone: "+91 9876543210",
@@ -550,6 +550,16 @@ const demoUsers = [
   },
   {
     userId: 2,
+    name: "Rohit Raj (Alternate)",
+    email: "rohitraj6522@gmail.com",
+    rawPassword: "Password@123",
+    role: "USER",
+    phone: "+91 9876543210",
+    referralCode: "SMART6523",
+    addresses: [],
+  },
+  {
+    userId: 3,
     name: "Express Delivery Agent",
     email: "delivery@smartcart.com",
     rawPassword: "Delivery@123",
@@ -559,7 +569,7 @@ const demoUsers = [
     addresses: [],
   },
   {
-    userId: 3,
+    userId: 4,
     name: "Admin Rohit",
     email: "admin@smartcart.com",
     rawPassword: "Admin@123",
