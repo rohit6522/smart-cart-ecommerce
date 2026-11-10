@@ -162,8 +162,66 @@ router.post("/verify-otp", async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profilePhoto: user.profilePhoto || null,
       },
     });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = (email || "").toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account found with that email" });
+    }
+
+    const generatedOtp = "123456";
+    otpStore.set(normalizedEmail, generatedOtp);
+    console.log(`[Password Reset OTP for ${normalizedEmail}]: ${generatedOtp}`);
+
+    res.json({
+      success: true,
+      data: {
+        message: "Password reset OTP sent (use 123456 for demo)",
+        email: normalizedEmail,
+        requiresOtp: true,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const normalizedEmail = (email || "").toLowerCase().trim();
+    const storedOtp = otpStore.get(normalizedEmail);
+
+    if (otp !== "123456" && (!storedOtp || storedOtp !== otp)) {
+      return res.status(400).json({ success: false, message: "Invalid OTP code" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const user = await User.findOneAndUpdate(
+      { email: normalizedEmail },
+      { password: hashedPassword },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    otpStore.delete(normalizedEmail);
+    res.json({ success: true, message: "Password updated successfully", data: null });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

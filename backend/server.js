@@ -23,8 +23,8 @@ app.use(
   })
 );
 app.options("*", cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Health Check
 app.get("/health", (req, res) => {
@@ -36,12 +36,40 @@ app.get("/health", (req, res) => {
   });
 });
 
-// Routes
-app.use("/api/products", require("./src/routes/productRoutes"));
-app.use("/api/admin/products", require("./src/routes/productRoutes"));
-app.use("/api/categories", require("./src/routes/categoryRoutes"));
-app.use("/api/coupons", require("./src/routes/couponRoutes"));
+// Route Imports
+const { couponRouter, userCouponRouter, adminCouponRouter } = require("./src/routes/couponRoutes");
+const { userOrderRouter, adminOrderRouter } = require("./src/routes/orderRoutes");
+const { adminDeliveryRouter, deliveryRouter } = require("./src/routes/deliveryRoutes");
+const { userSupportRouter, adminSupportRouter } = require("./src/routes/supportRoutes");
+const { publicReviewRouter, userReviewRouter } = require("./src/routes/reviewRoutes");
+
+// Public & Auth Routes
 app.use("/api/auth", require("./src/routes/authRoutes"));
+app.use("/api/products", publicReviewRouter);
+app.use("/api/products", require("./src/routes/productRoutes"));
+app.use("/api/categories", require("./src/routes/categoryRoutes"));
+app.use("/api/coupons", couponRouter);
+
+// User Routes
+app.use("/api/user/cart", require("./src/routes/cartRoutes"));
+app.use("/api/user/wishlist", require("./src/routes/wishlistRoutes"));
+app.use("/api/user/notifications", require("./src/routes/notificationRoutes"));
+app.use("/api/user/orders", userOrderRouter);
+app.use("/api/user/support", userSupportRouter);
+app.use("/api/user/products", userReviewRouter);
+app.use("/api/user", userCouponRouter);
+app.use("/api/user", require("./src/routes/userProfileRoutes"));
+
+// Admin Routes
+app.use("/api/admin/products", require("./src/routes/productRoutes"));
+app.use("/api/admin/orders", adminOrderRouter);
+app.use("/api/admin/coupons", adminCouponRouter);
+app.use("/api/admin/support", adminSupportRouter);
+app.use("/api/admin/analytics", require("./src/routes/analyticsRoutes"));
+app.use("/api/admin", adminDeliveryRouter);
+
+// Delivery Agent Routes
+app.use("/api/delivery", deliveryRouter);
 
 // App Info
 app.get("/api", (req, res) => {

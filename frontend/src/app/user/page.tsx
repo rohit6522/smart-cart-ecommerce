@@ -32,12 +32,19 @@ function UserHomeContent() {
   };
 
   useEffect(() => {
-    Promise.all([getAllProducts(), getCart()])
-      .then(([productsData, cartData]) => {
-        setProducts(productsData);
-        setCart(cartData);
+    Promise.allSettled([getAllProducts(), getCart()])
+      .then(([productsRes, cartRes]) => {
+        if (productsRes.status === "fulfilled") {
+          setProducts(productsRes.value);
+        } else {
+          console.error("Failed to load products", productsRes.reason);
+        }
+        if (cartRes.status === "fulfilled") {
+          setCart(cartRes.value);
+        } else {
+          console.error("Failed to load cart", cartRes.reason);
+        }
       })
-      .catch((err) => console.error("Failed to load home data", err))
       .finally(() => setLoading(false));
   }, []);
 
