@@ -571,7 +571,7 @@ const demoUsers = [
   {
     userId: 4,
     name: "Admin Rohit",
-    email: "admin@smartcart.com",
+    email: "rohitrajyadav6522@gmail.com",
     rawPassword: "Admin@123",
     role: "ADMIN",
     phone: "+91 9876543212",

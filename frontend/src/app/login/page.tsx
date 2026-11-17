@@ -52,7 +52,7 @@ const ROLE_TABS: RoleTab[] = [
     icon: ShieldCheck,
     title: "Admin Portal",
     subtitle: "Sign in to access admin console & inventory",
-    emailPlaceholder: "admin@smartcart.com",
+    emailPlaceholder: "rohitrajyadav6522@gmail.com",
   },
 ];
 
@@ -195,11 +195,10 @@ function LoginForm() {
                     setSelectedRole(tab.id);
                     setError("");
                   }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative ${
-                    isActive
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative ${isActive
                       ? "text-slate-900 shadow-xs"
                       : "text-slate-500 hover:text-slate-800"
-                  }`}
+                    }`}
                 >
                   {isActive && (
                     <motion.div
