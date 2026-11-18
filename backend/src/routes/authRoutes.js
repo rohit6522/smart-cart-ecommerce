@@ -6,7 +6,7 @@ const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET || "smart_cart_jwt_secret_key_2026";
 
-// In-memory OTP storage for demo / admin 2FA
+// In-memory OTP storage for password reset
 const otpStore = new Map();
 
 // POST /api/auth/register
@@ -89,24 +89,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid email or password" });
     }
 
-    // Admin role requires 2FA OTP
-    if (user.role === "ADMIN") {
-      const generatedOtp = "123456"; // Default demo OTP or random
-      otpStore.set(user.email, generatedOtp);
-      console.log(`[Admin OTP generated for ${user.email}]: ${generatedOtp}`);
-
-      return res.json({
-        success: true,
-        data: {
-          message: "OTP sent to admin email",
-          email: user.email,
-          requiresOtp: true,
-          role: user.role,
-        },
-      });
-    }
-
-    // Customer or Delivery Boy - direct login
+    // Direct login for all roles (User, Delivery Boy, Admin)
     const token = jwt.sign(
       { userId: user.userId, email: user.email, role: user.role, name: user.name },
       JWT_SECRET,
@@ -123,49 +106,11 @@ router.post("/login", async (req, res) => {
         userId: user.userId,
         name: user.name,
         role: user.role,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-});
-
-// POST /api/auth/verify-otp
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const storedOtp = otpStore.get(email);
-
-    if (otp !== "123456" && (!storedOtp || storedOtp !== otp)) {
-      return res.status(400).json({ success: false, message: "Invalid OTP code" });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    otpStore.delete(email);
-
-    const token = jwt.sign(
-      { userId: user.userId, email: user.email, role: user.role, name: user.name },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
-    res.json({
-      success: true,
-      data: {
-        token,
-        userId: user.userId,
-        name: user.name,
-        email: user.email,
-        role: user.role,
         profilePhoto: user.profilePhoto || null,
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });

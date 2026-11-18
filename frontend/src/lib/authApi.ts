@@ -11,11 +11,6 @@ export const loginUser = async (payload: LoginPayload) => {
   return res.data.data;
 };
 
-export const verifyOtp = async (email: string, otp: string) => {
-  const res = await api.post<ApiResponse<AuthResponse>>("/api/auth/verify-otp", { email, otp });
-  return res.data.data;
-};
-
 export const getMyReferralInfo = async () => {
   const res = await api.get<ApiResponse<ReferralInfo>>("/api/user/referral");
   return res.data.data;

@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useState, useRef, useEffect } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginUser, verifyOtp } from "@/lib/authApi";
+import { loginUser } from "@/lib/authApi";
 import { useAuth } from "@/context/AuthContext";
 import { getDashboardPath } from "@/lib/roleRedirect";
 import { Role } from "@/types";
@@ -74,11 +74,6 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [step, setStep] = useState<"credentials" | "otp">("credentials");
-  const [otp, setOtp] = useState("");
-  const [otpEmail, setOtpEmail] = useState("");
-  const otpInputRef = useRef<HTMLInputElement>(null);
-
   const activeTabInfo =
     ROLE_TABS.find((t) => t.id === selectedRole) || ROLE_TABS[0];
 
@@ -111,8 +106,7 @@ function LoginForm() {
         return;
       }
 
-      if (!data.requiresOtp && data.token) {
-        // Direct login (non-admin or non-OTP users)
+      if (data.token) {
         login(data.token, {
           userId: data.userId!,
           name: data.name!,
@@ -123,46 +117,11 @@ function LoginForm() {
         return;
       }
 
-      // Admin requiring OTP
-      if (selectedRole !== "ADMIN") {
-        setError(
-          "This account requires Admin OTP verification. Please switch to the Admin tab."
-        );
-        return;
-      }
-      setOtpEmail(data.email);
-      setStep("otp");
+      setError("Login failed. Please try again.");
     } catch (err: any) {
       setError(
         err?.response?.data?.message || "Login failed. Check your credentials."
       );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (step === "otp") {
-      otpInputRef.current?.focus();
-    }
-  }, [step]);
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const data = await verifyOtp(otpEmail, otp);
-      login(data.token, {
-        userId: data.userId,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-      });
-      router.push(getDashboardPath(data.role));
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Invalid OTP. Try again.");
     } finally {
       setLoading(false);
     }
@@ -182,49 +141,47 @@ function LoginForm() {
         </div>
 
         {/* Role Selection Tabs */}
-        {step === "credentials" && (
-          <div className="bg-slate-100/90 p-1 rounded-2xl flex items-center gap-1 mb-6 border border-slate-200/60">
-            {ROLE_TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = selectedRole === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole(tab.id);
-                    setError("");
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative ${isActive
-                      ? "text-slate-900 shadow-xs"
-                      : "text-slate-500 hover:text-slate-800"
-                    }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeRoleTab"
-                      className="absolute inset-0 bg-white rounded-xl shadow-xs border border-slate-200/60"
-                      transition={{
-                        type: "spring",
-                        stiffness: 450,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1.5 whitespace-nowrap">
-                    <Icon
-                      size={15}
-                      className={
-                        isActive ? "text-blue-600" : "text-slate-400"
-                      }
-                    />
-                    <span>{tab.label}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <div className="bg-slate-100/90 p-1 rounded-2xl flex items-center gap-1 mb-6 border border-slate-200/60">
+          {ROLE_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = selectedRole === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setSelectedRole(tab.id);
+                  setError("");
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs sm:text-sm font-semibold transition-all relative ${isActive
+                    ? "text-slate-900 shadow-xs"
+                    : "text-slate-500 hover:text-slate-800"
+                  }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeRoleTab"
+                    className="absolute inset-0 bg-white rounded-xl shadow-xs border border-slate-200/60"
+                    transition={{
+                      type: "spring",
+                      stiffness: 450,
+                      damping: 30,
+                    }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5 whitespace-nowrap">
+                  <Icon
+                    size={15}
+                    className={
+                      isActive ? "text-blue-600" : "text-slate-400"
+                    }
+                  />
+                  <span>{tab.label}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {notice === "login-required" && (
           <div className="bg-blue-50 border border-blue-100 text-blue-700 text-sm px-4 py-3 rounded-xl mb-5 font-medium">
@@ -238,114 +195,74 @@ function LoginForm() {
           </div>
         )}
 
-        {step === "credentials" ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold tracking-wider text-slate-500 mb-1.5 uppercase">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail
-                  size={18}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder={activeTabInfo.emailPlaceholder}
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900 transition-all placeholder:text-slate-400"
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold tracking-wider text-slate-500 mb-1.5 uppercase">
+              Email Address
+            </label>
+            <div className="relative">
+              <Mail
+                size={18}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder={activeTabInfo.emailPlaceholder}
+                value={form.email}
+                onChange={handleChange}
+                required
+                className="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900 transition-all placeholder:text-slate-400"
+              />
             </div>
+          </div>
 
-            <div>
-              <label className="block text-xs font-semibold tracking-wider text-slate-500 mb-1.5 uppercase">
-                Password
-              </label>
-              <div className="relative">
-                <Lock
-                  size={18}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-slate-300 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900 transition-all placeholder:text-slate-400"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <Link
-                href="/forgot-password"
-                className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+          <div>
+            <label className="block text-xs font-semibold tracking-wider text-slate-500 mb-1.5 uppercase">
+              Password
+            </label>
+            <div className="relative">
+              <Lock
+                size={18}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+              />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="••••••••"
+                value={form.password}
+                onChange={handleChange}
+                required
+                className="w-full border border-slate-300 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900 transition-all placeholder:text-slate-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                Forgot Password?
-              </Link>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 shadow-sm hover:shadow-md text-sm sm:text-base mt-2"
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors"
             >
-              {loading
-                ? "Signing in..."
-                : selectedRole === "ADMIN"
-                  ? "Continue to 2FA"
-                  : "Sign In"}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleVerifyOtp} className="space-y-4">
-            <div className="bg-blue-50 border border-blue-100 text-blue-700 text-sm px-4 py-3 rounded-xl">
-              We&apos;ve sent a 6-digit verification code to{" "}
-              <strong>{otpEmail}</strong>. Enter it below to complete Admin
-              login.
-            </div>
-            <input
-              ref={otpInputRef}
-              type="text"
-              placeholder="••••••"
-              value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              maxLength={6}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-center text-2xl tracking-[0.5em] font-mono focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 text-slate-900"
-            />
-            <button
-              type="submit"
-              disabled={loading || otp.length !== 6}
-              className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 shadow-sm hover:shadow-md text-sm sm:text-base"
-            >
-              {loading ? "Verifying..." : "Verify & Sign In"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep("credentials")}
-              className="w-full text-sm text-slate-500 hover:text-slate-800 font-medium py-2 transition-colors"
-            >
-              ← Back to login
-            </button>
-          </form>
-        )}
+              Forgot Password?
+            </Link>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 shadow-sm hover:shadow-md text-sm sm:text-base mt-2"
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
 
         {/* Context-aware Bottom Links */}
         {selectedRole === "USER" && (
@@ -387,8 +304,7 @@ function LoginForm() {
         {selectedRole === "ADMIN" && (
           <div className="mt-7 text-center">
             <p className="text-xs text-slate-400 leading-relaxed">
-              🔒 Admin console is restricted to authorized personnel. 2-Step
-              Verification (OTP) is enforced.
+              🔒 Admin console is restricted to authorized personnel.
             </p>
           </div>
         )}
