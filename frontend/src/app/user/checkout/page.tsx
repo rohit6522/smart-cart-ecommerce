@@ -108,7 +108,6 @@ function CheckoutContent() {
           sessionStorage.removeItem("pendingCoupon");
         });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const selectAddress = (address: Address) => {

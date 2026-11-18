@@ -14,7 +14,6 @@ import {
   CreditCard,
   Tag,
 } from "lucide-react";
-import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { useCart } from "@/context/CartContext";
 import { getMyCoupons, applyCoupon } from "@/lib/couponApi";

@@ -21,12 +21,6 @@ export const updateProfilePhoto = async (base64Photo: string) => {
   return res.data.data;
 };
 
-export const getProfilePhoto = async () => {
-  const res = await api.get<ApiResponse<string | null>>("/api/user/profile-photo");
-  return res.data.data;
-};
-
-
 export const forgotPassword = async (email: string) => {
   const res = await api.post<ApiResponse<LoginOtpResponse>>("/api/auth/forgot-password", { email });
   return res.data.data;

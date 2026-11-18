@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { getAllProducts } from "@/lib/productApi";
 import { Product } from "@/types";
 import { ShoppingCart, Search } from "lucide-react";
@@ -10,10 +10,9 @@ import { ShoppingCart, Search } from "lucide-react";
 interface SearchSuggestionsProps {
   query: string;
   onClose: () => void;
-  onSelectCategory?: (category: string) => void;
 }
 
-export default function SearchSuggestions({ query, onClose, onSelectCategory }: SearchSuggestionsProps) {
+export default function SearchSuggestions({ query, onClose }: SearchSuggestionsProps) {
   const [results, setResults] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const router = useRouter();

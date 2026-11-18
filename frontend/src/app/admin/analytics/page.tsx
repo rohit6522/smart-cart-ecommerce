@@ -12,7 +12,6 @@ import {
   TrendingUp,
   ShoppingBag,
   IndianRupee,
-  Package,
 } from "lucide-react";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { formatCurrency } from "@/lib/formatCurrency";

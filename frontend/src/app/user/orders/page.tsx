@@ -19,7 +19,6 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
-import { ArrowLeft } from "lucide-react";
 import BackButton from "@/components/ui/BackButton";
 
 type TabKey = "ALL" | "PROCESSING" | "SHIPPED" | "DELIVERED";

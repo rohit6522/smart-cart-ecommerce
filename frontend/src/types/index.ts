@@ -282,10 +282,6 @@ export interface LoginOtpResponse {
   role?: Role;
 }
 
-export interface ProfilePhoto {
-  profilePhoto: string | null;
-}
-
 export interface AuthResponse {
   token: string;
   userId: number;

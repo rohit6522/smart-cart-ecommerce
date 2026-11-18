@@ -14,7 +14,7 @@ import {
   setDefaultAddress,
 } from "@/lib/addressApi";
 import { Address, AddressPayload } from "@/types";
-import { MapPin, Plus, Pencil, Trash2, Star, Phone } from "lucide-react";
+import { MapPin, Plus, Pencil, Trash2, Phone } from "lucide-react";
 import BackButton from "@/components/ui/BackButton";
 
 function AddressesContent() {

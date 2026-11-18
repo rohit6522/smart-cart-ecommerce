@@ -9,8 +9,7 @@ import { getMyNotifications, markAllAsRead } from "@/lib/notificationApi";
 import { Notification } from "@/types";
 
 export default function NotificationBell() {
-  const { unreadCount, refreshUnreadCount, setUnreadCount } =
-    useNotifications();
+  const { unreadCount, setUnreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
